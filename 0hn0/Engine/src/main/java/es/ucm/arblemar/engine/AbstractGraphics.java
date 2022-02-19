@@ -1,6 +1,6 @@
 package es.ucm.arblemar.engine;
 
-public class AbstractGraphics {
+public abstract class AbstractGraphics implements Graphics{
     protected AbstractGraphics(int w, int h){
         _wLogWindow = w;
         _hLogWindow = h;
@@ -21,72 +21,86 @@ public class AbstractGraphics {
     }
 
     /**
-     * Dada una posición (x, y) se devuelve el Vector2 transformado
+     * Dada una posición P(x, y) se devuelve el vector transformado
      * al sistema de coordenadas de la ventana
      * */
-    public Vector2 realPos(Vector2 pos){
+    public int[] realPos(int x, int y){
         _scaleFactor = scaleFactor();
         float offsetX = (getWidth() - (_wLogWindow * _scaleFactor)) / 2.0f;
         float offsetY = (getHeight() - (_hLogWindow) * _scaleFactor) / 2.0f;
 
-        int newPosX = (int)((pos._x * _scaleFactor) + offsetX);
-        int newPosY = (int)((pos._y * _scaleFactor) + offsetY);
+        int newPosX = (int)((x * _scaleFactor) + offsetX);
+        int newPosY = (int)((y * _scaleFactor) + offsetY);
 
-        return new Vector2((int)(newPosX), (int)(newPosY));
+        int newPos [] = new int[2];
+        newPos[0] = newPosX;
+        newPos[1] = newPosY;
+        return newPos;
     }
 
     /**
-     * Dado tamaño size se devuelve el Vector2 transformado
+     * Dado un tamaño S(w, h) se devuelve el tamaño transformado
      * al sistema de coordenadas de la ventana
      * */
-    public Vector2 realSize(Vector2 size){
+    public int[] realSize(float w, float h){
         _scaleFactor = scaleFactor();
-        int newW = (int)(size._x * _scaleFactor);
-        int newH = (int)(size._y * _scaleFactor);
+        int newW = (int)(w * _scaleFactor);
+        int newH = (int)(h * _scaleFactor);
 
-        return new Vector2(newW, newH);
+        int newSize[] = new int[2];
+        newSize[0] = newW;
+        newSize[1] = newH;
+        return newSize;
     }
 
     /**
      * Dado un tamaño size se devuelve el valor transformado
      * al sistema de coordenadas de la ventana
      * */
-    public int realSize(int size){
+    public int realSize(float size){
         _scaleFactor = scaleFactor();
         return (int)(size * _scaleFactor);
     }
 
     /**
-     * Dado una posición pos, se devuelve el valor transformado
+     * Dado una posición P(x, y), se devuelve el valor transformado
      * al sistema de coordenadas lógico
      * */
-    public Vector2 logPos(Vector2 pos){
+    public int[] logPos(int x, int y){
         _scaleFactor = scaleFactor();
         float offsetX = (_wLogWindow - (getWidth() / _scaleFactor)) / 2;
         float offsetY = (_hLogWindow - (getHeight() / _scaleFactor)) / 2;
 
-        int newPosX = (int)((pos._x / _scaleFactor) + offsetX);
-        int newPosY = (int)((pos._y / _scaleFactor) + offsetY);
+        int newPosX = (int)((x / _scaleFactor) + offsetX);
+        int newPosY = (int)((y / _scaleFactor) + offsetY);
 
-        return new Vector2(newPosX, newPosY);
+        int newPos [] = new int[2];
+        newPos[0] = newPosX;
+        newPos[1] = newPosY;
+
+        return newPos;
     }
 
     //TODO: Borrar esto si no es necesario
-    private Vector2 translateWindow() {
+    private int[] translateWindow() {
         float offsetX = (getWidth() - (_wLogWindow * _scaleFactor)) / 2.0f;
         float offsetY = (getHeight() - (_hLogWindow) * _scaleFactor) / 2.0f;
 
         int newPosX = (int)((_posLogX * _scaleFactor) + offsetX);
         int newPosY = (int)((_posLogY * _scaleFactor) + offsetY);
 
-        return new Vector2((int)(newPosX), (int)(newPosY));
+        int newPos[] = new int[2];
+        newPos[0] = newPosX;
+        newPos[1] = newPosY;
+
+        return newPos;
     }
 
     public void prepareFrame(){
         _scaleFactor = scaleFactor();
-        Vector2 newPos = translateWindow();
+        int newPos [] = translateWindow();
 
-        translate(newPos._x, newPos._y);
+        translate(newPos[0], newPos[1]);
         scale(_scaleFactor, _scaleFactor);
     }
 
@@ -100,7 +114,7 @@ public class AbstractGraphics {
         return (int)_hLogWindow;
     }
 
-    // Posaición lógica
+    // Posición lógica
     protected float _posLogX;
     protected float _posLogY;
 

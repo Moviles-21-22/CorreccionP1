@@ -29,33 +29,50 @@ public interface Graphics {
      * @param x posición X en pantalla
      * @param y posición Y en pantalla
      * */
-    void drawImage(Image image, int x, int y, int w, int h);
+    void drawImage(Image image, int x, int y, float w, float h);
     /**
-     * Dibuja una línea desde el P(x1, y1) hasta Q(x2, y2)
+     * Dibuja una línea desde el P hasta el punto Q
+     * @param x1 Posición X del punto P
+     * @param y1 Posición Y del punto P
+     * @param x2 Posición X del punto Q
+     * @param y2 Posición Y del punto Q
      * */
-    void drawLine(Vector2 P, Vector2 Q);
+    void drawLine(int x1, int y1, int x2, int y2);
     /**
-     * Dibuja un rectángulo en la posición (x, y) con
-     * un tamaño (width, height)
+     * Dibuja un rectángulo sin relleno
+     * @param x Posición X esquina superior izquierda
+     * @param y Posición Y esquina superior izquierda
+     * @param width Ancho del rectángulo
+     * @param height Alto del rectángulo
      * */
-    void drawRect(int x, int y, int width, int height);
+    void drawRect(int x, int y, float width, float height);
     /**
-     * Dibuja un círculo
+     * Dibuja una circunferencia
+     * @param x Posición X del centro
+     * @param y Posición Y del centro
+     * @param r radio de la circunferencia
      * */
-    void drawCircle(Vector2 centro, int radio);
+    void drawCircle(int x, int y, float r);
     /**
      * Renderiza texto
      * @param text texto a mostrar
-     * @param x posición X en pantalla
-     * @param y posición Y en pantalla
+     * @param x posición X esquina superior izquierda
+     * @param y posición Y esquina superior izquierda
      * */
     void drawText(String text, int x, int y, Font font, int tam);
     /**
-     * Rellena un circulo
+     * Dibuja un círculo
+     * @param x posición X del centro
+     * @param y posición Y del centro
+     * @param dm diámetro del círculo
      * */
-    void fillCircle(Vector2 centro, int dm);
+    void fillCircle(int x, int y, int dm);
     /**
      * Rellena un rectángulo
+     * @param x posición X esquina superior izquierda
+     * @param y posición Y esquina superior izquierda
+     * @param width ancho del rectángulo
+     * @param height alto del rectángulo
      * */
     void fillRect(int x, int y, int width, int height);
     /**
