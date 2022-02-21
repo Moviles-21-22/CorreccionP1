@@ -2,24 +2,25 @@ package es.ucm.arblemar.desktopengine;
 
 import java.awt.image.BufferStrategy;
 
+import es.ucm.arblemar.engine.AbstractEngine;
 import es.ucm.arblemar.engine.State;
 import es.ucm.arblemar.engine.Engine;
 import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 
-public class DesktopEngine implements Engine {
+public class DesktopEngine extends AbstractEngine {
     public DesktopEngine(){
     }
 
     public boolean init(State initState, String nameGame, int w, int h) {
-        _currentState = initState;
+        _currState = initState;
         _input = new DesktopInput(this);
         _graphics = new DesktopGraphics(nameGame, this, w, h);
-        return _graphics.init() && _input.init() && _currentState.init();
+        return ((DesktopGraphics)_graphics).init() && ((DesktopInput)_input).init() && _currState.init();
     }
 
     public void run() {
-        BufferStrategy strategy = _graphics.getStrategy();
+        BufferStrategy strategy = ((DesktopGraphics)_graphics).getStrategy();
         _lastFrameTime = System.nanoTime();
 
         while(true) {
@@ -27,9 +28,8 @@ public class DesktopEngine implements Engine {
             updateDeltaTime();
 
             // Refresco del estado actual
-
-            _currentState.handleInput();
-            _currentState.update(_deltaTime);
+            _currState.handleInput();
+            _currState.update(_deltaTime);
 
             // Pintamos el frame con el BufferStrategy
             do {
@@ -37,7 +37,7 @@ public class DesktopEngine implements Engine {
                     _graphics.updateGraphics();
                     _graphics.clear(0xFFFFFFFF);
                     try {
-                        _currentState.render();
+                        _currState.render();
                     }
                     finally {
                         _graphics.restore();
@@ -45,23 +45,15 @@ public class DesktopEngine implements Engine {
                 } while(strategy.contentsRestored());
                 strategy.show();
             } while(strategy.contentsLost());
+
+            // Inicializacion del nuevo estado en diferido
+            if(_changeState)
+            {
+                _changeState = false;
+                _currState = _newState;
+                _currState.init();
+            }
         }
-    }
-
-    @Override
-    public boolean initNewState(State newState){
-        _currentState = newState;
-        return _currentState.init();
-    }
-
-    @Override
-    public Graphics getGraphics() {
-        return _graphics;
-    }
-
-    @Override
-    public Input getInput() {
-        return _input;
     }
 
     /**
@@ -78,8 +70,5 @@ public class DesktopEngine implements Engine {
     private long _lastFrameTime = 0;
     private long _currentTime = 0;
     private double _deltaTime = 0;
-    private State _currentState;
-    private DesktopGraphics _graphics;
-    private DesktopInput _input;
 }
 

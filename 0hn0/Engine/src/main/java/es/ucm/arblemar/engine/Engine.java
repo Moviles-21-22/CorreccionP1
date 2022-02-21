@@ -2,9 +2,9 @@ package es.ucm.arblemar.engine;
 
 public interface Engine {
     /**
-     * Inicializa un nuevo estado
+     * Solicita un cambio de estado a newState
      * */
-    public boolean initNewState(State newState);
+    public void reqNewState(State newState);
 
     /**
      * Devuelve la clase graphics implementada por la plataforma

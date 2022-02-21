@@ -88,13 +88,6 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     }
 
     @Override
-    public void drawLine(int x1, int y1, int x2, int y2) {
-        int newP [] = realPos(x1, y1);
-        int newQ [] = realPos(x2, y2);
-        _graphics.drawLine(newP[0], newP[1], newQ[0], newQ[1]);
-    }
-
-    @Override
     public void drawRect(int x, int y, float width, float height) {
         int newPos [] = realPos(x, y);
         int newSize [] = realSize(width, height);
@@ -117,7 +110,7 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     }
 
     @Override
-    public void fillCircle(int x, int y, int dm){
+    public void fillCircle(int x, int y, float dm){
         int newPos [] = realPos(x, y);
         int newSize = realSize(dm);
         _graphics.fillOval(newPos[0], newPos[1], newSize, newSize);

@@ -31,14 +31,6 @@ public interface Graphics {
      * */
     void drawImage(Image image, int x, int y, float w, float h);
     /**
-     * Dibuja una línea desde el P hasta el punto Q
-     * @param x1 Posición X del punto P
-     * @param y1 Posición Y del punto P
-     * @param x2 Posición X del punto Q
-     * @param y2 Posición Y del punto Q
-     * */
-    void drawLine(int x1, int y1, int x2, int y2);
-    /**
      * Dibuja un rectángulo sin relleno
      * @param x Posición X esquina superior izquierda
      * @param y Posición Y esquina superior izquierda
@@ -66,7 +58,7 @@ public interface Graphics {
      * @param y posición Y del centro
      * @param dm diámetro del círculo
      * */
-    void fillCircle(int x, int y, int dm);
+    void fillCircle(int x, int y, float dm);
     /**
      * Rellena un rectángulo
      * @param x posición X esquina superior izquierda
