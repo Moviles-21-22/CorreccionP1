@@ -113,7 +113,7 @@ public class MainMenuState implements State {
                             && eventPos[1] > posJugar[1] && eventPos[1] < posJugar[1] + sizeJugar[1])
                     {
                         play.doSomething();
-                    };
+                    }
                     break;
                 }
                 default:{

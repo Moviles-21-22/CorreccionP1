@@ -1,5 +1,5 @@
 package es.ucm.arblemar.gamelogic.states;
-import java.awt.Button;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +12,8 @@ import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
+import es.ucm.arblemar.gamelogic.TipoCelda;
+import es.ucm.arblemar.gamelogic.gameobjects.Celda;
 
 public class SelectMenuState implements State {
     public SelectMenuState(Engine engine){
@@ -23,82 +25,98 @@ public class SelectMenuState implements State {
         try{
             Graphics g = _engine.getGraphics();
 
-            //final CeldaAzul c1 = new CeldaAzul(Assets.jose, 43,4,new Vector2(0,0), new Vector2(88,230), 70);
-            //c1.setCallback(new ButtonCallback() {
-            //    @Override
-            //    public void doSomething() {
-            //        //System.out.println(eventPos._x + " " + eventPos._y);
-            //        int numGame = c1.getValue();
-            //        Game game = new Game(engine,numGame);
-            //        engine.initNewApp(game);
-            //    }
-            //});
-//
-            //gameObjects.add(c1);
+            // INICIALIZACIÓN DE LAS CELDAS
+            celdas = new ArrayList<>();
 
-            //final CeldaRoja c2 = new CeldaRoja(new Vector2(0,0), new Vector2(165,230),5,Assets.jose, 43, 70);
-            //c2.setCallback(new ButtonCallback() {
-            //    @Override
-            //    public void doSomething() {
-            //        //System.out.println(eventPos._x + " " + eventPos._y);
-            //        int numGame = c2.getValue();
-            //        Game game = new Game(engine,numGame);
-            //        engine.initNewApp(game);
-            //    }
-            //});
-            //gameObjects.add(c2);
+            int ind [] = new int[2];
+            ind[0] = ind[1] = -1;
+            float diam = 70;
+            int pos [] = new int[2];
+            pos[0] = (g.getLogWidth() * 2 / 7)  - ((int)diam / 2);
+            pos[1] = (g.getLogHeight() * 2 / 5);
+            Font f = Assets.jose;
+            int tamF = 43;
+            final Celda c1 = new Celda(TipoCelda.AZUL, f, tamF,4, pos, diam, ind);
+            c1.setCallback(new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    //System.out.println(eventPos._x + " " + eventPos._y);
+                    int numGame = c1.getValue();
+                    GameState game = new GameState(_engine, numGame);
+                    _engine.reqNewState(game);
+                }
+            });
+            celdas.add(c1);
 
-            //final CeldaAzul c3 = new CeldaAzul(Assets.jose, 43, 6,new Vector2(0,0), new Vector2(243,230), 70);
-            //c3.setCallback(new ButtonCallback() {
-            //    @Override
-            //    public void doSomething() {
-            //        //System.out.println(eventPos._x + " " + eventPos._y);
-            //        int numGame = c3.getValue();
-            //        Game game = new Game(engine,numGame);
-            //        engine.initNewApp(game);
-            //    }
-            //});
-            //gameObjects.add(c3);
+            pos[0] = (g.getLogWidth() / 2)  - ((int)diam / 2);
+            final Celda c2 = new Celda(TipoCelda.ROJO, f, tamF, 5, pos, diam, ind);
+            c2.setCallback(new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    //System.out.println(eventPos._x + " " + eventPos._y);
+                    int numGame = c2.getValue();
+                    GameState game = new GameState(_engine, numGame);
+                    _engine.reqNewState(game);
+                }
+            });
+            celdas.add(c2);
 
-            //final CeldaRoja c4 =  new CeldaRoja(new Vector2(0,0), new Vector2(88,308),7,Assets.jose, 43, 70);
-            //c4.setCallback(new ButtonCallback() {
-            //    @Override
-            //    public void doSomething() {
-            //        //System.out.println(eventPos._x + " " + eventPos._y);
-            //        int numGame = c4.getValue();
-            //        Game game = new Game(engine,numGame);
-            //        engine.initNewApp(game);
-            //    }
-            //});
-            //gameObjects.add(c4);
+            pos[0] = (g.getLogWidth() * 5 / 7)  - ((int)diam / 2);
+            final Celda c3 = new Celda(TipoCelda.AZUL, f, tamF,6, pos, diam, ind);
+            c3.setCallback(new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    //System.out.println(eventPos._x + " " + eventPos._y);
+                    int numGame = c3.getValue();
+                    GameState game = new GameState(_engine, numGame);
+                    _engine.reqNewState(game);
+                }
+            });
+            celdas.add(c3);
 
-            //final CeldaAzul c5 = new CeldaAzul(Assets.jose, 43, 8,new Vector2(0,0), new Vector2(165,308), 70);
-            //c5.setCallback(new ButtonCallback() {
-            //    @Override
-            //    public void doSomething() {
-            //        //System.out.println(eventPos._x + " " + eventPos._y);
-            //        int numGame = c5.getValue();
-            //        Game game = new Game(engine,numGame);
-            //        engine.initNewApp(game);
-            //    }
-            //});
-            //gameObjects.add(c5);
+            pos[0] = (g.getLogWidth() * 2 / 7)  - ((int)diam / 2);
+            pos[1] += (int)(diam * 11 / 10);
+            final Celda c4 =  new Celda(TipoCelda.ROJO, f, tamF, 7, pos, diam, ind);
+            c4.setCallback(new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    //System.out.println(eventPos._x + " " + eventPos._y);
+                    int numGame = c4.getValue();
+                    GameState game = new GameState(_engine, numGame);
+                    _engine.reqNewState(game);
+                }
+            });
+            celdas.add(c4);
 
-            //final CeldaRoja c6 = new CeldaRoja(new Vector2(0,0), new Vector2(243,308),9, Assets.jose, 43, 70);
-            //c6.setCallback(new ButtonCallback() {
-            //    @Override
-            //    public void doSomething() {
-            //        //System.out.println(eventPos._x + " " + eventPos._y);
-            //        int numGame = c6.getValue();
-            //        Game game = new Game(engine,numGame);
-            //        engine.initNewApp(game);
-            //    }
-            //});
-            //gameObjects.add(c6);
+            pos[0] = (g.getLogWidth() / 2)  - ((int)diam / 2);
+            final Celda c5 = new Celda(TipoCelda.AZUL, f, tamF,8, pos, diam, ind);
+            c5.setCallback(new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    //System.out.println(eventPos._x + " " + eventPos._y);
+                    int numGame = c5.getValue();
+                    GameState game = new GameState(_engine, numGame);
+                    _engine.reqNewState(game);
+                }
+            });
+            celdas.add(c5);
 
+            pos[0] = (g.getLogWidth() * 5 / 7)  - ((int)diam / 2);
+            final Celda c6 = new Celda(TipoCelda.ROJO, f, tamF, 9, pos, diam, ind);
+            c6.setCallback(new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    //System.out.println(eventPos._x + " " + eventPos._y);
+                    int numGame = c6.getValue();
+                    GameState game = new GameState(_engine, numGame);
+                    _engine.reqNewState(game);
+                }
+            });
+            celdas.add(c6);
 
+            // BOTON VOLVER
             sizeVolver = new int[2];
-            sizeVolver[0] = (g.getLogWidth() / 16) * 2 ;
+            sizeVolver[0] = (g.getLogWidth() / 16) * 2;
             sizeVolver[1] = (g.getLogWidth() / 16) * 2;
             posVolver = new int[2];
             posVolver[0] = (g.getLogWidth() / 2)  - (sizeVolver[0] / 2);
@@ -155,8 +173,14 @@ public class SelectMenuState implements State {
         g.setColor(color);
         g.drawText("Elija el tamaño a jugar", pos[0],  pos[1] + size[1], font, tamF);
 
+        // Celdas
+        for(Celda c : celdas){
+            c.render(g);
+        }
+
         // BOTON VOLVER
         g.drawImage(backIm, posVolver[0], posVolver[1], sizeVolver[0], sizeVolver[1]);
+
     }
 
     @Override
@@ -175,7 +199,26 @@ public class SelectMenuState implements State {
                             && eventPos[1] > posVolver[1] && eventPos[1] < posVolver[1] + sizeVolver[1])
                     {
                         goBack.doSomething();
-                    };
+                    }
+                    else
+                    {
+                        boolean isClick = false;
+                        int j = 0;
+                        while(!isClick && j < celdas.size())
+                        {
+                            if(celdas.get(j).isClicked(eventPos))
+                            {
+                                System.out.println("Celda pulsada: " + Integer.toString(celdas.get(j).getValue()));
+                                //celdas.get(j).runCallBack();
+                                isClick = true;
+                            }
+                            j++;
+                        }
+                        for(Celda c : celdas){
+                            c.render(g);
+                        }
+                    }
+
                     break;
                 }
             }
@@ -189,5 +232,5 @@ public class SelectMenuState implements State {
     int sizeVolver [];
     int posVolver [];
     ButtonCallback goBack;
-
+    private List<Celda> celdas;
 }
