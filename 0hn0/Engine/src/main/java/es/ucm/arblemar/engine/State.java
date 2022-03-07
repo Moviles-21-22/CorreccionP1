@@ -1,5 +1,10 @@
 package es.ucm.arblemar.engine;
 
+/**
+ * Interfaz de los diferentes estados del juego. Debe ir en Engine
+ * porque se usa en otras interfaces y clases Abstractas para la comunicación
+ * del cambio de estado pricipalmente
+ */
 public interface State {
     /**
      * Inicializa el estado del juego

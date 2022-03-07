@@ -1,8 +1,7 @@
 package es.ucm.arblemar.gamelogic.states;
 
-import java.awt.Button;
 import java.util.List;
-import es.ucm.arblemar.engine.AbstractGraphics;
+
 import es.ucm.arblemar.engine.Image;
 import es.ucm.arblemar.engine.State;
 import es.ucm.arblemar.engine.Engine;
@@ -23,13 +22,13 @@ public class MainMenuState implements State {
             Graphics g = _engine.getGraphics();
 
             // Atributos del botón jugar
-            sizeJugar = new int[2];
-            sizeJugar[0] = (g.getLogWidth() / 10) * 3;
-            sizeJugar[1] = (g.getLogHeight() / 10);
-            posJugar = new int[2];
-            posJugar[0] = (g.getLogWidth() / 2)  - (sizeJugar[0] / 2);
-            posJugar[1] = (g.getLogHeight() / 10) * 3;
-            play = new ButtonCallback() {
+            _sizeJugar = new int[2];
+            _sizeJugar[0] = (g.getLogWidth() / 10) * 3;
+            _sizeJugar[1] = (g.getLogHeight() / 10);
+            _posJugar = new int[2];
+            _posJugar[0] = (g.getLogWidth() / 2)  - (_sizeJugar[0] / 2);
+            _posJugar[1] = (g.getLogHeight() / 10) * 3;
+            _play = new ButtonCallback() {
                 @Override
                 public void doSomething() {
                     SelectMenuState sMenu = new SelectMenuState(_engine);
@@ -38,6 +37,7 @@ public class MainMenuState implements State {
             };
         }
         catch (Exception e){
+            System.out.println(e);
             return false;
         }
         return true;
@@ -72,7 +72,7 @@ public class MainMenuState implements State {
         tamF = 56;
 
         g.setColor(color);
-        g.drawText("Jugar", posJugar[0], posJugar[1] + sizeJugar[1], font, tamF);
+        g.drawText("Jugar", _posJugar[0], _posJugar[1] + _sizeJugar[1], font, tamF);
 
         // CREDITOS
         size[0] = (g.getLogWidth() / 2);
@@ -102,22 +102,14 @@ public class MainMenuState implements State {
     //  Gestiona las colisiones del ratón con los objetos de la escena
     public void handleInput() {
         List<TouchEvent> events = _engine.getInput().GetTouchEvents();
-        AbstractGraphics g = (AbstractGraphics) _engine.getGraphics();
         for(int i = 0 ; i < events.size() ; i++){
             TouchEvent currEvent = events.get(i);
-            // Posición donde se hizo click
-            int eventPos [] = g.logPos(currEvent.getX(), currEvent.getY());
-            switch (currEvent){
-                case touchDown:{
-                    if (eventPos[0] > posJugar[0] && eventPos[0] < posJugar[0] + sizeJugar[0]
-                            && eventPos[1] > posJugar[1] && eventPos[1] < posJugar[1] + sizeJugar[1])
-                    {
-                        play.doSomething();
-                    }
-                    break;
-                }
-                default:{
-                    break;
+            if (currEvent == TouchEvent.touchDown) {
+                if (    currEvent.getX() > _posJugar[0] &&
+                        currEvent.getX() < _posJugar[0] + _sizeJugar[0] &&
+                        currEvent.getY() > _posJugar[1] &&
+                        currEvent.getY() < _posJugar[1] + _sizeJugar[1]) {
+                    _play.doSomething();
                 }
             }
         }
@@ -126,7 +118,7 @@ public class MainMenuState implements State {
     Engine _engine;
 
     // Atributos del botón JUGAR
-    int posJugar[];
-    int sizeJugar[];
-    ButtonCallback play;
+    int _posJugar[];
+    int _sizeJugar[];
+    ButtonCallback _play;
 }

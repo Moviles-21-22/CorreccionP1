@@ -9,11 +9,11 @@ import es.ucm.arblemar.gamelogic.TipoCelda;
  * color podrá tener unos comportamientos u otros.
  */
 public class Celda {
-    public Celda(TipoCelda tc, Font f, int tamFont, int val, int pos [],
-                 float diam, int ind []) {
+    public Celda(TipoCelda tc, Font f, int tamFont, int val, int pos[],
+                 float diam, int ind[]) {
         _tipoCelda = tc;
         // La celda se bloquea cuando es distinta de gris
-        _lock = _tipoCelda != TipoCelda.GRIS ? true : false;
+        _lock = _tipoCelda != TipoCelda.GRIS;
         _font = f;
         _tamF = tamFont;
         _value = val;
@@ -22,8 +22,7 @@ public class Celda {
         _pos[1] = pos[1];
         _index = ind;
         _diametro = diam;
-        switch (_tipoCelda)
-        {
+        switch (_tipoCelda) {
             case GRIS: {
                 _color = 0XEEEEEEFF;
                 break;
@@ -37,6 +36,11 @@ public class Celda {
                 break;
             }
         }
+
+        _drawText = _value > 0;
+        if (!_drawText) return;
+
+        posicionaTexto();
     }
 
     public void render(es.ucm.arblemar.engine.Graphics g) {
@@ -49,107 +53,71 @@ public class Celda {
         g.setColor(_color);
         g.fillCircle(_pos[0], _pos[1], _diametro);
         g.setColor(0XFFFFFFFF);
-        int x = (int)(_pos[0] + (_diametro / 3));
-        int y = (int)(_pos[1] + (_diametro * 2 / 3));
-        g.drawText(Integer.toString(_value), x, y, _font, _tamF);
+
+        if (!_drawText) return;
+
+        g.drawText(Integer.toString(_value), _textX, _textY, _font, _tamF);
     }
 
     /**
      * Pone en marcha la funcionalidad
      * asociada al callback
      */
-    public void runCallBack(){
-        if(_cb != null){
+    public void runCallBack() {
+        if (_cb != null) {
             _cb.doSomething();
         }
-    };
+    }
+
+    ;
 
     /**
      * Asocia un nuevo callback a la celda
      */
-    public void setCallback(ButtonCallback cb)
-    {
+    public void setCallback(ButtonCallback cb) {
         _cb = cb;
-    }
-
-    /**
-     * Determina si la celda ha sido "clickeada"
-     */
-    public boolean isClicked(int eventPos []){
-        double xDiff = (_pos[0] + (_diametro / 2)) - eventPos[0];
-        double yDiff = (_pos[1] + (_diametro / 2)) - eventPos[1];
-        double distance = Math.sqrt((Math.pow(xDiff, 2) + Math.pow(yDiff, 2)));
-        return distance <= (int)(_diametro / 2);
     }
 
     /**
      * Devuelve si la celda está bloqueada o no
      */
-    public boolean isLock(){
+    public boolean isLock() {
         return _lock;
+    }
+
+    /**
+     * Determina si la celda ha sido pulsada
+     */
+    public boolean isClicked(int eventPosX, int eventPosY) {
+        double xDiff = (_pos[0] + (_diametro / 2)) - eventPosX;
+        double yDiff = (_pos[1] + (_diametro / 2)) - eventPosY;
+        double distance = Math.sqrt((Math.pow(xDiff, 2) + Math.pow(yDiff, 2)));
+        return distance <= (int) (_diametro / 2);
     }
 
     /**
      * Devuelve el valor asociado al circulo
      */
-    public int getValue(){
+    public int getValue() {
         return _value;
     }
 
+    /**
+     * Posiciona el texto dentro del circulo
+     */
+    private void posicionaTexto() {
+        if (_value == 1) {
+            _textX = (int) (_pos[0] + (_diametro * 4 / 9));
+        } else if (_value == 8) {
+            _textX = (int) (_pos[0] + (_diametro * 3 / 8));
+        } else if (_value == 7 || _value == 3 || _value == 9) {
+            _textX = (int) (_pos[0] + (_diametro * 2 / 5));
+        } else {
+            _textX = (int) (_pos[0] + (_diametro / 3));
+        }
 
-    //public void setTypeColor(TipoCelda type) {
-    //    TipoCelda antType = _tipoCelda;
-    //    _tipoCelda = type;
-    //    timer = 0;
-    //    switch (type){
-    //        case GRIS:
-    //            targetColor = 0XEEEEEEFF;
-    //            if (antType == TipoCelda.AZUL)
-    //                newColor = 0xbee7eeFF;
-    //            else if (antType == TipoCelda.ROJO)
-    //                newColor = 0xf6c5caFF;
-    //            break;
-    //        case AZUL:
-    //            targetColor = 0x1CC0E0FF;
-    //            if (antType == TipoCelda.GRIS)
-    //                newColor = 0xbee7eeFF;
-    //            else if (antType == TipoCelda.ROJO)
-    //                newColor = 0xc68b9dFF;
-    //            break;
-    //        case ROJO:
-    //            targetColor = 0xFF384BFF;
-    //            if (antType == TipoCelda.AZUL)
-    //                newColor = 0xc68b9dFF;
-    //            else if (antType == TipoCelda.GRIS)
-    //                newColor = 0xf6c5caFF;
-    //            break;
-    //    }
-    //}
-
-    //public void set_color(int c) {
-    //    _color = c;
-    //}
-
-    //public void setValue(int v){
-    //    valor = v;
-    //}
-
-    //public void setAnimState(int s) {
-    //    anSt = s;
-    //}
-
-    //public TipoCelda getTypeColor(){
-    //    return _tipoCelda;
-    //}
-
-    //public int get_color(){
-    //    return _color;
-    //}
-
-    //public Vector2 get_index(){
-    //    return _index;
-    //}
-
+        _textY = (int) (_pos[1] + (_diametro * 5 / 7));
+    }
 
     // ATRIBUTOS DE LAS CELDAS
     //  Tipo de celda
@@ -163,21 +131,19 @@ public class Celda {
     //  Valor de la celda
     private int _value;
     // Posición donde se va a renderizar la celda
-    private int _pos [];
+    private int _pos[];
     //  Index dentro del tablero
     private int _index[];
     // Diametro del circulo
     private float _diametro;
     // Color inicial del circulo
     private int _color;
+    // Determina si la celda escribe texto
+    private boolean _drawText = false;
+    // Posicion X del texto
+    int _textX = 0;
+    // Posición Y del texto
+    int _textY = 0;
     // Callback del circulo
     private ButtonCallback _cb;
-
-    // TODO: Revisar si es necesario tener estos atributos o no
-    //private int targetColor;
-    //private int newColor;
-    //private int anSt;  //0: no anim; 1: anim grande; 2: anim pequeña
-    //private int contAnim;
-    //private double timer;
-    //private int cont;
 };

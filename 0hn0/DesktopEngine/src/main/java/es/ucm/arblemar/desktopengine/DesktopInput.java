@@ -6,19 +6,15 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.ucm.arblemar.engine.AbstractGraphics;
 import es.ucm.arblemar.engine.Engine;
 import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 
 public class DesktopInput implements Input, MouseListener, MouseMotionListener {
-
-    private Engine _mainEngine;
-    //  Lista de los eventos que maneja deskopPc
-    private List<TouchEvent> events;
-
     public DesktopInput(Engine e){
         super();
-        _mainEngine = e;
+        _engine = e;
         events = new ArrayList<>();
     }
 
@@ -50,9 +46,13 @@ public class DesktopInput implements Input, MouseListener, MouseMotionListener {
     @Override
     public void mousePressed(MouseEvent e) {
         synchronized (events){
+            AbstractGraphics g = (AbstractGraphics) _engine.getGraphics();
+
             TouchEvent currEvent = TouchEvent.touchDown;
-            currEvent.setX(e.getX());
-            currEvent.setY(e.getY());
+            int eventPos [] = g.logPos(e.getX(), e.getY());
+            currEvent.setX(eventPos[0]);
+            currEvent.setY(eventPos[1]);
+
             events.add(currEvent);
         }
     }
@@ -60,9 +60,13 @@ public class DesktopInput implements Input, MouseListener, MouseMotionListener {
     @Override
     public void mouseReleased(MouseEvent e) {
         synchronized (events){
+            AbstractGraphics g = (AbstractGraphics) _engine.getGraphics();
+
             TouchEvent currEvent = TouchEvent.touchUp;
-            currEvent.setX(e.getX());
-            currEvent.setY(e.getY());
+            int eventPos [] = g.logPos(e.getX(), e.getY());
+            currEvent.setX(eventPos[0]);
+            currEvent.setY(eventPos[1]);
+
             events.add(currEvent);
         }
     }
@@ -88,4 +92,8 @@ public class DesktopInput implements Input, MouseListener, MouseMotionListener {
 
 
     }
+
+    private Engine _engine;
+    //  Lista de los eventos que maneja deskopPc
+    private List<TouchEvent> events;
 }

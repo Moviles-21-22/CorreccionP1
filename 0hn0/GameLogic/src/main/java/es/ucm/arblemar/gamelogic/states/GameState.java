@@ -1,45 +1,62 @@
 package es.ucm.arblemar.gamelogic.states;
 
 import java.util.List;
+import java.util.Random;
 
-import es.ucm.arblemar.engine.AbstractGraphics;
+import es.ucm.arblemar.engine.Font;
+import es.ucm.arblemar.engine.Image;
 import es.ucm.arblemar.engine.State;
 import es.ucm.arblemar.engine.Engine;
 import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
+import es.ucm.arblemar.gamelogic.Assets;
+import es.ucm.arblemar.gamelogic.ButtonCallback;
+import es.ucm.arblemar.gamelogic.TipoCelda;
+import es.ucm.arblemar.gamelogic.gameobjects.Celda;
 
 public class GameState implements State {
-    Engine _engine;
-    Graphics _graphics;
-    private int tam;
-    private int posPista [];
-    //private Tablero tab;
-    //private List<GameObject> objects;
-    //private List<Boton> images;
-    //private Icon[] candados;
-    //private Boton backButton;
-    //private Boton restButton;
-    //private Boton pistabutton;
-    //private Texto textoSuperior;
-    //private Texto textoSupDos;
-    private boolean _pistaPuesta = false;
-    private boolean muestraCandados = false;
-    private boolean win = false;
-
-    GameState(Engine _engine,int _tam){
+    GameState(Engine _engine, int t) {
         this._engine = _engine;
-        tam = _tam;
+        _tam = t;
         _graphics = this._engine.getGraphics();
-        //objects = new ArrayList<>();
-        //images = new ArrayList<>();
     }
 
     @Override
     public boolean init() {
         try {
-        }
-        catch (Exception e){
-            System.out.println("Fallo al intentar crear el juego");
+            Graphics g = _engine.getGraphics();
+
+            // INICIALIZACION DEL TABLERO
+            _sizeTab = (int) (_graphics.getLogWidth() * 0.85);
+            _tabX = (_graphics.getLogWidth() - _sizeTab) / 2;
+            _tabY = (_graphics.getLogHeight() - _sizeTab) / 2;
+            _celdas = new Celda[_tam][_tam];
+            _celdaSize = (_sizeTab / _tam);
+            _diam = _celdaSize * 0.8f;
+            _tabFont = Assets.jose;
+            _tabTamFont = (int) Math.round(_diam * 0.614);
+
+            testTab();
+
+            // BOTON VOLVER
+            _sizeVolver = new int[2];
+            _sizeVolver[0] = (g.getLogWidth() / 16) * 2;
+            _sizeVolver[1] = (g.getLogWidth() / 16) * 2;
+            _posVolver = new int[2];
+            _posVolver[0] = (g.getLogWidth() / 2) - (_sizeVolver[0] / 2);
+            _posVolver[1] = (g.getLogHeight() / 5) * 4;
+            _backIm = Assets.close;
+
+            _goBack = new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    SelectMenuState main = new SelectMenuState(_engine);
+                    _engine.reqNewState(main);
+                }
+            };
+
+        } catch (Exception e) {
+            System.out.println("Fallo al intenar generar GameState");
             System.out.println(e);
             return false;
         }
@@ -59,80 +76,102 @@ public class GameState implements State {
     @Override
     public void render() {
         Graphics g = _engine.getGraphics();
+        // CELDAS
+        for (int i = 0; i < _tam; i++) {
+            for (int j = 0; j < _tam; j++) {
+                _celdas[i][j].render(g);
+            }
+        }
 
-        ////  Render de las celdas
-        //if (tab != null && _pistaPuesta) {
-        //    _graphics.setColor(0x313131FF);
-        //    _graphics.fillCircle(new Vector2(posPista._x - 3, posPista._y - 3), (int)tab.GetCeldaSize() + 6);
-        //}
-        //// Render de los demás objetos
-        //for(GameObject obj : objects){
-        //    obj.render(g);
-        //}
+        // BOTON VOLVER
+        g.drawImage(_backIm, _posVolver[0], _posVolver[1], _sizeVolver[0], _sizeVolver[1]);
     }
 
     @Override
     public void handleInput() {
         List<Input.TouchEvent> events = _engine.getInput().GetTouchEvents();
-        AbstractGraphics g = (AbstractGraphics) _graphics;
 
-        for(int i = 0 ; i < events.size() ; i++){
+        for (int i = 0; i < events.size(); i++) {
             Input.TouchEvent currEvent = events.get(i);
-            int eventPos [] = g.logPos(currEvent.getX(), currEvent.getY());
-            switch (currEvent) {
-                case touchDown: {
-                    if (win) {
-                        win = false;
-                        SelectMenuState menu = new SelectMenuState(_engine);
-                        _engine.reqNewState(menu);
-                    }
-                    //GameObject obj = getObjectClicked(eventPos);
-                    //  Es de tipo texto o imagen
-                    //if(obj != null){
-                    //    obj.clicked();
-                    //}
-                    break;
+            if (currEvent == Input.TouchEvent.touchDown) {
+                // BOTON VOLVER
+                if (currEvent.getX() > _posVolver[0] &&
+                        currEvent.getX() < _posVolver[0] + _sizeVolver[0] &&
+                        currEvent.getY() > _posVolver[1] &&
+                        currEvent.getY() < _posVolver[1] + _sizeVolver[1]) {
+                    _goBack.doSomething();
                 }
+//                                    if (win) {
+//                        win = false;
+//                        SelectMenuState menu = new SelectMenuState(_engine);
+//                        _engine.reqNewState(menu);
+//                    }
+//                    GameObject obj = getObjectClicked(eventPos);
+//                      Es de tipo texto o imagen
+//                    if(obj != null){
+//                        obj.clicked();
+//                    }
             }
         }
     }
 
-    private void gameWin() {
-        win = true;
-        //objects.remove(textoSuperior);
-        //if (textoSupDos != null) {
-        //    objects.remove(textoSupDos);
-        //    textoSupDos = null;
-        //}
-        //objects.remove(backButton);
-        //objects.remove(restButton);
-        //objects.remove(pistabutton);
+//------------------------------------------------------------------------------------------------//
 
-        //int width = (_graphics.getLogWidth() / 2) * 3, height = (_graphics.getLogWidth() / 7),
-        //        posX = (_graphics.getLogWidth() / 3) - 15, posY = (_graphics.getLogHeight() / 12) - 10;
+    /**
+     * Tablero de pruebas
+     */
+    private void testTab() {
+        Random rn = new Random();
+        int pos[] = new int[2];
+        for (int i = 0; i < _tam; i++) {
+            pos[1] = (int) (_tabY + (_celdaSize * i) + (_celdaSize * 0.1));
+            for (int j = 0; j < _tam; j++) {
+                pos[0] = (int) (_tabX + (_celdaSize * j) + (_celdaSize * 0.1));
 
-        //textoSuperior = new Texto(new Vector2(posX,posY), new Vector2(width, height), 0X313131FF ,Assets.jose,72,0);
-        //textoSuperior.setTexto("Super");
-        //objects.add(textoSuperior);
+                int choice = rn.nextInt(3);
+                int ind[] = new int[2];
+                ind[0] = i;
+                ind[1] = j;
+                switch (choice) {
+                    case 0: {
+                        _celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
+                                0, pos, _diam, ind);
+                        break;
+                    }
+                    case 1: {
+                        _celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont,
+                                rn.nextInt(9) + 1, pos, _diam, ind);
+                        break;
+                    }
+                    case 2: {
+                        _celdas[i][j] = new Celda(TipoCelda.ROJO, _tabFont, _tabTamFont,
+                                0, pos, _diam, ind);
+                        break;
+                    }
+                }
+
+            }
+        }
     }
 
-    // Devuelve el objecto que ha sido pulsado
-    //private GameObject getObjectClicked(Vector2 eventPos){
-
-    //    boolean encontrado = false;
-    //    int gameObjIndex = 0;
-    //    while (!encontrado && gameObjIndex < objects.size()){
-    //        //  Buscando entre los objetos que son textos, img ,etc (no incluidas las celdas)
-    //        if(objects.get(gameObjIndex).isInteractive() && objects.get(gameObjIndex).isClicked(eventPos)) {
-    //            encontrado = true;
-    //            return objects.get(gameObjIndex);
-    //        }
-    //        else{
-    //            gameObjIndex++;
-    //        }
-    //    }
-    //    return null;
-    //}
+//    private void gameWin() {
+//        win = true;
+//        objects.remove(textoSuperior);
+//        if (textoSupDos != null) {
+//            objects.remove(textoSupDos);
+//            textoSupDos = null;
+//        }
+//        objects.remove(backButton);
+//        objects.remove(restButton);
+//        objects.remove(pistabutton);
+//
+//        int width = (_graphics.getLogWidth() / 2) * 3, height = (_graphics.getLogWidth() / 7),
+//                posX = (_graphics.getLogWidth() / 3) - 15, posY = (_graphics.getLogHeight() / 12) - 10;
+//
+//        textoSuperior = new Texto(new Vector2(posX,posY), new Vector2(width, height), 0X313131FF ,Assets.jose,72,0);
+//        textoSuperior.setTexto("Super");
+//        objects.add(textoSuperior);
+//    }
 
     //Escribe un texto en función de la pista elegida
     private void stringText(int id) {
@@ -202,4 +241,53 @@ public class GameState implements State {
         //textoSupDos.setTexto(text2);
         //objects.add(textoSupDos);
     }
+
+    // ATRIBUTOS DEL ESTADO
+    Engine _engine;
+    Graphics _graphics;
+    private boolean win = false;
+    // ATRIBUTOS BOTON VOLVER
+    Image _backIm;
+    int _sizeVolver[];
+    int _posVolver[];
+    ButtonCallback _goBack;
+
+    // ATRIBUTOS DEL TABLERO
+    /**
+     * Tipo de tablero: 4x4, 5x5, 6x6...
+     */
+    private int _tam;
+    /**
+     * Tamaño de la cuadrícula del tablero dentro
+     * del canvas
+     */
+    int _sizeTab;
+    /**
+     * Coordenadas x del tablero
+     */
+    int _tabX;
+    /**
+     * Coordenadas y del tablero
+     */
+    int _tabY;
+    /**
+     * Fuente de la letra de las celdas
+     */
+    Font _tabFont;
+    /**
+     * Tamaño de la fuente de las celdas
+     */
+    int _tabTamFont;
+    /**
+     * Diámetro de las celdas
+     */
+    float _celdaSize;
+    /**
+     * Diámetro de las celdas
+     */
+    float _diam;
+    /**
+     * Array que contiene las celdas
+     */
+    private Celda _celdas[][];
 }
