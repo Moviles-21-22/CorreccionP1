@@ -34,7 +34,8 @@ public class SelectMenuState implements State {
             pos[0] = (g.getLogWidth() * 2 / 7) - ((int) diam / 2);
             pos[1] = (g.getLogHeight() * 2 / 5);
             Font f = Assets.jose;
-            int tamF = (int)Math.round(diam * 0.614);
+            int tamF = (int) Math.round(diam * 0.614);
+
             final Celda c1 = new Celda(TipoCelda.AZUL, f, tamF, 4, pos, diam, ind);
             c1.setCallback(new ButtonCallback() {
                 @Override
@@ -184,21 +185,28 @@ public class SelectMenuState implements State {
             Input.TouchEvent currEvent = events.get(i);
             if (currEvent == Input.TouchEvent.touchDown) {
                 // BOTON VOLVER
-                if (    currEvent.getX() > _posVolver[0] &&
+                if (currEvent.getX() > _posVolver[0] &&
                         currEvent.getX() < _posVolver[0] + _sizeVolver[0] &&
                         currEvent.getY() > _posVolver[1] &&
                         currEvent.getY() < _posVolver[1] + _sizeVolver[1]) {
                     _goBack.doSomething();
                 } else {
-                    boolean isClick = false;
-                    int j = 0;
-                    while (!isClick && j < _celdas.size()) {
-                        if (_celdas.get(j).isClicked(currEvent.getX(), currEvent.getY())) {
-                            _celdas.get(j).runCallBack();
-                            isClick = true;
+                    finding:
+                    for (int m = 0; m < _celdas.size(); m++) {
+                        if (_celdas.get(m).isClicked(currEvent.getX(), currEvent.getY())) {
+                            _celdas.get(m).runCallBack();
+                            break finding;
                         }
-                        j++;
                     }
+//                    boolean isClick = false;
+//                    int j = 0;
+//                    while (!isClick && j < _celdas.size()) {
+//                        if (_celdas.get(j).isClicked(currEvent.getX(), currEvent.getY())) {
+//                            _celdas.get(j).runCallBack();
+//                            isClick = true;
+//                        }
+//                        j++;
+//                    }
                 }
             }
         }

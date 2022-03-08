@@ -35,7 +35,7 @@ public class AndroidEngine extends AbstractEngine implements  Runnable {
 
         surface = new SurfaceView(activity.getApplicationContext());
         _graphics = new AndroidGraphics(activity,logicW,logicH,buffer);
-        _input = new AndroidInput(surface);
+        _input = new AndroidInput(this, surface);
         activity.setContentView(surface);
     }
 

@@ -12,13 +12,13 @@ import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 
 public class MainMenuState implements State {
-    public MainMenuState(Engine engine){
+    public MainMenuState(Engine engine) {
         _engine = engine;
     }
 
     @Override
     public boolean init() {
-        try{
+        try {
             Graphics g = _engine.getGraphics();
 
             // Atributos del botón jugar
@@ -26,7 +26,7 @@ public class MainMenuState implements State {
             _sizeJugar[0] = (g.getLogWidth() / 10) * 3;
             _sizeJugar[1] = (g.getLogHeight() / 10);
             _posJugar = new int[2];
-            _posJugar[0] = (g.getLogWidth() / 2)  - (_sizeJugar[0] / 2);
+            _posJugar[0] = (g.getLogWidth() / 2) - (_sizeJugar[0] / 2);
             _posJugar[1] = (g.getLogHeight() / 10) * 3;
             _play = new ButtonCallback() {
                 @Override
@@ -35,8 +35,7 @@ public class MainMenuState implements State {
                     _engine.reqNewState(sMenu);
                 }
             };
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
             return false;
         }
@@ -53,11 +52,11 @@ public class MainMenuState implements State {
         Graphics g = _engine.getGraphics();
 
         // TITULO
-        int size [] = new int[2];
+        int size[] = new int[2];
         size[0] = (g.getLogWidth() / 10) * 7;
         size[1] = (g.getLogWidth() / 6);
-        int pos [] = new int[2];
-        pos[0] = (g.getLogWidth() / 2)  - (size[0] / 2);
+        int pos[] = new int[2];
+        pos[0] = (g.getLogWidth() / 2) - (size[0] / 2);
         pos[1] = (g.getLogHeight() / 10);
         int color = 0X313131FF;
         Font font = Assets.molle;
@@ -77,7 +76,7 @@ public class MainMenuState implements State {
         // CREDITOS
         size[0] = (g.getLogWidth() / 2);
         size[1] = (g.getLogHeight() / 20);
-        pos[0] = (g.getLogWidth() / 2)  - (size[0] / 2);
+        pos[0] = (g.getLogWidth() / 2) - (size[0] / 2);
         pos[1] = (g.getLogHeight() / 2);
         color = 0XB6B3B6FF;
         tamF = 20;
@@ -91,21 +90,21 @@ public class MainMenuState implements State {
         // ICONO
         size[0] = (g.getLogWidth() / 16) * 2;
         size[1] = (g.getLogWidth() / 11) * 2;
-        pos[0] = (g.getLogWidth() / 2)  - (size[0] / 2);
+        pos[0] = (g.getLogWidth() / 2) - (size[0] / 2);
         pos[1] = (g.getLogHeight() / 4) * 3;
         Image im = Assets.q42;
 
-        g.drawImage(im, pos[0] , pos[1], size[0], size[1]);
+        g.drawImage(im, pos[0], pos[1], size[0], size[1]);
     }
 
     @Override
     //  Gestiona las colisiones del ratón con los objetos de la escena
     public void handleInput() {
         List<TouchEvent> events = _engine.getInput().GetTouchEvents();
-        for(int i = 0 ; i < events.size() ; i++){
+        for (int i = 0; i < events.size(); i++) {
             TouchEvent currEvent = events.get(i);
             if (currEvent == TouchEvent.touchDown) {
-                if (    currEvent.getX() > _posJugar[0] &&
+                if (currEvent.getX() > _posJugar[0] &&
                         currEvent.getX() < _posJugar[0] + _sizeJugar[0] &&
                         currEvent.getY() > _posJugar[1] &&
                         currEvent.getY() < _posJugar[1] + _sizeJugar[1]) {
