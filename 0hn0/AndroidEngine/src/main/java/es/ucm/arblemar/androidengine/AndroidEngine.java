@@ -14,7 +14,7 @@ import es.ucm.arblemar.engine.State;
 import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 
-public class AndroidEngine extends AbstractEngine implements  Runnable {
+public class AndroidEngine extends AbstractEngine implements Runnable {
     private SurfaceView surface;
     private volatile boolean running = false;
     private Thread thread;
@@ -22,8 +22,7 @@ public class AndroidEngine extends AbstractEngine implements  Runnable {
     private long _currentTime = 0;
     private double _deltaTime = 0;
 
-    public AndroidEngine(AppCompatActivity activity, int logicW, int logicH){
-
+    public AndroidEngine(AppCompatActivity activity, int logicW, int logicH) {
         activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -45,8 +44,7 @@ public class AndroidEngine extends AbstractEngine implements  Runnable {
     }
 
     @Override
-    public void run(){
-
+    public void run() {
         SurfaceHolder holder = surface.getHolder();
         _lastFrameTime = System.nanoTime();
 

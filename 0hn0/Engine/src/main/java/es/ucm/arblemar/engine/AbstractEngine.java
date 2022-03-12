@@ -1,6 +1,6 @@
 package es.ucm.arblemar.engine;
 
-public abstract class AbstractEngine implements Engine{
+public abstract class AbstractEngine implements Engine {
     public AbstractEngine(){
     }
 

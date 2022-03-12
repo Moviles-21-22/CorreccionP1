@@ -135,7 +135,7 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
 
     @Override
     public void updateGraphics(){
-        while(getStrategy() == null){
+        while(getStrategy() == null) {
             System.out.println("NULL");
         }
         _graphics = getStrategy().getDrawGraphics();

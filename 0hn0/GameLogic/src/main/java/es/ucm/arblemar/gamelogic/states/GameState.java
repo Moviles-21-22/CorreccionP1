@@ -150,7 +150,7 @@ public class GameState implements State {
                                     }
                                 };
                                 System.out.println("Timer empezado...");
-                                timer.schedule( timerTask, 2000);
+                                timer.schedule(timerTask, 2000);
                             }
                         });
                         break;
@@ -182,7 +182,6 @@ public class GameState implements State {
                     default:
                         throw new IllegalStateException("Unexpected value: " + choice);
                 }
-
             }
         }
     }

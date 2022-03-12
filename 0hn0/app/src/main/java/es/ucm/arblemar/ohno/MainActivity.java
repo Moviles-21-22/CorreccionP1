@@ -6,16 +6,15 @@ import es.ucm.arblemar.androidengine.AndroidEngine;
 import es.ucm.arblemar.gamelogic.states.LoadState;
 
 public class MainActivity extends AppCompatActivity {
-
     private AndroidEngine engine;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         engine = new AndroidEngine(this,400,600);
         LoadState assets = new LoadState(engine);
-
+        getSupportActionBar().hide();
+        
         if(!engine.init(assets,"oh no",400,600)){
             System.err.println("Error al inicializar el engine");
             return;

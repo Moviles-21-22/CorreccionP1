@@ -69,8 +69,6 @@ public class Celda {
         }
     }
 
-    ;
-
     /**
      * Asocia un nuevo callback a la celda
      */

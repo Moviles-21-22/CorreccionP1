@@ -29,7 +29,7 @@ public class LoadState implements State {
             Assets.molle = graphics.newFont("Molle-Regular.ttf", 1, false);
             Assets.jose = graphics.newFont("JosefinSans-Bold.ttf", 1, true);
 
-            //  Falla al inicializar
+            //Estado MainMenu
             State mainMenu = new MainMenuState(_engine);
             _engine.reqNewState(mainMenu);
         }
