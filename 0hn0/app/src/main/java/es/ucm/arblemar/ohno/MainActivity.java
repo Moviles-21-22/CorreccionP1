@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity {
         engine = new AndroidEngine(this,400,600);
         LoadState assets = new LoadState(engine);
         getSupportActionBar().hide();
-        
+
         if(!engine.init(assets,"oh no",400,600)){
             System.err.println("Error al inicializar el engine");
             return;

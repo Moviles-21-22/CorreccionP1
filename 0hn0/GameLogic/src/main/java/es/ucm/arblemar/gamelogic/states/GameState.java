@@ -35,7 +35,7 @@ public class GameState implements State {
             _tabY = (int) (_graphics.getLogHeight() - _sizeTab) / 2;
             _celdas = new Celda[_tam][_tam];
             _celdaSize = (_sizeTab / _tam);
-            _diam = _celdaSize * 0.8f;
+            _diam = _celdaSize * 0.9f;
             _tabFont = Assets.jose;
             _tabTamFont = (int) Math.round(_diam * 0.614);
 
@@ -43,12 +43,24 @@ public class GameState implements State {
 
             // BOTON VOLVER
             _sizeVolver = new int[2];
-            _sizeVolver[0] = (g.getLogWidth() / 16) * 2;
-            _sizeVolver[1] = (g.getLogWidth() / 16) * 2;
+            _sizeVolver[0] = (g.getLogWidth() / 15);
+            _sizeVolver[1] = (g.getLogWidth() / 15);
             _posVolver = new int[2];
-            _posVolver[0] = (g.getLogWidth() / 2) - (_sizeVolver[0] / 2);
-            _posVolver[1] = (g.getLogHeight() / 5) * 4;
+            _posVolver[0] = (g.getLogWidth() / 4) + (_sizeVolver[0] / 3);
+            _posVolver[1] = (g.getLogHeight() / 6) * 5;
             _backIm = Assets.close;
+
+            // TITULO
+            _sizeTitulo = new int[2];
+            _sizeTitulo[0] = (g.getLogWidth() / 9) * 3;
+            _sizeTitulo[1] = (g.getLogWidth() / 8);
+            _posTitulo = new int[2];
+            _posTitulo[0] = (g.getLogWidth() / 2) - (_sizeTitulo[0] / 2);
+            _posTitulo[1] = (g.getLogHeight() / 10);
+            _colorTitulo = 0X313131FF;
+            _fontTitulo = Assets.jose;
+            _tamFTitulo = 64;
+            _titulo = Integer.toString(_tam) + " x " + Integer.toString(_tam);
 
             _goBack = new ButtonCallback() {
                 @Override
@@ -86,6 +98,10 @@ public class GameState implements State {
 
         // BOTON VOLVER
         g.drawImage(_backIm, _posVolver[0], _posVolver[1], _sizeVolver[0], _sizeVolver[1]);
+
+        // TITULO
+        g.setColor(_colorTitulo);
+        g.drawText(_titulo, _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
     }
 
     @Override
@@ -123,7 +139,10 @@ public class GameState implements State {
      */
     private void testTab() {
         Random rn = new Random();
-        int[] pos = new int[2];
+        Graphics g = _engine.getGraphics();
+
+        //Tablero
+        int pos[] = new int[2];
         for (int i = 0; i < _tam; i++) {
             pos[1] = (int) (_tabY + (_celdaSize * i) + (_celdaSize * 0.1));
             for (int j = 0; j < _tam; j++) {
@@ -286,6 +305,14 @@ public class GameState implements State {
     int[] _sizeVolver;
     int[] _posVolver;
     ButtonCallback _goBack;
+
+    // ATRIBUTOS TITULO
+    int[] _sizeTitulo;
+    int[] _posTitulo;
+    int _tamFTitulo;
+    int _colorTitulo;
+    String _titulo;
+    Font _fontTitulo;
 
     // ATRIBUTOS DEL TABLERO
     /**

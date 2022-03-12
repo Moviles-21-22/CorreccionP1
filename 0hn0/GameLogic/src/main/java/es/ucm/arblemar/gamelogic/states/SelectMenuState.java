@@ -29,7 +29,7 @@ public class SelectMenuState implements State {
 
             int ind[] = new int[2];
             ind[0] = ind[1] = -1;
-            float diam = 70;
+            float diam = 75;
             int pos[] = new int[2];
             pos[0] = (g.getLogWidth() * 2 / 7) - ((int) diam / 2);
             pos[1] = (g.getLogHeight() * 2 / 5);
@@ -110,8 +110,8 @@ public class SelectMenuState implements State {
 
             // BOTON VOLVER
             _sizeVolver = new int[2];
-            _sizeVolver[0] = (g.getLogWidth() / 16) * 2;
-            _sizeVolver[1] = (g.getLogWidth() / 16) * 2;
+            _sizeVolver[0] = (g.getLogWidth() / 15);
+            _sizeVolver[1] = (g.getLogWidth() / 15);
             _posVolver = new int[2];
             _posVolver[0] = (g.getLogWidth() / 2) - (_sizeVolver[0] / 2);
             _posVolver[1] = (g.getLogHeight() / 5) * 4;
@@ -143,16 +143,16 @@ public class SelectMenuState implements State {
         // TITULO
         int size[] = new int[2];
         size[0] = (g.getLogWidth() / 2);
-        size[1] = (g.getLogWidth() / 8);
+        size[1] = (g.getLogWidth() / 7);
         int pos[] = new int[2];
-        pos[0] = (g.getLogWidth() / 6);
+        pos[0] = (g.getLogWidth() / 2) - (size[0] / 2);
         pos[1] = (g.getLogHeight() / 10);
         int color = 0x313131FF;
         Font font = Assets.molle;
-        int tamF = 80;
+        int tamF = 74;
 
         g.setColor(color);
-        g.drawText("Oh, no", pos[0], pos[1] + size[1], font, tamF);
+        g.drawText("Oh no", pos[0], pos[1] + size[1], font, tamF);
 
         // INFO
         size[0] = (g.getLogWidth() / 7) * 5;

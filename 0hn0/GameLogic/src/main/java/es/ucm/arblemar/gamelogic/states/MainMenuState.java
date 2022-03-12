@@ -85,6 +85,7 @@ public class MainMenuState implements State {
         g.drawText("Un juego copiado a Q42", pos[0], pos[1] + size[1], font, tamF);
 
         pos[1] += size[1];
+        g.setColor(color);
         g.drawText("Creado por Martin Kool", pos[0], pos[1] + size[1], font, tamF);
 
         // ICONO
