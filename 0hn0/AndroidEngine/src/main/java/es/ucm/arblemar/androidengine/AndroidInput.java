@@ -21,8 +21,17 @@ public class AndroidInput extends AbstractInput implements View.OnTouchListener 
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        onTouchEvent((int) event.getX(), (int) event.getY());
+        switch(event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                onTouchEvent((int) event.getX(), (int) event.getY());
+                break;
+
+            //case MotionEvent.ACTION_MOVE:
+            //    break;
+
+            //case MotionEvent.ACTION_UP:
+            //    break;
+        }
         return true;
     }
-
 }

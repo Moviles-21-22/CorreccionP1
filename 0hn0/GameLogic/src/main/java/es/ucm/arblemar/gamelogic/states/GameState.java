@@ -14,6 +14,7 @@ import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
+import es.ucm.arblemar.gamelogic.CellCallback;
 import es.ucm.arblemar.gamelogic.TipoCelda;
 import es.ucm.arblemar.gamelogic.gameobjects.Celda;
 
@@ -117,16 +118,18 @@ public class GameState implements State {
                         currEvent.getY() > _posVolver[1] &&
                         currEvent.getY() < _posVolver[1] + _sizeVolver[1]) {
                     _goBack.doSomething();
-                } else{
+                    break;
+                } else {
                     findingCelda:
-                    for(int n = 0; n < _tam; n++){
-                        for(int m = 0; m < _tam; m++){
+                    for(int n = 0; n < _tam; n++) {
+                        for(int m = 0; m < _tam; m++) {
                             if (_celdas[n][m].isClicked(currEvent.getX(), currEvent.getY())) {
                                 _celdas[n][m].runCallBack();
                                 break findingCelda;
                             }
                         }
                     }
+                    break;
                 }
             }
         }
@@ -154,24 +157,26 @@ public class GameState implements State {
                 ind[1] = j;
                 switch (choice) {
                     case 0: {
+                        _i = i; _j = j;
                         _celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
                                 0, pos, _diam, ind);
-                        _celdas[i][j].setCallback(new ButtonCallback() {
+                        _celdas[i][j].setCellCallback(new CellCallback() {
                             @Override
-                            public void doSomething() {
+                            public void doSomething(int x, int y) {
+                                //// INICIALIZACIÓN DEL TIMER
+                                //timer = new Timer();
+                                //timerTask = new TimerTask() {
+                                //    @Override
+                                //    public void run() {
+                                //        win = true;
+                                //    }
+                                //};
+                                //System.out.println("Timer empezado...");
+                                //timer.schedule(timerTask, 2000);
 
-                                // INICIALIZACIÓN DEL TIMER
-                                timer = new Timer();
-                                timerTask = new TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        win = true;
-                                    }
-                                };
-                                System.out.println("Timer empezado...");
-                                timer.schedule(timerTask, 2000);
+                                _celdas[x][y].setColor();
                             }
-                        });
+                        }, _i, _j);
                         break;
                     }
                     case 1: {
@@ -352,4 +357,8 @@ public class GameState implements State {
      * Array que contiene las celdas
      */
     Celda[][] _celdas;
+    /**
+     * Posicion temporal en _celdas que tiene una celda gris
+     */
+    int _i, _j;
 }

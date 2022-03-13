@@ -2,7 +2,12 @@ package es.ucm.arblemar.gamelogic.gameobjects;
 
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
+import es.ucm.arblemar.gamelogic.CellCallback;
 import es.ucm.arblemar.gamelogic.TipoCelda;
+
+import static es.ucm.arblemar.gamelogic.TipoCelda.AZUL;
+import static es.ucm.arblemar.gamelogic.TipoCelda.GRIS;
+import static es.ucm.arblemar.gamelogic.TipoCelda.ROJO;
 
 /**
  * Clase que representa a todas las celdas del juego. Dependiendo de su
@@ -20,7 +25,8 @@ public class Celda {
         _pos = new int[2];
         _pos[0] = pos[0];
         _pos[1] = pos[1];
-        _index = ind;
+        _i = ind[0];
+        _j = ind[1];
         _diametro = diam;
         switch (_tipoCelda) {
             case GRIS: {
@@ -67,6 +73,9 @@ public class Celda {
         if (_cb != null) {
             _cb.doSomething();
         }
+        if (_cbc != null) {
+            _cbc.doSomething(_i, _j);
+        }
     }
 
     /**
@@ -74,6 +83,12 @@ public class Celda {
      */
     public void setCallback(ButtonCallback cb) {
         _cb = cb;
+    }
+
+    public void setCellCallback(CellCallback cbc, int i, int j) {
+        _cbc = cbc;
+        _i = i;
+        _j = j;
     }
 
     /**
@@ -98,6 +113,26 @@ public class Celda {
      */
     public int getValue() {
         return _value;
+    }
+
+    public void setColor() {
+        switch (_tipoCelda) {
+            case GRIS: {
+                _tipoCelda = AZUL;
+                _color = 0x1CC0E0FF;
+                break;
+            }
+            case AZUL: {
+                _tipoCelda = ROJO;
+                _color = 0xFF384BFF;
+                break;
+            }
+            case ROJO: {
+                _tipoCelda = GRIS;
+                _color = 0XEEEEEEFF;
+                break;
+            }
+        }
     }
 
     /**
@@ -131,7 +166,7 @@ public class Celda {
     // Posición donde se va a renderizar la celda
     private int _pos[];
     //  Index dentro del tablero
-    private int _index[];
+    private int _i, _j;
     // Diametro del circulo
     private float _diametro;
     // Color inicial del circulo
@@ -142,6 +177,7 @@ public class Celda {
     int _textX = 0;
     // Posición Y del texto
     int _textY = 0;
-    // Callback del circulo
+    // Callback de las celdas del menu y del tablero
     private ButtonCallback _cb;
+    private CellCallback _cbc;
 };

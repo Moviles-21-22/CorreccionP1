@@ -1,8 +1,8 @@
 package es.ucm.arblemar.gamelogic;
 
-public interface ButtonCallback {
+public interface CellCallback {
     /**
      * Callback del botón para que haga algo
      * */
-    void doSomething();
+    void doSomething(int x, int y);
 }
