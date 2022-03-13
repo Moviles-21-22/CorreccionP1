@@ -24,7 +24,7 @@ public class DesktopInput extends AbstractInput implements MouseListener, MouseM
 
     @Override
     public void mousePressed(MouseEvent e) {
-        onTouchEvent(e.getX(), e.getY());
+        onTouchDownEvent(e.getX(), e.getY());
     }
 
     @Override

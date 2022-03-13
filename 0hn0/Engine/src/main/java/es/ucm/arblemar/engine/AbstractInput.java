@@ -19,7 +19,7 @@ public abstract class AbstractInput implements Input {
         } else return events;
     }
 
-    protected void onTouchEvent(int x, int y) {
+    protected void onTouchDownEvent(int x, int y) {
         AbstractGraphics g = (AbstractGraphics) _engine.getGraphics();
 
         TouchEvent currEvent = TouchEvent.touchDown;
