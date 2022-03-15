@@ -15,7 +15,7 @@ import es.ucm.arblemar.engine.Engine;
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.engine.Image;
 
-public class DesktopGraphics extends AbstractGraphics implements ComponentListener{
+public class DesktopGraphics extends AbstractGraphics implements ComponentListener {
     // VARIABLES
     private Engine _mainEngine;
     private String _titulo;
@@ -23,7 +23,7 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     private java.awt.Graphics _graphics;
     private AffineTransform _old;
 
-    public DesktopGraphics(String titulo, Engine engine, int w, int h){
+    public DesktopGraphics(String titulo, Engine engine, int w, int h) {
         super(w, h);
         _mainEngine = engine;
         _titulo = titulo;
@@ -34,10 +34,11 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
         _screen = new DesktopScreen(_titulo);
         _screen.addMouseListener((DesktopInput) _mainEngine.getInput());
         _screen.addMouseMotionListener((DesktopInput) _mainEngine.getInput());
-        return _screen.init((int)_wLogWindow, (int)_hLogWindow);
+
+        return _screen.init((int) _wLogWindow, (int) _hLogWindow);
     }
 
-    public DesktopScreen getScreen(){
+    public DesktopScreen getScreen() {
         return _screen;
     }
 
@@ -58,7 +59,7 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     }
 
     @Override
-    public void clear(int color){
+    public void clear(int color) {
         _graphics = getStrategy().getDrawGraphics();
         setColor(color);
         _graphics.fillRect(0, 0, getWidth(), getHeight());
@@ -76,27 +77,27 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
 
     @Override
     public void setFont(Font font, int tam) {
-        _graphics.setFont(((DesktopFont)font).getJavaFont().deriveFont(tam));
+        _graphics.setFont(((DesktopFont) font).getJavaFont().deriveFont(tam));
     }
 
     @Override
     public void drawImage(Image image, int x, int y, float w, float h) {
-        int newPos [] = realPos(x, y);
-        int newSize [] = realSize(w, h);
+        int newPos[] = realPos(x, y);
+        int newSize[] = realSize(w, h);
         _graphics.drawImage(((DesktopImage) image).getImage(), newPos[0], newPos[1],
                 newSize[0], newSize[1], null);
     }
 
     @Override
     public void drawRect(int x, int y, float width, float height) {
-        int newPos [] = realPos(x, y);
-        int newSize [] = realSize(width, height);
+        int newPos[] = realPos(x, y);
+        int newSize[] = realSize(width, height);
         _graphics.drawRect(newPos[0], newPos[1], newSize[0], newSize[1]);
     }
 
     @Override
     public void drawCircle(int x, int y, float radio) {
-        int newPos [] = realPos(x, y);
+        int newPos[] = realPos(x, y);
         int newSize = realSize(radio);
         _graphics.drawOval(newPos[0], newPos[1], newSize, newSize);
     }
@@ -104,22 +105,22 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     @Override
     public void drawText(String text, int x, int y, Font font, int tam) {
         font.setSize(realSize(tam));
-        _graphics.setFont(((DesktopFont)font).getJavaFont());
-        int newPos [] = realPos(x, y);
+        _graphics.setFont(((DesktopFont) font).getJavaFont());
+        int newPos[] = realPos(x, y);
         _graphics.drawString(text, newPos[0], newPos[1]);
     }
 
     @Override
-    public void fillCircle(int x, int y, float dm){
-        int newPos [] = realPos(x, y);
+    public void fillCircle(int x, int y, float dm) {
+        int newPos[] = realPos(x, y);
         int newSize = realSize(dm);
         _graphics.fillOval(newPos[0], newPos[1], newSize, newSize);
     }
 
     @Override
     public void fillRect(int x, int y, int width, int height) {
-        int newPos [] = realPos(x, y);
-        int newSize [] = realSize(width, height);
+        int newPos[] = realPos(x, y);
+        int newSize[] = realSize(width, height);
         _graphics.fillRect(newPos[0], newPos[1], newSize[0], newSize[1]);
     }
 
@@ -134,8 +135,8 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     }
 
     @Override
-    public void updateGraphics(){
-        while(getStrategy() == null) {
+    public void updateGraphics() {
+        while (getStrategy() == null) {
             System.out.println("NULL");
         }
         _graphics = getStrategy().getDrawGraphics();
@@ -143,12 +144,12 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
 
     @Override
     public void translate(int x, int y) {
-        ((Graphics2D)_graphics).translate(x, y);
+        ((Graphics2D) _graphics).translate(x, y);
     }
 
     @Override
     public void scale(float x, float y) {
-        ((Graphics2D)_graphics).scale(x, y);
+        ((Graphics2D) _graphics).scale(x, y);
     }
 
     @Override
@@ -162,11 +163,11 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     }
 
     //---------------------------------------//
-    public BufferStrategy getStrategy(){
+    public BufferStrategy getStrategy() {
         return _screen.getStrategy();
     }
 
-    public java.awt.Graphics getJavaGraphics(){
+    public java.awt.Graphics getJavaGraphics() {
         return _graphics;
     }
 

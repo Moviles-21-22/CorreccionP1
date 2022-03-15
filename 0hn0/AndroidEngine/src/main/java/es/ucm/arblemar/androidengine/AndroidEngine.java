@@ -1,55 +1,41 @@
 package es.ucm.arblemar.androidengine;
 
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.WindowManager;
+import android.content.res.AssetManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import es.ucm.arblemar.engine.AbstractEngine;
 import es.ucm.arblemar.engine.State;
-import es.ucm.arblemar.engine.Graphics;
-import es.ucm.arblemar.engine.Input;
 
 public class AndroidEngine extends AbstractEngine implements Runnable {
-    private SurfaceView surface;
-    private volatile boolean running = false;
-    private Thread thread;
-    private long _lastFrameTime = 0;
-    private long _currentTime = 0;
-    private double _deltaTime = 0;
-
-    public AndroidEngine(AppCompatActivity activity, int logicW, int logicH) {
-        activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        boolean landScape = activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-        int bufferW = landScape ? logicH : logicW;
-        int bufferH = landScape ? logicW : logicH;
-        Bitmap buffer = Bitmap.createBitmap(bufferW,bufferH, Bitmap.Config.RGB_565);
-
-        surface = new SurfaceView(activity.getApplicationContext());
-        _graphics = new AndroidGraphics(activity,logicW,logicH,buffer);
-        _input = new AndroidInput(this, surface);
-        activity.setContentView(surface);
+    public AndroidEngine() {
     }
 
-    public boolean init(State initState, String nameGame, int w, int h) {
-        _currState = initState;
-        return _currState.init();
+    public boolean init(State initState, AppCompatActivity activity, int logicW, int logicH) {
+        try {
+            // INPUT
+            _input = new AndroidInput(this);
+
+            // GRAPHICS
+            AssetManager assetMan = activity.getAssets();
+            _graphics = new AndroidGraphics(assetMan, activity.getWindowManager(), activity.getWindow(), logicW, logicH);
+
+            // STATE
+            _currState = initState;
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return false;
+        }
+        return ((AndroidGraphics) _graphics).init((AndroidInput) _input, activity) && _currState.init();
     }
 
     @Override
     public void run() {
-        SurfaceHolder holder = surface.getHolder();
         _lastFrameTime = System.nanoTime();
 
         running = true;
-        while (running){
+        while (running) {
             // Refresco del deltaTime
             updateDeltaTime();
 
@@ -57,18 +43,14 @@ public class AndroidEngine extends AbstractEngine implements Runnable {
             _currState.handleInput();
             _currState.update(_deltaTime);
 
-            while (!holder.getSurface().isValid());
-            Canvas canvas = holder.lockCanvas();
-            ((AndroidGraphics)_graphics).setCanvas(canvas);
-
+            _graphics.updateGraphics();
             _graphics.prepareFrame();
             _graphics.clear(0xFFFFFFFF);
             _currState.render();
-            holder.unlockCanvasAndPost(canvas);
+            _graphics.restore();
 
             // Inicializacion del nuevo estado en diferido
-            if(_changeState)
-            {
+            if (_changeState) {
                 _changeState = false;
                 _currState = _newState;
                 _currState.init();
@@ -76,7 +58,7 @@ public class AndroidEngine extends AbstractEngine implements Runnable {
         }
     }
 
-    private void updateDeltaTime(){
+    private void updateDeltaTime() {
         _currentTime = System.nanoTime();
         long nanoElapsedTime = _currentTime - _lastFrameTime;
         _lastFrameTime = _currentTime;
@@ -97,10 +79,18 @@ public class AndroidEngine extends AbstractEngine implements Runnable {
             try {
                 thread.join();
                 break;
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
+
+    // ATRIBUTOS
+    private volatile boolean running = false;
+    private Thread thread;
+    private long _lastFrameTime = 0;
+    private long _currentTime = 0;
+    private double _deltaTime = 0;
+    private AppCompatActivity _activity;
+
 }

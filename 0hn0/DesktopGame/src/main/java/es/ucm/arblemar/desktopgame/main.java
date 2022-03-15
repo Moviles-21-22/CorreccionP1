@@ -8,7 +8,7 @@ class Main {
         DesktopEngine engine = new DesktopEngine();
         State loadAssets = new LoadState(engine);
         if(!engine.init(loadAssets, "0hn0", 400, 600)) {
-            System.out.println("Algo fue mal");
+            System.out.println("Error al inicializar el engine");
             return;
         }
         engine.run();

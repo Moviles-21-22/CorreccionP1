@@ -13,9 +13,13 @@ public class DesktopEngine extends AbstractEngine {
     }
 
     public boolean init(State initState, String nameGame, int w, int h) {
+        // STATE
         _currState = initState;
+        // INPUT
         _input = new DesktopInput(this);
+        // GRAPHICS
         _graphics = new DesktopGraphics(nameGame, this, w, h);
+
         return ((DesktopGraphics)_graphics).init() && ((DesktopInput)_input).init() && _currState.init();
     }
 
@@ -35,6 +39,7 @@ public class DesktopEngine extends AbstractEngine {
             do {
                 do {
                     _graphics.updateGraphics();
+                    _graphics.prepareFrame();
                     _graphics.clear(0xFFFFFFFF);
                     try {
                         _currState.render();
@@ -66,7 +71,7 @@ public class DesktopEngine extends AbstractEngine {
         _deltaTime = (double) nanoElapsedTime / 1.0E9;
     }
 
-    // VARIABLES
+    // ATRIBUTOS
     private long _lastFrameTime = 0;
     private long _currentTime = 0;
     private double _deltaTime = 0;

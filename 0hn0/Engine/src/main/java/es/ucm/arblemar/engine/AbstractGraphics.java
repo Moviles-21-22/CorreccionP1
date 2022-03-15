@@ -81,7 +81,6 @@ public abstract class AbstractGraphics implements Graphics{
         return newPos;
     }
 
-    //TODO: Borrar esto si no es necesario
     private int[] translateWindow() {
         float offsetX = (getWidth() - (_wLogWindow * _scaleFactor)) / 2.0f;
         float offsetY = (getHeight() - (_hLogWindow) * _scaleFactor) / 2.0f;
