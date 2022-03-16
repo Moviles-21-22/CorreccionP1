@@ -48,8 +48,57 @@ public class GameState implements State {
             _sizeVolver[1] = (g.getLogWidth() / 15);
             _posVolver = new int[2];
             _posVolver[0] = (g.getLogWidth() / 4) + (_sizeVolver[0] / 3);
-            _posVolver[1] = (g.getLogHeight() / 6) * 5;
-            _backIm = Assets.close;
+            _posVolver[1] = (g.getLogHeight() / 8) * 7;
+            _imVolver = Assets.close;
+            _goBack = new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    SelectMenuState main = new SelectMenuState(_engine);
+                    _engine.reqNewState(main);
+                }
+            };
+
+            // BOTON RESET
+            _sizeReset = new int[2];
+            _sizeReset[0] = (g.getLogWidth() / 14);
+            _sizeReset[1] = (g.getLogWidth() / 14);
+            _posReset = new int[2];
+            _posReset[0] = (g.getLogWidth() / 2) - (_sizeReset[0] / 2);
+            _posReset[1] = (g.getLogHeight() / 8) * 7;
+            _imReset = Assets.history;
+            _reset = new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    System.out.println("Retrocedemos movimiento... Falta por hacer");
+                }
+            };
+
+            // BOTON PISTA
+            _sizePista = new int[2];
+            _sizePista[0] = (g.getLogWidth() / 13);
+            _sizePista[1] = (g.getLogWidth() / 13);
+            _posPista = new int[2];
+            _posPista[0] = (g.getLogWidth() / 3) * 2;
+            _posPista[1] = (g.getLogHeight() / 8) * 7;
+            _imPista = Assets.eye;
+            _pista = new ButtonCallback() {
+                @Override
+                public void doSomething() {
+                    System.out.println("Generamos una pista... Falta por hacer");
+                }
+            };
+
+            // PORCENTAJE
+            _sizePorcent = new int[2];
+            _sizePorcent[0] = (g.getLogWidth() / 12);
+            _sizePorcent[1] = (g.getLogWidth() / 12);
+            _posPorcent = new int[2];
+            _posPorcent[0] = (g.getLogWidth() / 2) - (_sizePorcent[0] / 2);
+            _posPorcent[1] = (g.getLogHeight() / 80) * 67;
+            _colorPorcent = 0X999999FF;
+            _fontPorcent = Assets.jose;
+            _tamFPorcent = 24;
+            _porcent = Integer.toString(0) + "%";
 
             // TITULO
             _sizeTitulo = new int[2];
@@ -63,13 +112,6 @@ public class GameState implements State {
             _tamFTitulo = 64;
             _titulo = Integer.toString(_tam) + " x " + Integer.toString(_tam);
 
-            _goBack = new ButtonCallback() {
-                @Override
-                public void doSomething() {
-                    SelectMenuState main = new SelectMenuState(_engine);
-                    _engine.reqNewState(main);
-                }
-            };
         } catch (Exception e) {
             System.out.println("Fallo al intenar generar GameState");
             System.out.println(e);
@@ -97,8 +139,14 @@ public class GameState implements State {
             }
         }
 
-        // BOTON VOLVER
-        g.drawImage(_backIm, _posVolver[0], _posVolver[1], _sizeVolver[0], _sizeVolver[1]);
+        // BOTONES
+        g.drawImage(_imVolver, _posVolver[0], _posVolver[1], _sizeVolver[0], _sizeVolver[1]);
+        g.drawImage(_imReset, _posReset[0], _posReset[1], _sizeReset[0], _sizeReset[1]);
+        g.drawImage(_imPista, _posPista[0], _posPista[1], _sizePista[0], _sizePista[1]);
+
+        //PORCENTAJE
+        g.setColor(_colorPorcent);
+        g.drawText(_porcent, _posPorcent[0], _posPorcent[1] + _sizePorcent[1], _fontPorcent, _tamFPorcent);
 
         // TITULO
         g.setColor(_colorTitulo);
@@ -118,6 +166,18 @@ public class GameState implements State {
                         currEvent.getY() > _posVolver[1] &&
                         currEvent.getY() < _posVolver[1] + _sizeVolver[1]) {
                     _goBack.doSomething();
+                    break;
+                } else if (currEvent.getX() > _posReset[0] &&
+                        currEvent.getX() < _posReset[0] + _sizeReset[0] &&
+                        currEvent.getY() > _posReset[1] &&
+                        currEvent.getY() < _posReset[1] + _sizeReset[1]) {
+                    _reset.doSomething();
+                    break;
+                } else if (currEvent.getX() > _posPista[0] &&
+                        currEvent.getX() < _posPista[0] + _sizePista[0] &&
+                        currEvent.getY() > _posPista[1] &&
+                        currEvent.getY() < _posPista[1] + _sizePista[1]) {
+                    _pista.doSomething();
                     break;
                 } else {
                     findingCelda:
@@ -306,10 +366,30 @@ public class GameState implements State {
     TimerTask timerTask;
 
     // ATRIBUTOS BOTON VOLVER
-    Image _backIm;
+    Image _imVolver;
     int[] _sizeVolver;
     int[] _posVolver;
     ButtonCallback _goBack;
+
+    // ATRIBUTOS BOTON RESET
+    Image _imReset;
+    int[] _sizeReset;
+    int[] _posReset;
+    ButtonCallback _reset;
+
+    // ATRIBUTOS BOTON PISTA
+    Image _imPista;
+    int[] _sizePista;
+    int[] _posPista;
+    ButtonCallback _pista;
+
+    // ATRIBUTOS PORCENTAJE
+    int[] _sizePorcent;
+    int[] _posPorcent;
+    int _tamFPorcent;
+    int _colorPorcent;
+    String _porcent;
+    Font _fontPorcent;
 
     // ATRIBUTOS TITULO
     int[] _sizeTitulo;
