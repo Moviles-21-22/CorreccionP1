@@ -15,8 +15,8 @@ import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
-import es.ucm.arblemar.gamelogic.TipoCelda;
-import es.ucm.arblemar.gamelogic.TipoPista;
+import es.ucm.arblemar.gamelogic.gameobjects.TipoCelda;
+import es.ucm.arblemar.gamelogic.gameobjects.TipoPista;
 import es.ucm.arblemar.gamelogic.gameobjects.Celda;
 import es.ucm.arblemar.gamelogic.gameobjects.Pista;
 
@@ -241,7 +241,7 @@ public class GameState implements State {
         }
         //Arriba
         if (val <= _celdas[i][j].getValue()) {
-            for (int x = i - 1; x > 0; --x) {
+            for (int x = i - 1; x >= 0; --x) {
                 if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
                 else break;
                 if (val > _celdas[i][j].getValue()) return false;
@@ -257,7 +257,7 @@ public class GameState implements State {
         }
         //Izquierda
         if (val <= _celdas[i][j].getValue()) {
-            for (int y = j - 1; y > 0; --y) {
+            for (int y = j - 1; y >= 0; --y) {
                 if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
                 else break;
                 if (val > _celdas[i][j].getValue()) return false;

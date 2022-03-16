@@ -1,7 +1,5 @@
 package es.ucm.arblemar.gamelogic.gameobjects;
 
-import es.ucm.arblemar.gamelogic.TipoPista;
-
 public class Pista {
     public Pista() {
         _tipo = TipoPista.NONE;

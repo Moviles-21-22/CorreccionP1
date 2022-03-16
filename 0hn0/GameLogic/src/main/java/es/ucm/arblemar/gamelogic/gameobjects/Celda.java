@@ -3,12 +3,10 @@ package es.ucm.arblemar.gamelogic.gameobjects;
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
-import es.ucm.arblemar.gamelogic.TipoCelda;
-import es.ucm.arblemar.gamelogic.TipoPista;
 
-import static es.ucm.arblemar.gamelogic.TipoCelda.AZUL;
-import static es.ucm.arblemar.gamelogic.TipoCelda.GRIS;
-import static es.ucm.arblemar.gamelogic.TipoCelda.ROJO;
+import static es.ucm.arblemar.gamelogic.gameobjects.TipoCelda.AZUL;
+import static es.ucm.arblemar.gamelogic.gameobjects.TipoCelda.GRIS;
+import static es.ucm.arblemar.gamelogic.gameobjects.TipoCelda.ROJO;
 
 /**
  * Clase que representa a todas las celdas del juego. Dependiendo de su
