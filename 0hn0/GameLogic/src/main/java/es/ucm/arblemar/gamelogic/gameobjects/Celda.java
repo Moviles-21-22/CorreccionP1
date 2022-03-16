@@ -4,6 +4,7 @@ import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
 import es.ucm.arblemar.gamelogic.TipoCelda;
+import es.ucm.arblemar.gamelogic.TipoPista;
 
 import static es.ucm.arblemar.gamelogic.TipoCelda.AZUL;
 import static es.ucm.arblemar.gamelogic.TipoCelda.GRIS;
@@ -114,6 +115,8 @@ public class Celda {
     public int getValue() {
         return _value;
     }
+
+    public TipoCelda getTipoCelda() { return _tipoCelda; }
 
     public void setColor() {
         switch (_tipoCelda) {

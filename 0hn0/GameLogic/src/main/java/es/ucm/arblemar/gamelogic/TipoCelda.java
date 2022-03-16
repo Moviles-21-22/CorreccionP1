@@ -7,7 +7,6 @@ public enum TipoCelda {
 
     MAX(3);
 
-    private int value;
     private TipoCelda(int i) {
         this.value = i;
     }
@@ -15,4 +14,6 @@ public enum TipoCelda {
     public int getValue(){
         return value;
     }
+
+    private int value;
 };

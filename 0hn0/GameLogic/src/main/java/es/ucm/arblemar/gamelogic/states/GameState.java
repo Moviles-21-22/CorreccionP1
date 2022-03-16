@@ -16,7 +16,9 @@ import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
 import es.ucm.arblemar.gamelogic.TipoCelda;
+import es.ucm.arblemar.gamelogic.TipoPista;
 import es.ucm.arblemar.gamelogic.gameobjects.Celda;
+import es.ucm.arblemar.gamelogic.gameobjects.Pista;
 
 public class GameState implements State {
     GameState(Engine _engine, int t) {
@@ -81,10 +83,21 @@ public class GameState implements State {
             _posPista[0] = (g.getLogWidth() / 3) * 2;
             _posPista[1] = (g.getLogHeight() / 8) * 7;
             _imPista = Assets.eye;
-            _pista = new ButtonCallback() {
+            _verPista = new ButtonCallback() {
                 @Override
                 public void doSomething() {
-                    System.out.println("Generamos una pista... Falta por hacer");
+                    System.out.println("Generamos una pista...");
+                    if (_pista.getTipo() == TipoPista.NONE) {
+                        primerFor:
+                        for (int i = 0; i < _tam; ++i) {
+                            for (int j = 0; j < _tam; ++j) {
+                                if (procesaPista(i, j)) break primerFor;
+                            }
+                        }
+                    }
+                    else {
+                        _pista.setTipo(TipoPista.NONE);
+                    }
                 }
             };
 
@@ -111,6 +124,20 @@ public class GameState implements State {
             _fontTitulo = Assets.jose;
             _tamFTitulo = 64;
             _titulo = Integer.toString(_tam) + " x " + Integer.toString(_tam);
+
+            // PISTAS
+            _pista = new Pista();
+            _sizePistaTxt = new int[3];
+            _sizePistaTxt[0] = (g.getLogWidth() / 2);
+            _sizePistaTxt[1] = (g.getLogWidth() / 10);
+            _sizePistaTxt[2] = (g.getLogWidth() / 30) * 16;
+            _posPistaTxt = new int[3];
+            _posPistaTxt[0] = (g.getLogWidth() / 2) - (_sizePistaTxt[0] / 2);
+            _posPistaTxt[1] = (g.getLogHeight() / 20);
+            _posPistaTxt[2] = (g.getLogWidth() / 2) - (_sizePistaTxt[2] / 2);
+            _colorPistaTxt = 0X313131FF;
+            _fontPistaTxt = Assets.jose;
+            _tamFPistaTxt = 32;
 
         } catch (Exception e) {
             System.out.println("Fallo al intenar generar GameState");
@@ -148,9 +175,16 @@ public class GameState implements State {
         g.setColor(_colorPorcent);
         g.drawText(_porcent, _posPorcent[0], _posPorcent[1] + _sizePorcent[1], _fontPorcent, _tamFPorcent);
 
-        // TITULO
-        g.setColor(_colorTitulo);
-        g.drawText(_titulo, _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
+        // TITULO O TEXTO DE PISTA
+        if (_pista.getTipo() == TipoPista.NONE) {
+            g.setColor(_colorTitulo);
+            g.drawText(_titulo, _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
+        }
+        else {
+            g.setColor(_colorPistaTxt);
+            g.drawText(_pista.getTextoPista()[0], _posPistaTxt[0], _posPistaTxt[1] + _sizePistaTxt[1], _fontPistaTxt, _tamFPistaTxt);
+            g.drawText(_pista.getTextoPista()[1], _posPistaTxt[2], _posPistaTxt[1] + _sizePistaTxt[1] * 2, _fontPistaTxt, _tamFPistaTxt);
+        }
     }
 
     @Override
@@ -177,7 +211,7 @@ public class GameState implements State {
                         currEvent.getX() < _posPista[0] + _sizePista[0] &&
                         currEvent.getY() > _posPista[1] &&
                         currEvent.getY() < _posPista[1] + _sizePista[1]) {
-                    _pista.doSomething();
+                    _verPista.doSomething();
                     break;
                 } else {
                     findingCelda:
@@ -193,6 +227,46 @@ public class GameState implements State {
                 }
             }
         }
+    }
+
+    public boolean procesaPista(int i, int j) {
+        if (!_celdas[i][j].isLock() || _celdas[i][j].getTipoCelda() != TipoCelda.AZUL) return false;
+
+        int val = 0;
+        //Abajo
+        for (int x = i + 1; x < _tam; ++x) {
+            if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
+            else break;
+            if (val > _celdas[i][j].getValue()) return false;
+        }
+        //Arriba
+        if (val <= _celdas[i][j].getValue()) {
+            for (int x = i - 1; x > 0; --x) {
+                if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
+                else break;
+                if (val > _celdas[i][j].getValue()) return false;
+            }
+        }
+        //Derecha
+        if (val <= _celdas[i][j].getValue()) {
+            for (int y = j + 1; y < _tam; ++y) {
+                if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
+                else break;
+                if (val > _celdas[i][j].getValue()) return false;
+            }
+        }
+        //Izquierda
+        if (val <= _celdas[i][j].getValue()) {
+            for (int y = j - 1; y > 0; --y) {
+                if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
+                else break;
+                if (val > _celdas[i][j].getValue()) return false;
+            }
+        }
+
+        if (val != _celdas[i][j].getValue()) return false;
+        _pista.setTipo(TipoPista.CERRAR_CASILLA);
+        return true;
     }
 
 //------------------------------------------------------------------------------------------------//
@@ -381,7 +455,7 @@ public class GameState implements State {
     Image _imPista;
     int[] _sizePista;
     int[] _posPista;
-    ButtonCallback _pista;
+    ButtonCallback _verPista;
 
     // ATRIBUTOS PORCENTAJE
     int[] _sizePorcent;
@@ -398,6 +472,14 @@ public class GameState implements State {
     int _colorTitulo;
     String _titulo;
     Font _fontTitulo;
+
+    // ATRIBUTOS PARA EL TEXTO DE PISTAS
+    int[] _sizePistaTxt;
+    int[] _posPistaTxt;
+    int _tamFPistaTxt;
+    int _colorPistaTxt;
+    Font _fontPistaTxt;
+    Pista _pista;
 
     // ATRIBUTOS DEL TABLERO
     /**
