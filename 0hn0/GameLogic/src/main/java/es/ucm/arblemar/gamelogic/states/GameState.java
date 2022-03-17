@@ -127,14 +127,11 @@ public class GameState implements State {
 
             // PISTAS
             _pista = new Pista();
-            _sizePistaTxt = new int[3];
-            _sizePistaTxt[0] = (g.getLogWidth() / 2);
-            _sizePistaTxt[1] = (g.getLogWidth() / 10);
-            _sizePistaTxt[2] = (g.getLogWidth() / 30) * 16;
+            _altoPistaTxt = (g.getLogWidth() / 10);                 //Tamaño del texto a lo alto
             _posPistaTxt = new int[3];
-            _posPistaTxt[0] = (g.getLogWidth() / 2) - (_sizePistaTxt[0] / 2);
-            _posPistaTxt[1] = (g.getLogHeight() / 20);
-            _posPistaTxt[2] = (g.getLogWidth() / 2) - (_sizePistaTxt[2] / 2);
+            _posPistaTxt[0] = (g.getLogWidth() / 2);                //A lo ancho
+            _posPistaTxt[1] = (g.getLogHeight() / 8);               //A lo alto primera linea
+            _posPistaTxt[2] = _posPistaTxt[1] + _altoPistaTxt;    //A lo alto segunda linea
             _colorPistaTxt = 0X313131FF;
             _fontPistaTxt = Assets.jose;
             _tamFPistaTxt = 32;
@@ -182,8 +179,8 @@ public class GameState implements State {
         }
         else {
             g.setColor(_colorPistaTxt);
-            g.drawText(_pista.getTextoPista()[0], _posPistaTxt[0], _posPistaTxt[1] + _sizePistaTxt[1], _fontPistaTxt, _tamFPistaTxt);
-            g.drawText(_pista.getTextoPista()[1], _posPistaTxt[2], _posPistaTxt[1] + _sizePistaTxt[1] * 2, _fontPistaTxt, _tamFPistaTxt);
+            g.drawText(_pista.getTextoPista()[0], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[0]), _posPistaTxt[1], _fontPistaTxt, _tamFPistaTxt);
+            g.drawText(_pista.getTextoPista()[1], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[1]), _posPistaTxt[2], _fontPistaTxt, _tamFPistaTxt);
         }
     }
 
@@ -240,33 +237,98 @@ public class GameState implements State {
             if (val > _celdas[i][j].getValue()) return false;
         }
         //Arriba
-        if (val <= _celdas[i][j].getValue()) {
-            for (int x = i - 1; x >= 0; --x) {
-                if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
-                else break;
-                if (val > _celdas[i][j].getValue()) return false;
-            }
+        for (int x = i - 1; x >= 0; --x) {
+            if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
+            else break;
+            if (val > _celdas[i][j].getValue()) return false;
         }
         //Derecha
-        if (val <= _celdas[i][j].getValue()) {
-            for (int y = j + 1; y < _tam; ++y) {
-                if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
-                else break;
-                if (val > _celdas[i][j].getValue()) return false;
-            }
+        for (int y = j + 1; y < _tam; ++y) {
+            if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
+            else break;
+            if (val > _celdas[i][j].getValue()) return false;
         }
         //Izquierda
-        if (val <= _celdas[i][j].getValue()) {
-            for (int y = j - 1; y >= 0; --y) {
-                if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
-                else break;
-                if (val > _celdas[i][j].getValue()) return false;
-            }
+        for (int y = j - 1; y >= 0; --y) {
+            if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
+            else break;
+            if (val > _celdas[i][j].getValue()) return false;
         }
 
-        if (val != _celdas[i][j].getValue()) return false;
-        _pista.setTipo(TipoPista.CERRAR_CASILLA);
-        return true;
+        if (val == _celdas[i][j].getValue()) {      //Primera pista
+            _pista.setTipo(TipoPista.CERRAR_CASILLA);
+            return true;
+        }
+        else {      //val < getValue    ->    Puede ser segunda pista
+            boolean gris = false;
+            int nuevoVal = val;
+            //Abajo
+            for (int x = i + 1; x < _tam; ++x) {
+                if (!gris && _celdas[x][j].getTipoCelda() == TipoCelda.GRIS) {
+                    gris = true;
+                    nuevoVal++;
+                }
+                else if (gris && _celdas[x][j].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
+                else if (!gris &&  _celdas[x][j].getTipoCelda() == TipoCelda.AZUL) continue;
+                else break;
+                if (nuevoVal > _celdas[i][j].getValue()) {
+                    _pista.setTipo(TipoPista.DEBE_SER_PARED);
+                    return true;
+                }
+            }
+            gris = false;
+            nuevoVal = val;
+
+            //Arriba
+            for (int x = i - 1; x >= 0; --x) {
+                if (!gris && _celdas[x][j].getTipoCelda() == TipoCelda.GRIS) {
+                    gris = true;
+                    nuevoVal++;
+                }
+                else if (gris && _celdas[x][j].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
+                else if (!gris &&  _celdas[x][j].getTipoCelda() == TipoCelda.AZUL) continue;
+                else break;
+                if (nuevoVal > _celdas[i][j].getValue()) {
+                    _pista.setTipo(TipoPista.DEBE_SER_PARED);
+                    return true;
+                }
+            }
+            gris = false;
+            nuevoVal = val;
+
+            //Derecha
+            for (int y = j + 1; y < _tam; ++y) {
+                if (!gris && _celdas[i][y].getTipoCelda() == TipoCelda.GRIS) {
+                    gris = true;
+                    nuevoVal++;
+                }
+                else if (gris && _celdas[i][y].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
+                else if (!gris &&  _celdas[i][y].getTipoCelda() == TipoCelda.AZUL) continue;
+                else break;
+                if (nuevoVal > _celdas[i][j].getValue()) {
+                    _pista.setTipo(TipoPista.DEBE_SER_PARED);
+                    return true;
+                }
+            }
+            gris = false;
+            nuevoVal = val;
+
+            //Izquierda
+            for (int y = j - 1; y >= 0; --y) {
+                if (!gris && _celdas[i][y].getTipoCelda() == TipoCelda.GRIS) {
+                    gris = true;
+                    nuevoVal++;
+                }
+                else if (gris && _celdas[i][y].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
+                else if (!gris &&  _celdas[i][y].getTipoCelda() == TipoCelda.AZUL) continue;
+                else break;
+                if (nuevoVal > _celdas[i][j].getValue()) {
+                    _pista.setTipo(TipoPista.DEBE_SER_PARED);
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
 //------------------------------------------------------------------------------------------------//
@@ -474,7 +536,7 @@ public class GameState implements State {
     Font _fontTitulo;
 
     // ATRIBUTOS PARA EL TEXTO DE PISTAS
-    int[] _sizePistaTxt;
+    int _altoPistaTxt;
     int[] _posPistaTxt;
     int _tamFPistaTxt;
     int _colorPistaTxt;
