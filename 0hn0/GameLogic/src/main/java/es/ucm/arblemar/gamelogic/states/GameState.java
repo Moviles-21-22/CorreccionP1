@@ -327,8 +327,51 @@ public class GameState implements State {
                     return true;
                 }
             }
-            return false;
         }
+
+        //Si se sale es porque no es ni primera ni segunda pista    ->    puede ser tercera
+        int valLinea[] = new int[4];
+        boolean dirCompl = false;
+
+        //Abajo
+        for (int x = i + 1; x < _tam; ++x) {
+            if (_celdas[x][j].getTipoCelda() != TipoCelda.ROJO &&
+                    valLinea[0] < _celdas[i][j].getValue())
+                valLinea[0]++;
+            else break;
+        }
+        //Arriba
+        for (int x = i - 1; x >= 0; --x) {
+            if (_celdas[x][j].getTipoCelda() != TipoCelda.ROJO &&
+                    valLinea[1] < _celdas[i][j].getValue())
+                valLinea[1]++;
+            else break;
+        }
+        //Derecha
+        for (int y = j + 1; y < _tam; ++y) {
+            if (_celdas[i][y].getTipoCelda() != TipoCelda.ROJO &&
+                    valLinea[2] < _celdas[i][j].getValue())
+                valLinea[2]++;
+            else break;
+        }
+        //Izquierda
+        for (int y = j - 1; y >= 0; --y) {
+            if (_celdas[i][y].getTipoCelda() != TipoCelda.ROJO &&
+                    valLinea[3] < _celdas[i][j].getValue())
+                valLinea[3]++;
+            else break;
+        }
+
+        //Para que sea pista tres, el valor maximo entre tres de las direcciones debe ser menor
+        //estricto que el valor buscado por la celda
+        if (valLinea[0] + valLinea[1] + valLinea[2] < _celdas[i][j].getValue() ||
+                valLinea[0] + valLinea[1] + valLinea[3] < _celdas[i][j].getValue() ||
+                valLinea[0] + valLinea[2] + valLinea[3] < _celdas[i][j].getValue() ||
+                valLinea[1] + valLinea[2] + valLinea[3] < _celdas[i][j].getValue()) {
+            _pista.setTipo(TipoPista.DEBE_SER_AZUL);
+            return true;
+        }
+        return false;
     }
 
 //------------------------------------------------------------------------------------------------//

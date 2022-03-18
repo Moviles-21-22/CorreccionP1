@@ -23,6 +23,10 @@ public class Pista {
                 size[0] = (winWidthLog / 20) * 9;
                 size[1] = (winWidthLog / 36) * 17;
                 break;
+            case DEBE_SER_AZUL:
+                size[0] = (winWidthLog / 10) * 4;
+                size[1] = (winWidthLog / 10) * 4;
+                break;
         }
         return size;
     }
@@ -39,6 +43,10 @@ public class Pista {
             case DEBE_SER_PARED:
                 st[0] = "Se debe poner una pared o";
                 st[1] = "pasará el número de vecinas";
+                break;
+            case DEBE_SER_AZUL:
+                st[0] = "Se debe poner celda azul";
+                st[1] = "para alcanzar las vecinas";
                 break;
         }
         return st;
