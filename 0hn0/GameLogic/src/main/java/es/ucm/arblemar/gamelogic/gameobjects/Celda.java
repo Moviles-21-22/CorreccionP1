@@ -116,6 +116,8 @@ public class Celda {
 
     public TipoCelda getTipoCelda() { return _tipoCelda; }
 
+    public int[] getPos() { return _pos; }
+
     public void setColor() {
         switch (_tipoCelda) {
             case GRIS: {

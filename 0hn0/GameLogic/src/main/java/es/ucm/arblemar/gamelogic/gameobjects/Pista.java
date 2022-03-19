@@ -8,7 +8,7 @@ public class Pista {
         st = new String[2];
     }
 
-    public void setPos(int x, int y) { pos[0] = x; pos[1] = y; }
+    public void setPos(int[] p) { pos = p; }
     public int[] getPos() {
         return pos;
     }
