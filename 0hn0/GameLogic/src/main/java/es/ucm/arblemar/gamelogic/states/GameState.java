@@ -234,25 +234,37 @@ public class GameState implements State {
         for (int x = i + 1; x < _tam; ++x) {
             if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
             else break;
-            if (val > _celdas[i][j].getValue()) return false;
+            if (val > _celdas[i][j].getValue()) {
+                _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
+                return true;
+            }
         }
         //Arriba
         for (int x = i - 1; x >= 0; --x) {
             if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
             else break;
-            if (val > _celdas[i][j].getValue()) return false;
+            if (val > _celdas[i][j].getValue()) {
+                _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
+                return true;
+            }
         }
         //Derecha
         for (int y = j + 1; y < _tam; ++y) {
             if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
             else break;
-            if (val > _celdas[i][j].getValue()) return false;
+            if (val > _celdas[i][j].getValue()) {
+                _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
+                return true;
+            }
         }
         //Izquierda
         for (int y = j - 1; y >= 0; --y) {
             if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
             else break;
-            if (val > _celdas[i][j].getValue()) return false;
+            if (val > _celdas[i][j].getValue()) {
+                _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
+                return true;
+            }
         }
 
         if (val == _celdas[i][j].getValue()) {      //Primera pista

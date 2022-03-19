@@ -27,6 +27,10 @@ public class Pista {
                 size[0] = (winWidthLog / 10) * 4;
                 size[1] = (winWidthLog / 10) * 4;
                 break;
+            case DEMASIADAS_AZULES:
+                size[0] = (winWidthLog / 9) * 2;
+                size[1] = (winWidthLog / 10) * 3;
+                break;
         }
         return size;
     }
@@ -47,6 +51,10 @@ public class Pista {
             case DEBE_SER_AZUL:
                 st[0] = "Se debe poner celda azul";
                 st[1] = "para alcanzar las vecinas";
+                break;
+            case DEMASIADAS_AZULES:
+                st[0] = "La celda tiene";
+                st[1] = "demasiadas vecinas";
                 break;
         }
         return st;

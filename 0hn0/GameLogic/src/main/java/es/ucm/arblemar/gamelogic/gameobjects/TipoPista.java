@@ -20,7 +20,14 @@ public enum TipoPista {
      * Si no ponemos un punto en alguna celda vacía, entonces es imposible alcanzar el
      * número
      */
-    DEBE_SER_AZUL;
+    DEBE_SER_AZUL,
+
+    //PISTAS QUE SIGNIFCAN ERROR
+
+    /**
+     * Un número tiene más casillas azules visibles de las que debería
+     */
+    DEMASIADAS_AZULES;
 
     TipoPista() {}
 }
