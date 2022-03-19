@@ -230,9 +230,14 @@ public class GameState implements State {
         if (!_celdas[i][j].isLock() || _celdas[i][j].getTipoCelda() != TipoCelda.AZUL) return false;
 
         int val = 0;
+        boolean yaCerrada = true;  //Para medir si la celda completa ya esta cerrada
         //Abajo
         for (int x = i + 1; x < _tam; ++x) {
             if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
+            else if (_celdas[x][j].getTipoCelda() == TipoCelda.GRIS) {
+                yaCerrada = false;
+                break;
+            }
             else break;
             if (val > _celdas[i][j].getValue()) {
                 _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
@@ -242,6 +247,10 @@ public class GameState implements State {
         //Arriba
         for (int x = i - 1; x >= 0; --x) {
             if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
+            else if (_celdas[x][j].getTipoCelda() == TipoCelda.GRIS) {
+                yaCerrada = false;
+                break;
+            }
             else break;
             if (val > _celdas[i][j].getValue()) {
                 _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
@@ -251,6 +260,10 @@ public class GameState implements State {
         //Derecha
         for (int y = j + 1; y < _tam; ++y) {
             if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
+            else if (_celdas[i][y].getTipoCelda() == TipoCelda.GRIS) {
+                yaCerrada = false;
+                break;
+            }
             else break;
             if (val > _celdas[i][j].getValue()) {
                 _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
@@ -260,6 +273,10 @@ public class GameState implements State {
         //Izquierda
         for (int y = j - 1; y >= 0; --y) {
             if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
+            else if (_celdas[i][y].getTipoCelda() == TipoCelda.GRIS) {
+                yaCerrada = false;
+                break;
+            }
             else break;
             if (val > _celdas[i][j].getValue()) {
                 _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
@@ -268,6 +285,7 @@ public class GameState implements State {
         }
 
         if (val == _celdas[i][j].getValue()) {      //Primera pista
+            if (yaCerrada) return false;
             _pista.setTipo(TipoPista.CERRAR_CASILLA);
             return true;
         }
