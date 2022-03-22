@@ -1,12 +1,12 @@
-package es.ucm.arblemar.gamelogic.gameobjects;
+package es.ucm.arblemar.gamelogic.tablero;
 
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
 
-import static es.ucm.arblemar.gamelogic.gameobjects.TipoCelda.AZUL;
-import static es.ucm.arblemar.gamelogic.gameobjects.TipoCelda.GRIS;
-import static es.ucm.arblemar.gamelogic.gameobjects.TipoCelda.ROJO;
+import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.AZUL;
+import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.GRIS;
+import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.ROJO;
 
 /**
  * Clase que representa a todas las celdas del juego. Dependiendo de su
@@ -139,7 +139,8 @@ public class Celda {
     }
 
     /**
-     * Posiciona el texto dentro del circulo
+     * Posiciona el texto dentro del circulo en función del número,
+     * ya que no todos tienen el mismo tamaño
      */
     private void posicionaTexto() {
         if (_value == 1) {

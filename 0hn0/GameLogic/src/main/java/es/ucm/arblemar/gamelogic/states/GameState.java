@@ -15,10 +15,11 @@ import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
-import es.ucm.arblemar.gamelogic.gameobjects.TipoCelda;
-import es.ucm.arblemar.gamelogic.gameobjects.TipoPista;
-import es.ucm.arblemar.gamelogic.gameobjects.Celda;
-import es.ucm.arblemar.gamelogic.gameobjects.Pista;
+import es.ucm.arblemar.gamelogic.tablero.Tablero;
+import es.ucm.arblemar.gamelogic.tablero.TipoCelda;
+import es.ucm.arblemar.gamelogic.tablero.TipoPista;
+import es.ucm.arblemar.gamelogic.tablero.Celda;
+import es.ucm.arblemar.gamelogic.tablero.Pista;
 
 public class GameState implements State {
     GameState(Engine _engine, int t) {
@@ -36,13 +37,19 @@ public class GameState implements State {
             _sizeTab = (int) (_graphics.getLogWidth() * 0.85);
             _tabX = (int) (_graphics.getLogWidth() - _sizeTab) / 2;
             _tabY = (int) (_graphics.getLogHeight() - _sizeTab) / 2;
-            _celdas = new Celda[_tam][_tam];
             _celdaSize = (_sizeTab / _tam);
             _diam = _celdaSize * 0.9f;
             _tabFont = Assets.jose;
             _tabTamFont = (int) Math.round(_diam * 0.614);
 
-            testTab();
+            Celda[][] celdas;
+            if (_tam > 4) {
+                celdas = randomTab();
+            } else {
+                celdas = testTab();
+            }
+
+            _tablero = new Tablero(celdas);
 
             // BOTON VOLVER
             _sizeVolver = new int[2];
@@ -91,11 +98,11 @@ public class GameState implements State {
                         primerFor:
                         for (int i = 0; i < _tam; ++i) {
                             for (int j = 0; j < _tam; ++j) {
-                                if (procesaPista(i, j)) break primerFor;
+                                _pista = _tablero.procesaPista(i, j);
+                                if (_pista.getTipo() != TipoPista.NONE) break primerFor;
                             }
                         }
-                    }
-                    else {
+                    } else {
                         _pista.setTipo(TipoPista.NONE);
                     }
                 }
@@ -111,7 +118,7 @@ public class GameState implements State {
             _colorPorcent = 0X999999FF;
             _fontPorcent = Assets.jose;
             _tamFPorcent = 24;
-            _porcent = Integer.toString(0) + "%";
+            _porcent = 0;
 
             // TITULO
             _sizeTitulo = new int[2];
@@ -123,7 +130,7 @@ public class GameState implements State {
             _colorTitulo = 0X313131FF;
             _fontTitulo = Assets.jose;
             _tamFTitulo = 64;
-            _titulo = Integer.toString(_tam) + " x " + Integer.toString(_tam);
+            _titulo = _tam + " x " + _tam;
 
             // PISTAS
             _pista = new Pista();
@@ -164,30 +171,25 @@ public class GameState implements State {
 
         //PORCENTAJE
         g.setColor(_colorPorcent);
-        g.drawText(_porcent, _posPorcent[0], _posPorcent[1] + _sizePorcent[1], _fontPorcent, _tamFPorcent);
+        g.drawText(_porcent + "%", _posPorcent[0], _posPorcent[1] + _sizePorcent[1], _fontPorcent, _tamFPorcent);
 
         // TITULO O TEXTO DE PISTA
         if (_pista.getTipo() == TipoPista.NONE) {
             g.setColor(_colorTitulo);
             g.drawText(_titulo, _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
-        }
-        else {
+        } else {
             g.setColor(_colorPistaTxt);
             g.drawText(_pista.getTextoPista()[0], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[0]), _posPistaTxt[1], _fontPistaTxt, _tamFPistaTxt);
             g.drawText(_pista.getTextoPista()[1], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[1]), _posPistaTxt[2], _fontPistaTxt, _tamFPistaTxt);
 
             g.setColor(0X313131FF);
-            int difTam = (int)(_celdaSize * 0.06);
+            int difTam = (int) (_celdaSize * 0.06);
             g.fillCircle(_pista.getPos()[0] - difTam, _pista.getPos()[1] - difTam, _diam + (difTam * 2));
             g.setColor(0XFFFFFFFF);
         }
 
         // CELDAS
-        for (int i = 0; i < _tam; i++) {
-            for (int j = 0; j < _tam; j++) {
-                _celdas[i][j].render(g);
-            }
-        }
+        _tablero.render(g);
     }
 
     @Override
@@ -204,233 +206,43 @@ public class GameState implements State {
                         currEvent.getY() < _posVolver[1] + _sizeVolver[1]) {
                     _goBack.doSomething();
                     break;
-                } else if (currEvent.getX() > _posReset[0] &&
+                }
+                // BOTON RESET MOVIMIENTO
+                else if (currEvent.getX() > _posReset[0] &&
                         currEvent.getX() < _posReset[0] + _sizeReset[0] &&
                         currEvent.getY() > _posReset[1] &&
                         currEvent.getY() < _posReset[1] + _sizeReset[1]) {
                     _reset.doSomething();
                     break;
-                } else if (currEvent.getX() > _posPista[0] &&
+                }
+                // BOTÓN PISTA
+                else if (currEvent.getX() > _posPista[0] &&
                         currEvent.getX() < _posPista[0] + _sizePista[0] &&
                         currEvent.getY() > _posPista[1] &&
                         currEvent.getY() < _posPista[1] + _sizePista[1]) {
                     _verPista.doSomething();
                     break;
                 } else {
-                    findingCelda:
-                    for(int n = 0; n < _tam; n++) {
-                        for(int m = 0; m < _tam; m++) {
-                            if (_celdas[n][m].isClicked(currEvent.getX(), currEvent.getY())) {
-                                _celdas[n][m].runCallBack();
-                                break findingCelda;
-                            }
-                        }
-                    }
+                    _tablero.handleInput(currEvent.getX(), currEvent.getY());
                     break;
                 }
             }
         }
     }
 
-    public boolean procesaPista(int i, int j) {
-        if (!_celdas[i][j].isLock() || _celdas[i][j].getTipoCelda() != TipoCelda.AZUL) return false;
-
-        int val = 0;
-        boolean yaCerrada = true;  //Para medir si la celda completa ya esta cerrada
-        //Abajo
-        for (int x = i + 1; x < _tam; ++x) {
-            if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
-            else if (_celdas[x][j].getTipoCelda() == TipoCelda.GRIS) {
-                yaCerrada = false;
-                break;
-            }
-            else break;
-            if (val > _celdas[i][j].getValue()) {
-                _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                _pista.setPos(_celdas[i][j].getPos());
-                return true;
-            }
-        }
-        //Arriba
-        for (int x = i - 1; x >= 0; --x) {
-            if (_celdas[x][j].getTipoCelda() == TipoCelda.AZUL) val++;
-            else if (_celdas[x][j].getTipoCelda() == TipoCelda.GRIS) {
-                yaCerrada = false;
-                break;
-            }
-            else break;
-            if (val > _celdas[i][j].getValue()) {
-                _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                _pista.setPos(_celdas[i][j].getPos());
-                return true;
-            }
-        }
-        //Derecha
-        for (int y = j + 1; y < _tam; ++y) {
-            if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
-            else if (_celdas[i][y].getTipoCelda() == TipoCelda.GRIS) {
-                yaCerrada = false;
-                break;
-            }
-            else break;
-            if (val > _celdas[i][j].getValue()) {
-                _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                _pista.setPos(_celdas[i][j].getPos());
-                return true;
-            }
-        }
-        //Izquierda
-        for (int y = j - 1; y >= 0; --y) {
-            if (_celdas[i][y].getTipoCelda() == TipoCelda.AZUL) val++;
-            else if (_celdas[i][y].getTipoCelda() == TipoCelda.GRIS) {
-                yaCerrada = false;
-                break;
-            }
-            else break;
-            if (val > _celdas[i][j].getValue()) {
-                _pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                _pista.setPos(_celdas[i][j].getPos());
-                return true;
-            }
-        }
-
-        if (val == _celdas[i][j].getValue()) {      //Primera pista
-            if (yaCerrada) return false;
-            _pista.setTipo(TipoPista.CERRAR_CASILLA);
-            _pista.setPos(_celdas[i][j].getPos());
-            return true;
-        }
-        else {      //val < getValue    ->    Puede ser segunda pista
-            boolean gris = false;
-            int nuevoVal = val;
-            //Abajo
-            for (int x = i + 1; x < _tam; ++x) {
-                if (!gris && _celdas[x][j].getTipoCelda() == TipoCelda.GRIS) {
-                    gris = true;
-                    nuevoVal++;
-                }
-                else if (gris && _celdas[x][j].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
-                else if (!gris && _celdas[x][j].getTipoCelda() == TipoCelda.AZUL) continue;
-                else break;
-                if (nuevoVal > _celdas[i][j].getValue()) {
-                    _pista.setTipo(TipoPista.DEBE_SER_PARED);
-                    _pista.setPos(_celdas[i][j].getPos());
-                    return true;
-                }
-            }
-            gris = false;
-            nuevoVal = val;
-
-            //Arriba
-            for (int x = i - 1; x >= 0; --x) {
-                if (!gris && _celdas[x][j].getTipoCelda() == TipoCelda.GRIS) {
-                    gris = true;
-                    nuevoVal++;
-                }
-                else if (gris && _celdas[x][j].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
-                else if (!gris && _celdas[x][j].getTipoCelda() == TipoCelda.AZUL) continue;
-                else break;
-                if (nuevoVal > _celdas[i][j].getValue()) {
-                    _pista.setTipo(TipoPista.DEBE_SER_PARED);
-                    _pista.setPos(_celdas[i][j].getPos());
-                    return true;
-                }
-            }
-            gris = false;
-            nuevoVal = val;
-
-            //Derecha
-            for (int y = j + 1; y < _tam; ++y) {
-                if (!gris && _celdas[i][y].getTipoCelda() == TipoCelda.GRIS) {
-                    gris = true;
-                    nuevoVal++;
-                }
-                else if (gris && _celdas[i][y].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
-                else if (!gris && _celdas[i][y].getTipoCelda() == TipoCelda.AZUL) continue;
-                else break;
-                if (nuevoVal > _celdas[i][j].getValue()) {
-                    _pista.setTipo(TipoPista.DEBE_SER_PARED);
-                    _pista.setPos(_celdas[i][j].getPos());
-                    return true;
-                }
-            }
-            gris = false;
-            nuevoVal = val;
-
-            //Izquierda
-            for (int y = j - 1; y >= 0; --y) {
-                if (!gris && _celdas[i][y].getTipoCelda() == TipoCelda.GRIS) {
-                    gris = true;
-                    nuevoVal++;
-                }
-                else if (gris && _celdas[i][y].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
-                else if (!gris && _celdas[i][y].getTipoCelda() == TipoCelda.AZUL) continue;
-                else break;
-                if (nuevoVal > _celdas[i][j].getValue()) {
-                    _pista.setTipo(TipoPista.DEBE_SER_PARED);
-                    _pista.setPos(_celdas[i][j].getPos());
-                    return true;
-                }
-            }
-        }
-
-        //Si se sale es porque no es ni primera ni segunda pista    ->    puede ser tercera
-        int valLinea[] = new int[4];
-        boolean dirCompl = false;
-
-        //Abajo
-        for (int x = i + 1; x < _tam; ++x) {
-            if (_celdas[x][j].getTipoCelda() != TipoCelda.ROJO &&
-                    valLinea[0] < _celdas[i][j].getValue())
-                valLinea[0]++;
-            else break;
-        }
-        //Arriba
-        for (int x = i - 1; x >= 0; --x) {
-            if (_celdas[x][j].getTipoCelda() != TipoCelda.ROJO &&
-                    valLinea[1] < _celdas[i][j].getValue())
-                valLinea[1]++;
-            else break;
-        }
-        //Derecha
-        for (int y = j + 1; y < _tam; ++y) {
-            if (_celdas[i][y].getTipoCelda() != TipoCelda.ROJO &&
-                    valLinea[2] < _celdas[i][j].getValue())
-                valLinea[2]++;
-            else break;
-        }
-        //Izquierda
-        for (int y = j - 1; y >= 0; --y) {
-            if (_celdas[i][y].getTipoCelda() != TipoCelda.ROJO &&
-                    valLinea[3] < _celdas[i][j].getValue())
-                valLinea[3]++;
-            else break;
-        }
-
-        //Para que sea pista tres, el valor maximo entre tres de las direcciones debe ser menor
-        //estricto que el valor buscado por la celda
-        if (valLinea[0] + valLinea[1] + valLinea[2] < _celdas[i][j].getValue() ||
-                valLinea[0] + valLinea[1] + valLinea[3] < _celdas[i][j].getValue() ||
-                valLinea[0] + valLinea[2] + valLinea[3] < _celdas[i][j].getValue() ||
-                valLinea[1] + valLinea[2] + valLinea[3] < _celdas[i][j].getValue()) {
-            _pista.setTipo(TipoPista.DEBE_SER_AZUL);
-            _pista.setPos(_celdas[i][j].getPos());
-            return true;
-        }
-        return false;
-    }
-
 //------------------------------------------------------------------------------------------------//
 
     /**
-     * Tablero de pruebas
+     * Tablero random de pruebas
      */
-    private void testTab() {
+    private Celda[][] randomTab() {
         Random rn = new Random();
-        Graphics g = _engine.getGraphics();
+        Celda[][] celdas;
+        celdas = new Celda[_tam][_tam];
 
         //Tablero
-        int pos[] = new int[2];
+        int[] pos;
+        pos = new int[2];
         for (int i = 0; i < _tam; i++) {
             pos[1] = (int) (_tabY + (_celdaSize * i) + (_celdaSize * 0.1));
             for (int j = 0; j < _tam; j++) {
@@ -442,50 +254,39 @@ public class GameState implements State {
                 ind[1] = j;
                 switch (choice) {
                     case 0: {
-                        _i = i; _j = j;
-                        _celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
+                        celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
                                 0, pos, _diam, ind);
-                        _celdas[i][j].setCellCallback(new CellCallback() {
+                        celdas[i][j].setCellCallback(new CellCallback() {
                             @Override
                             public void doSomething(int x, int y) {
-                                //// INICIALIZACIÓN DEL TIMER
-                                //timer = new Timer();
-                                //timerTask = new TimerTask() {
-                                //    @Override
-                                //    public void run() {
-                                //        win = true;
-                                //    }
-                                //};
-                                //System.out.println("Timer empezado...");
-                                //timer.schedule(timerTask, 2000);
-
-                                _celdas[x][y].setColor();
+                                if (_pista.getTipo() != TipoPista.NONE) {
+                                    _pista.setTipo(TipoPista.NONE);
+                                }
+                                _tablero.changeCellColor(x, y);
                             }
-                        }, _i, _j);
+                        }, i, j);
                         break;
                     }
                     case 1: {
-                        _celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont,
+                        celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont,
                                 rn.nextInt(9) + 1, pos, _diam, ind);
-//                        _celdas[i][j].setCallback(new ButtonCallback() {
-//                            @Override
-//                            public void doSomething() {
-//                                System.out.println("Timer cancelado...");
-//                                timerTask.cancel();
-//                            }
-//                        });
+                        celdas[i][j].setCallback(new ButtonCallback() {
+                            @Override
+                            public void doSomething() {
+                                System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                            }
+                        });
                         break;
                     }
                     case 2: {
-                        _celdas[i][j] = new Celda(TipoCelda.ROJO, _tabFont, _tabTamFont,
+                        celdas[i][j] = new Celda(TipoCelda.ROJO, _tabFont, _tabTamFont,
                                 0, pos, _diam, ind);
-//                        _celdas[i][j].setCallback(new ButtonCallback() {
-//                            @Override
-//                            public void doSomething() {
-//                                System.out.println("Timer reanudado...");
-//                                timerTask.run();
-//                            }
-//                        });
+                        celdas[i][j].setCallback(new ButtonCallback() {
+                            @Override
+                            public void doSomething() {
+                                System.out.println("Animación Roja grande-pequeño.\nAlternar candado Rojas");
+                            }
+                        });
                         break;
                     }
                     default:
@@ -493,95 +294,77 @@ public class GameState implements State {
                 }
             }
         }
+
+        return celdas;
     }
 
-//    private void gameWin() {
-//        win = true;
-//        objects.remove(textoSuperior);
-//        if (textoSupDos != null) {
-//            objects.remove(textoSupDos);
-//            textoSupDos = null;
-//        }
-//        objects.remove(backButton);
-//        objects.remove(restButton);
-//        objects.remove(pistabutton);
-//
-//        int width = (_graphics.getLogWidth() / 2) * 3, height = (_graphics.getLogWidth() / 7),
-//                posX = (_graphics.getLogWidth() / 3) - 15, posY = (_graphics.getLogHeight() / 12) - 10;
-//
-//        textoSuperior = new Texto(new Vector2(posX,posY), new Vector2(width, height), 0X313131FF ,Assets.jose,72,0);
-//        textoSuperior.setTexto("Super");
-//        objects.add(textoSuperior);
-//    }
+    /**
+     * Tablero de 4x4 del enunciado
+     */
+    private Celda[][] testTab() {
+        Celda[][] celdas;
+        celdas = new Celda[_tam][_tam];
 
-    //Escribe un texto en función de la pista elegida
-//    private void stringText(int id) {
-//        String text = "", text2 = "";
-//        int width = (_graphics.getLogWidth() / 2) * 3, height = (_graphics.getLogWidth() / 7),
-//                posX = (_graphics.getLogWidth() / 22), posY = (_graphics.getLogHeight() / 50),
-//                dist = height / 2;
-//
-//        switch (id) {
-//            case 0: {
-//                posX = (_graphics.getLogWidth() / 4);
-//                text = "Azul completa,";
-//                text2 = "se puede cerrar";
-//                break;
-//            }
-//            case 1: {
-//                posX = (_graphics.getLogWidth() / 6);
-//                text = "   Se puede poner";
-//                text2 = "una pared adyacente";
-//                break;
-//            }
-//            case 2: {
-//                posX = (_graphics.getLogWidth() / 4);
-//                text = "  Es necesario";
-//                text2 = "poner una azul";
-//                break;
-//            }
-//            case 3: {
-//                posX = (_graphics.getLogWidth() / 10);
-//                text = "Tiene más vecinas azules";
-//                text2 = "    de las que debería";
-//                break;
-//            }
-//            case 4: {
-//                text = "Necesita más vecinas azules";
-//                text2 = " y, en cambio, está cerrada";
-//                break;
-//            }
-//            case 5:
-//            case 6: {
-//                posX = (_graphics.getLogWidth() / 8);
-//                text = "No puede haber celdas";
-//                text2 = "   azules sin vecinas";
-//                break;
-//            }
-//            case 7: {
-//                text = "   Se deben poner azules";
-//                text2 = "en la única dirección abierta";
-//                break;
-//            }
-//            case 8: {
-//                posX = (_graphics.getLogWidth() / 11);
-//                text = "   Suma alcanzable de";
-//                text2 = "adyacentes igual al valor";
-//                break;
-//            }
-//            case 9: {
-//                text = "No puede alcanzar su valor";
-//                text2 = "con las adyacentes que tiene";
-//                break;
-//            }
-//        }
-//        //textoSuperior = new Texto(new Vector2(posX, posY), new Vector2(width, height), 0X313131FF, Assets.jose, 32, 0);
-//        //textoSuperior.setTexto(text);
-//        //objects.add(textoSuperior);
-//        //textoSupDos = new Texto(new Vector2(posX, posY + dist), new Vector2(width, height), 0X313131FF, Assets.jose, 32, 0);
-//        //textoSupDos.setTexto(text2);
-//        //objects.add(textoSupDos);
-//    }
+        //Tablero
+        int[] pos;
+        pos = new int[2];
+        for (int i = 0; i < _tam; i++) {
+            pos[1] = (int) (_tabY + (_celdaSize * i) + (_celdaSize * 0.1));
+            for (int j = 0; j < _tam; j++) {
+                pos[0] = (int) (_tabX + (_celdaSize * j) + (_celdaSize * 0.1));
+
+                int[] ind = new int[2];
+                ind[0] = i;
+                ind[1] = j;
+                if ((i == 0 && j == 1) || (i == 1 && j == 0) || (i == 1 && j == 1) || (i == 1 && j == 2) ||
+                        (i == 2 && j == 0) || (i == 2 && j == 3) || (i == 3 && j == 0) || (i == 3 && j == 1) ||
+                        (i == 3 && j == 3)) {
+                    celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
+                            0, pos, _diam, ind);
+                    celdas[i][j].setCellCallback(new CellCallback() {
+                        @Override
+                        public void doSomething(int x, int y) {
+                            if (_pista.getTipo() != TipoPista.NONE) {
+                                _pista.setTipo(TipoPista.NONE);
+                            }
+                            _tablero.changeCellColor(x, y);
+                        }
+                    }, i, j);
+                } else if (i == 2 && j == 2) {
+                    celdas[i][j] = new Celda(TipoCelda.ROJO, _tabFont, _tabTamFont,
+                            0, pos, _diam, ind);
+                    celdas[i][j].setCallback(new ButtonCallback() {
+                        @Override
+                        public void doSomething() {
+                            System.out.println("Animación Roja grande-pequeño.\nAlternar candado Rojas");
+                        }
+                    });
+                } else {
+                    if ((i == 0 && j == 0) || (i == 2 && j == 1)) {
+                        celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont, 1, pos, _diam, ind);
+                        celdas[i][j].setCallback(new ButtonCallback() {
+                            @Override
+                            public void doSomething() {
+                                System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                            }
+                        });
+                    } else {
+                        celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont, 2, pos, _diam, ind);
+                        celdas[i][j].setCallback(new ButtonCallback() {
+                            @Override
+                            public void doSomething() {
+                                System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        return celdas;
+    }
+
+//------------------------------------------------------------------------------------------------//
 
     // ATRIBUTOS DEL ESTADO
     Engine _engine;
@@ -613,7 +396,7 @@ public class GameState implements State {
     int[] _posPorcent;
     int _tamFPorcent;
     int _colorPorcent;
-    String _porcent;
+    int _porcent;
     Font _fontPorcent;
 
     // ATRIBUTOS TITULO
@@ -667,11 +450,11 @@ public class GameState implements State {
      */
     float _diam;
     /**
-     * Array que contiene las celdas
+     * Referencia al tablero del juego
      */
-    Celda[][] _celdas;
+    Tablero _tablero;
     /**
      * Posicion temporal en _celdas que tiene una celda gris
      */
-    int _i, _j;
+    //int _i, _j;
 }

@@ -1,4 +1,4 @@
-package es.ucm.arblemar.gamelogic.gameobjects;
+package es.ucm.arblemar.gamelogic.tablero;
 
 public enum TipoPista {
     /**
@@ -27,7 +27,12 @@ public enum TipoPista {
     /**
      * Un número tiene más casillas azules visibles de las que debería
      */
-    DEMASIADAS_AZULES;
+    DEMASIADAS_AZULES,
+    /**
+     * Un número tiene una cantidad insuficiente de casillas azules visibles y sin embargo
+     * ya está “cerrada” (no puede ampliarse más por culpa de paredes)
+     */
+    INSUFICIENTES_AZULES;
 
     TipoPista() {}
 }

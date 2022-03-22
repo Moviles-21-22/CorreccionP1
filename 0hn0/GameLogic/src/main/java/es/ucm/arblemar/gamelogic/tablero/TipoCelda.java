@@ -1,4 +1,4 @@
-package es.ucm.arblemar.gamelogic.gameobjects;
+package es.ucm.arblemar.gamelogic.tablero;
 
 public enum TipoCelda {
     GRIS(0),
