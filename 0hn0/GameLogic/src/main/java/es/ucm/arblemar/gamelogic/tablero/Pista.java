@@ -24,16 +24,24 @@ public class Pista {
                 break;
             case DEBE_SER_PARED:
                 _size[0] = (winWidthLog / 20) * 9;
-                _size[1] = (winWidthLog / 36) * 17;
+                _size[1] = (winWidthLog / 9) * 4;
                 break;
             case DEBE_SER_AZUL:
-                _size[0] = (winWidthLog / 10) * 4;
-                _size[1] = (winWidthLog / 10) * 4;
+                _size[0] = (winWidthLog / 5) * 2;
+                _size[1] = (winWidthLog / 5) * 2;
                 break;
             case DEMASIADAS_AZULES:
             case INSUFICIENTES_AZULES:
                 _size[0] = (winWidthLog / 9) * 2;
                 _size[1] = (winWidthLog / 10) * 3;
+                break;
+            case GRIS_ES_ROJA:
+                _size[0] = (winWidthLog / 16) * 3;
+                _size[1] = (winWidthLog / 8);
+                break;
+            case AZUL_ES_ROJA:
+                _size[0] = (winWidthLog / 12) * 4;
+                _size[1] = (winWidthLog / 11) * 4;
                 break;
         }
         return _size;
@@ -54,8 +62,8 @@ public class Pista {
                 _st[1] = "todas sus vecinas";
                 break;
             case DEBE_SER_PARED:
-                _st[0] = "Se debe poner una pared o";
-                _st[1] = "pasará el número de vecinas";
+                _st[0] = "Si se pone una azul en una";
+                _st[1] = "dirección se supera el valor";
                 break;
             case DEBE_SER_AZUL:
                 _st[0] = "Se debe poner celda azul";
@@ -67,15 +75,35 @@ public class Pista {
                 break;
             case INSUFICIENTES_AZULES:
                 _st[0] = "Este número no";
-                _st[1] = "puede ver demasiado";
+                _st[1] = "puede ver suficiente";
+                break;
+            case GRIS_ES_ROJA:
+                _st[0] = "Esta debería";
+                _st[1] = "ser fácil";
+                break;
+            case AZUL_ES_ROJA:
+                _st[0] = "Una celda azul debe";
+                _st[1] = "ver al menos otra azul";
                 break;
         }
         return _st;
     }
 
+    // ATRIBUTOS
+    /**
+     * Tipo de la pista que se genera
+     */
     private TipoPista _tipo;
-    //Para renderizar el círculo negro
+    /**
+     * Posición de la celda asociada a la pista
+     */
     private int[] _pos;
+    /**
+     * Tamaño del texto de la pista
+     */
     private final int[] _size;
+    /**
+     * Mensaje de la pista
+     */
     private final String[] _st;
 }

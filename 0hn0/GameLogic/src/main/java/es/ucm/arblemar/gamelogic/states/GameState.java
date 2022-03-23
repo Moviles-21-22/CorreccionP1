@@ -316,7 +316,7 @@ public class GameState implements State {
                 int[] ind = new int[2];
                 ind[0] = i;
                 ind[1] = j;
-                if ((i == 0 && j == 1) || (i == 1 && j == 0) || (i == 1 && j == 1) || (i == 1 && j == 2) ||
+                if ((i == 0 && j == 0) || (i == 0 && j == 1) || (i == 1 && j == 0) || (i == 1 && j == 1) || (i == 1 && j == 2) ||
                         (i == 2 && j == 0) || (i == 2 && j == 3) || (i == 3 && j == 0) || (i == 3 && j == 1) ||
                         (i == 3 && j == 3)) {
                     celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
@@ -340,7 +340,7 @@ public class GameState implements State {
                         }
                     });
                 } else {
-                    if ((i == 0 && j == 0) || (i == 2 && j == 1)) {
+                    if (/*(i == 0 && j == 0) ||*/ (i == 2 && j == 1)) {
                         celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont, 1, pos, _diam, ind);
                         celdas[i][j].setCallback(new ButtonCallback() {
                             @Override
