@@ -6,6 +6,8 @@ public enum TipoPista {
      */
     NONE,
 
+    //Pistas básicas
+
     /**
      * Si un número tiene ya visibles el número de celdas que dice, entonces se puede
      * “cerrar”, es decir, poner paredes en los extremos
@@ -24,6 +26,8 @@ public enum TipoPista {
      */
     DEBE_SER_AZUL,
 
+    //Pistas cuando el jugador se ha equivocado
+
     /**
      * Un número tiene más casillas azules visibles de las que debería
      */
@@ -34,6 +38,8 @@ public enum TipoPista {
      * ya está “cerrada” (no puede ampliarse más por culpa de paredes)
      */
     INSUFICIENTES_AZULES,
+
+    //Pistas sobre celdas sin número
 
     /**
      * Si una celda está vacía y cerrada y no ve ninguna celda azul, entonces es pared (todos
