@@ -92,16 +92,17 @@ public class Tablero {
     private void pistaCeldaAzul(int i, int j, Pista pista) {
         _numVisibles = 0;
         boolean yaCerrada;  //Para medir si la celda completa ya esta cerrada
-        //-----------------BÚSQUEDA-DEMASIADAS-AZULES-----------------------//
+        //-----------------DEMASIADAS-AZULES-----------------------//
         yaCerrada = demasiadasAzules(i, j, pista);
         if (pista.getTipo() != TipoPista.NONE) return;
 
         //-----------------INSUFICIENTES-AZULES-----------------------//
-        if (yaCerrada) {
+        if (yaCerrada) {    //Pueden estar las azules justas o faltar
             if (_numVisibles < _celdas[i][j].getValue()) {
                 pista.setTipo(TipoPista.INSUFICIENTES_AZULES);
+                pista.setPos(_celdas[i][j].getPos());
             }
-
+            //En caso de estar la celda completa y cerrada tb saldría
             return;
         }
 
@@ -111,13 +112,12 @@ public class Tablero {
             return;
         }
 
-        //-----------------PONER-PARED-----------------------//
+        //-----------------DEBE-SER-PARED-----------------------//
         ponerPared(i, j, pista);
         if (pista.getTipo() != TipoPista.NONE) return;
 
         //-----------------DEBE-SER-AZUL-------------------------//
         ponerAzul(i, j, pista);
-
     }
 
     /**
@@ -132,12 +132,13 @@ public class Tablero {
     }
 
     /**
-     * Procesa la pista sobre demasiadas azules. Es la 3 del enunciado
+     * Procesa la pista sobre demasiadas azules. Es la 4 del enunciado
      *
      * @param i:     Fila de la celda
      * @param j:     Columna de la celda
      * @param pista: variable de la pista que se va a modificar
-     * @return Devuelve true si la celda está cerrada, false en caso contrario
+     * @return Devuelve true si la celda está cerrada
+     *                  false en caso contrario o si ha sido pista
      */
     private boolean demasiadasAzules(int i, int j, Pista pista) {
         boolean yaCerrada = true;
@@ -154,8 +155,8 @@ public class Tablero {
             // Si se excede el valor de la celda, hay demasiadas azules
             if (_numVisibles > _celdas[i][j].getValue()) {
                 pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                yaCerrada = false;
-                break;
+                pista.setPos(_celdas[i][j].getPos());
+                return false;
             }
         }
         //-----------------ARRIBA----------------//
@@ -168,8 +169,8 @@ public class Tablero {
             // Si se excede el valor de la celda, hay demasiadas azules
             if (_numVisibles > _celdas[i][j].getValue()) {
                 pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                yaCerrada = false;
-                break;
+                pista.setPos(_celdas[i][j].getPos());
+                return false;
             }
         }
         //-----------------DERECHA----------------//
@@ -182,8 +183,8 @@ public class Tablero {
             // Si se excede el valor de la celda, hay demasiadas azules
             if (_numVisibles > _celdas[i][j].getValue()) {
                 pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                yaCerrada = false;
-                break;
+                pista.setPos(_celdas[i][j].getPos());
+                return false;
             }
         }
         //-----------------IZQUIERDA----------------//
@@ -196,11 +197,12 @@ public class Tablero {
             // Si se excede el valor de la celda, hay demasiadas azules
             if (_numVisibles > _celdas[i][j].getValue()) {
                 pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                yaCerrada = false;
-                break;
+                pista.setPos(_celdas[i][j].getPos());
+                return false;
             }
         }
 
+        //Si ha salido siempre por celdas rojas devolvera true
         return yaCerrada;
     }
 
@@ -215,6 +217,7 @@ public class Tablero {
     private void ponerPared(int i, int j, Pista pista) {
         boolean gris = false;
         int nuevoVal = _numVisibles;
+
         // i/n --> FILAS // j/m --> COLUMNAS
         //-----------------ABAJO----------------//
         for (int n = i + 1; n < _tam; ++n) {
@@ -292,6 +295,7 @@ public class Tablero {
      */
     private void ponerAzul(int i, int j, Pista pista) {
         int[] valLinea = new int[4];
+
         // i/n --> FILAS // j/m --> COLUMNAS
         //-----------------ABAJO----------------//
         for (int n = i + 1; n < _tam; ++n) {
