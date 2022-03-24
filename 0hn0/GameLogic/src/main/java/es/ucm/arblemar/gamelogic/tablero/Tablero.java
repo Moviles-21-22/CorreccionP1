@@ -346,43 +346,15 @@ public class Tablero {
      * @param pista: Variable de la pista que se va a modificar
      */
     private void celdaSola(int i, int j, Pista pista) {
-        // Si se detecta que puede conectarse con una celda con número, entonces no es esta pista
-        // i/n --> FILAS // j/m --> COLUMNAS
-        //-----------------ABAJO----------------//
-        for (int n = i + 1; n < _tam; ++n) {
-            if (_celdas[n][j].getTipoCelda() == TipoCelda.AZUL && _celdas[n][j].isLock())
-                return;
-            //Aunque haya cerrado la celda el jugador cuenta para la pista
-            else if (_celdas[n][j].getTipoCelda() == TipoCelda.ROJO)
-                break;
-        }
-        //-----------------ARRIBA----------------//
-        for (int n = i - 1; n >= 0; --n) {
-            if (_celdas[n][j].getTipoCelda() == TipoCelda.AZUL && _celdas[n][j].isLock())
-                return;
-            //Aunque haya cerrado la celda el jugador cuenta para la pista
-            else if (_celdas[n][j].getTipoCelda() == TipoCelda.ROJO)
-                break;
-        }
-        //-----------------DERECHA----------------//
-        for (int m = j + 1; m < _tam; ++m) {
-            if (_celdas[i][m].getTipoCelda() == TipoCelda.AZUL && _celdas[i][m].isLock())
-                return;
-            //Aunque haya cerrado la celda el jugador cuenta para la pista
-            else if (_celdas[i][m].getTipoCelda() == TipoCelda.ROJO)
-                break;
-        }
-        //-----------------IZQUIERDA----------------//
-        for (int m = j - 1; m >= 0; --m) {
-            if (_celdas[i][m].getTipoCelda() == TipoCelda.AZUL && _celdas[i][m].isLock())
-                return;
-            //Aunque haya cerrado la celda el jugador cuenta para la pista
-            else if (_celdas[i][m].getTipoCelda() == TipoCelda.ROJO)
-                break;
+        // Si se detecta que no está cerrada, entonces no es esta pista
+        if ((i + 1 < _tam && _celdas[i + 1][j].getTipoCelda() != TipoCelda.ROJO)        // ABAJO
+                || (i - 1 >= 0 && _celdas[i - 1][j].getTipoCelda() != TipoCelda.ROJO)   // ARRIBA
+                || (j + 1 < _tam && _celdas[i][j + 1].getTipoCelda() != TipoCelda.ROJO) // DERECHA
+                || (j - 1 >= 0 && _celdas[i][j - 1].getTipoCelda() != TipoCelda.ROJO))  // IZQUIERDA
+        {
+            return;
         }
 
-        //Si llegamos hasta aquí es porque la celda/celdas no tienen posibilidad de conectar
-        //con una celda azul con número, luego la celda/celdas deberán estar en rojo
         TipoPista tipo = _celdas[i][j].getTipoCelda() == TipoCelda.GRIS ?
                 TipoPista.GRIS_ES_ROJA : TipoPista.AZUL_ES_ROJA;
         pista.setTipo(tipo);
