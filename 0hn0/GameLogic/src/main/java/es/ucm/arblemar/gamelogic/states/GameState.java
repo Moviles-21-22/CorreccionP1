@@ -157,7 +157,7 @@ public class GameState implements State {
             win = false;
             SelectMenuState menu = new SelectMenuState(_engine);
             _engine.reqNewState(menu);
-        }
+        } else _tablero.update(deltaTime);
     }
 
     @Override
@@ -270,23 +270,25 @@ public class GameState implements State {
                     case 1: {
                         celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont,
                                 rn.nextInt(9) + 1, pos, _diam, ind);
-                        celdas[i][j].setCallback(new ButtonCallback() {
+                        celdas[i][j].setCellCallback(new CellCallback() {
                             @Override
-                            public void doSomething() {
+                            public void doSomething(int x, int y) {
                                 System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                                _tablero.celdaBloqueada(x, y);
                             }
-                        });
+                        }, i, j);
                         break;
                     }
                     case 2: {
                         celdas[i][j] = new Celda(TipoCelda.ROJO, _tabFont, _tabTamFont,
                                 0, pos, _diam, ind);
-                        celdas[i][j].setCallback(new ButtonCallback() {
+                        celdas[i][j].setCellCallback(new CellCallback() {
                             @Override
-                            public void doSomething() {
+                            public void doSomething(int x, int y) {
                                 System.out.println("Animación Roja grande-pequeño.\nAlternar candado Rojas");
+                                _tablero.celdaBloqueada(x, y);
                             }
-                        });
+                        }, i, j);
                         break;
                     }
                     default:
@@ -333,29 +335,32 @@ public class GameState implements State {
                 } else if (i == 2 && j == 2) {
                     celdas[i][j] = new Celda(TipoCelda.ROJO, _tabFont, _tabTamFont,
                             0, pos, _diam, ind);
-                    celdas[i][j].setCallback(new ButtonCallback() {
+                    celdas[i][j].setCellCallback(new CellCallback() {
                         @Override
-                        public void doSomething() {
+                        public void doSomething(int x, int y) {
                             System.out.println("Animación Roja grande-pequeño.\nAlternar candado Rojas");
+                            _tablero.celdaBloqueada(x, y);
                         }
-                    });
+                    }, i, j);
                 } else {
                     if (/*(i == 0 && j == 0) ||*/ (i == 2 && j == 1)) {
                         celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont, 1, pos, _diam, ind);
-                        celdas[i][j].setCallback(new ButtonCallback() {
+                        celdas[i][j].setCellCallback(new CellCallback() {
                             @Override
-                            public void doSomething() {
+                            public void doSomething(int x, int y) {
                                 System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                                _tablero.celdaBloqueada(x, y);
                             }
-                        });
+                        }, i, j);
                     } else {
                         celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont, 2, pos, _diam, ind);
-                        celdas[i][j].setCallback(new ButtonCallback() {
+                        celdas[i][j].setCellCallback(new CellCallback() {
                             @Override
-                            public void doSomething() {
+                            public void doSomething(int x, int y) {
                                 System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                                _tablero.celdaBloqueada(x, y);
                             }
-                        });
+                        }, i, j);
                     }
                 }
             }

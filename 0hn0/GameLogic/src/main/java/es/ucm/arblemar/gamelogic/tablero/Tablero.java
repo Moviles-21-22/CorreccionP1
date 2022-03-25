@@ -23,6 +23,17 @@ public class Tablero {
 //---------------------------------------------------------------------------------------//
 
     /**
+     * Actualiza cada una de las celdas
+     */
+    public void update(double deltaTime) {
+        for (int i = 0; i < _tam; i++) {
+            for (int j = 0; j < _tam; j++) {
+                _celdas[i][j].update(deltaTime);
+            }
+        }
+    }
+
+    /**
      * Renderiza cada una de las celdas
      */
     public void render(Graphics g) {
@@ -58,6 +69,14 @@ public class Tablero {
         _celdas[i][j].setColor();
     }
 
+    /**
+     * Hace vibrar a la celda pulsada y muestra/oculta los candados
+     * en las celdas bloqueadas rojas
+     * @param i: Fila de la celda
+     * @param j: Columna de la celda
+     */
+    public void celdaBloqueada(int i, int j) { _celdas[i][j].activeAnim(); }
+
 //-----------------------------------BÚSQUEDA-PISTAS----------------------------------------------//
 
     /**
@@ -75,9 +94,7 @@ public class Tablero {
             pistaCeldaAzul(i, j, pista);
         } else if (!_celdas[i][j].isLock() && (_celdas[i][j].getTipoCelda() == TipoCelda.GRIS ||
                 _celdas[i][j].getTipoCelda() == TipoCelda.AZUL)) {
-            //TODO Si no hay más pistas sobre celdas grises, eliminar este método y sustituirlo
-            //por el otro que hay dentro "celdaSola(...)"
-            pistaCeldaGris(i, j, pista);
+            celdaSola(i, j, pista);
         }
 
         return pista;
@@ -118,17 +135,6 @@ public class Tablero {
 
         //-----------------DEBE-SER-AZUL-------------------------//
         ponerAzul(i, j, pista);
-    }
-
-    /**
-     * Procesa las pistas que estén asociadas a una celda cambiable
-     *
-     * @param i:     Fila de la celda
-     * @param j:     Columna de la celda
-     * @param pista: Variable de la pista que se va a modificar
-     */
-    private void pistaCeldaGris(int i, int j, Pista pista) {
-        celdaSola(i, j, pista);
     }
 
     /**

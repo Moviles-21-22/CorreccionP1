@@ -21,12 +21,23 @@ public class Celda {
         _font = f;
         _tamF = tamFont;
         _value = val;
+        _actAnim = false;
+        _lastFrame = 0;
+        _currFrame = 0;
+        _nextFrame = 1;
         _pos = new int[2];
         _pos[0] = pos[0];
         _pos[1] = pos[1];
+        _iniPos = new int[2];
+        _iniPos[0] = pos[0];
+        _iniPos[1] = pos[1];
         _i = ind[0];
         _j = ind[1];
         _diametro = diam;
+        _diametroMin = _diametro;
+        _diametroMax = (float)(_diametro * 1.1);
+        _dirAnim = (int)(_diametroMax / diam);
+        _numAnims = 0;
         switch (_tipoCelda) {
             case GRIS: {
                 _color = 0XEEEEEEFF;
@@ -48,13 +59,36 @@ public class Celda {
         posicionaTexto();
     }
 
-    public void render(es.ucm.arblemar.engine.Graphics g) {
+    public void update(double deltaTime) {
         //Poner animación si la tiene
-        //if (anSt == 1) {
-        //    g.setColor(color);
-        //    g.fillCircle(new Vector2(_pos._x - 5, _pos._y - 5), (int)_diametro + 10);
-        //}
+        if (_actAnim) {
+            _currFrame += deltaTime * _diametroMin;
+            if (_currFrame - _lastFrame >= _nextFrame) {
+                _diametro += (_dirAnim * 2);
+                _pos[0] -= _dirAnim;
+                _pos[1] -= _dirAnim;
+                if (_diametro >= _diametroMax || _diametro <= _diametroMin) {
+                    _dirAnim *= -1;
+                    _numAnims++;
 
+                    //Terminamos la animacion
+                    if (_numAnims == 6) {
+                        _actAnim = false;
+                        _lastFrame = 0;
+                        _currFrame = 0;
+                        _dirAnim = 1;
+                        _numAnims = 0;
+                        _diametro = _diametroMin;
+                        _pos[0] = _iniPos[0];
+                        _pos[1] = _iniPos[1];
+                    }
+                }
+                _lastFrame = _currFrame;
+            }
+        }
+    }
+
+    public void render(es.ucm.arblemar.engine.Graphics g) {
         g.setColor(_color);
         g.fillCircle(_pos[0], _pos[1], _diametro);
         g.setColor(0XFFFFFFFF);
@@ -139,6 +173,11 @@ public class Celda {
     }
 
     /**
+     * Activa la animación de celda bloqueada
+     */
+    public void activeAnim() { _actAnim = true; }
+
+    /**
      * Posiciona el texto dentro del circulo en función del número,
      * ya que no todos tienen el mismo tamaño
      */
@@ -169,12 +208,22 @@ public class Celda {
     private int _value;
     // Posición donde se va a renderizar la celda
     private int _pos[];
+    private int _iniPos[];
     //  Index dentro del tablero
     private int _i, _j;
     // Diametro del circulo
     private float _diametro;
+
+    private boolean _actAnim;
+    private float _diametroMin;
+    private float _diametroMax;
+    private int _dirAnim;
     // Color inicial del circulo
     private int _color;
+    private double _lastFrame;
+    private double _currFrame;
+    private double _nextFrame;
+    private int _numAnims;
     // Determina si la celda escribe texto
     private boolean _drawText = false;
     // Posicion X del texto
