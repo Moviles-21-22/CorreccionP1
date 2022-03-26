@@ -75,7 +75,16 @@ public class Tablero {
      * @param i: Fila de la celda
      * @param j: Columna de la celda
      */
-    public void celdaBloqueada(int i, int j) { _celdas[i][j].activeAnim(); }
+    public void celdaBloqueada(int i, int j) {
+        _celdas[i][j].activeAnim();
+
+        //Para activar o desactivar los candados
+        for (int x = 0; x < _tam; x++) {
+            for (int y = 0; y < _tam; y++) {
+                _celdas[x][y].alternaCandado();
+            }
+        }
+    }
 
 //-----------------------------------BÚSQUEDA-PISTAS----------------------------------------------//
 

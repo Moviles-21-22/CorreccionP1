@@ -1,6 +1,7 @@
 package es.ucm.arblemar.gamelogic.tablero;
 
 import es.ucm.arblemar.engine.Font;
+import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
 
@@ -38,6 +39,10 @@ public class Celda {
         _diametroMax = (float)(_diametro * 1.1);
         _dirAnim = (int)(_diametroMax / diam);
         _numAnims = 0;
+        _candado = false;
+        _posCand = new int[2];
+        _posCand[0] = (int) (_pos[0] + (_diametro / 24) * 5);
+        _posCand[1] = (int) (_pos[1] + (_diametro / 5));
         switch (_tipoCelda) {
             case GRIS: {
                 _color = 0XEEEEEEFF;
@@ -92,6 +97,11 @@ public class Celda {
         g.setColor(_color);
         g.fillCircle(_pos[0], _pos[1], _diametro);
         g.setColor(0XFFFFFFFF);
+
+        if (_candado) {
+            g.drawImage(Assets.lock, _posCand[0], _posCand[1], _tamF, _tamF);
+            return;
+        }
 
         if (!_drawText) return;
 
@@ -178,6 +188,15 @@ public class Celda {
     public void activeAnim() { _actAnim = true; }
 
     /**
+     * Alterna entre poner o no el candado
+     * Solo lo cambia para las celdas rojas
+     */
+    public void alternaCandado() {
+        if (_tipoCelda == ROJO && _lock)
+            _candado = !_candado;
+    }
+
+    /**
      * Posiciona el texto dentro del circulo en función del número,
      * ya que no todos tienen el mismo tamaño
      */
@@ -213,17 +232,22 @@ public class Celda {
     private int _i, _j;
     // Diametro del circulo
     private float _diametro;
-
-    private boolean _actAnim;
     private float _diametroMin;
     private float _diametroMax;
+    // Para la animación de bloqueo
+    private boolean _actAnim;
     private int _dirAnim;
-    // Color inicial del circulo
-    private int _color;
+    private int _numAnims;
+    // Frames de la animación
     private double _lastFrame;
     private double _currFrame;
     private double _nextFrame;
-    private int _numAnims;
+    // Determina si hay o no que enseñar candados
+    private boolean _candado;
+    // Posicion de los candados
+    private int _posCand[];
+    // Color inicial del circulo
+    private int _color;
     // Determina si la celda escribe texto
     private boolean _drawText = false;
     // Posicion X del texto
