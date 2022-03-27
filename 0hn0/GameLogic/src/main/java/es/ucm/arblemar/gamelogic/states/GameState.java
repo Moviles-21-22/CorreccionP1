@@ -41,6 +41,7 @@ public class GameState implements State {
             _diam = _celdaSize * 0.9f;
             _tabFont = Assets.jose;
             _tabTamFont = (int) Math.round(_diam * 0.614);
+            _totalGrises = 0;
 
             Celda[][] celdas;
             if (_tam > 4) {
@@ -48,8 +49,8 @@ public class GameState implements State {
             } else {
                 celdas = testTab();
             }
-
             _tablero = new Tablero(celdas);
+            _tablero.setGrises(_totalGrises);
 
             // BOTON VOLVER
             _sizeVolver = new int[2];
@@ -157,7 +158,10 @@ public class GameState implements State {
             win = false;
             SelectMenuState menu = new SelectMenuState(_engine);
             _engine.reqNewState(menu);
-        } else _tablero.update(deltaTime);
+        } else {
+            _tablero.update(deltaTime);
+            _porcent = 100 - ((_tablero.getGrises() * 100) / _totalGrises);
+        }
     }
 
     @Override
@@ -254,6 +258,7 @@ public class GameState implements State {
                 ind[1] = j;
                 switch (choice) {
                     case 0: {
+                        _totalGrises++;
                         celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
                                 0, pos, _diam, ind);
                         celdas[i][j].setCellCallback(new CellCallback() {
@@ -296,7 +301,6 @@ public class GameState implements State {
                 }
             }
         }
-
         return celdas;
     }
 
@@ -321,6 +325,7 @@ public class GameState implements State {
                 if ((i == 0 && j == 0) || (i == 0 && j == 1) || (i == 1 && j == 0) || (i == 1 && j == 1) || (i == 1 && j == 2) ||
                         (i == 2 && j == 0) || (i == 2 && j == 3) || (i == 3 && j == 0) || (i == 3 && j == 1) ||
                         (i == 3 && j == 3)) {
+                    _totalGrises++;
                     celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
                             0, pos, _diam, ind);
                     celdas[i][j].setCellCallback(new CellCallback() {
@@ -365,7 +370,6 @@ public class GameState implements State {
                 }
             }
         }
-
         return celdas;
     }
 
@@ -455,11 +459,11 @@ public class GameState implements State {
      */
     float _diam;
     /**
+     * Total de grises del tablero al empezar
+     */
+    int _totalGrises;
+    /**
      * Referencia al tablero del juego
      */
     Tablero _tablero;
-    /**
-     * Posicion temporal en _celdas que tiene una celda gris
-     */
-    //int _i, _j;
 }

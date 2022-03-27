@@ -60,13 +60,32 @@ public class Tablero {
     }
 
     /**
+     * Guarda el numero de grises con las que comienza el tablero
+     */
+    public void setGrises(int g) { _celdasGrises = g; }
+
+    /**
+     * Devuelve el numero de grises que tiene actualmente el tablero
+     */
+    public int getGrises() { return _celdasGrises; }
+
+    /**
      * Cambia el color de la celda correspondiente
+     * Actualiza el contador de grises que tenemos en el tablero
      *
      * @param i: Fila de la celda
      * @param j: Columna de la celda
      */
     public void changeCellColor(int i, int j) {
         _celdas[i][j].setColor();
+
+        //Si pasamos de gris a azul tenemos una gris menos
+        if (_celdas[i][j].getTipoCelda() == TipoCelda.AZUL)
+            _celdasGrises--;
+
+        //Si pasamos de roja a gris tenemos gris de nuevo
+        if (_celdas[i][j].getTipoCelda() == TipoCelda.GRIS)
+            _celdasGrises++;
     }
 
     /**
@@ -388,4 +407,5 @@ public class Tablero {
      * visibles de una celda
      */
     int _numVisibles = 0;
+    int _celdasGrises = 0;
 }
