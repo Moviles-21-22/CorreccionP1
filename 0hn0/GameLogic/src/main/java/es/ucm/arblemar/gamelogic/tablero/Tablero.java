@@ -1,25 +1,51 @@
 package es.ucm.arblemar.gamelogic.tablero;
 
+import java.util.Random;
+
+import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.engine.Graphics;
+import es.ucm.arblemar.gamelogic.CellCallback;
+import es.ucm.arblemar.gamelogic.states.GameState;
 
 public class Tablero {
+
     /**
-     * Constructora del tablero mediante un tablero externo
-     *
-     * @param c: tablero
+     * Constructora del tablero para asignar atributos
+     * @param tam: Dimensiones del tablero 4x4, 5x5...
+     * @param posTabX: Posición X del tablero en pantalla
+     * @param posTabY: Posición Y del tablero en pantalla
+     * @param celdaSize: Tamaño de cada celda en pantalla
+     * @param celdaDiam: Diámetro del círculo de cada celda en pantalla
+     * @param tabTamFont: Tamaño de la fuente de las celdas
+     * @param celdaFont: Fuente de las celdas
+     * @param gm: Referencia al GameState
      */
-    public Tablero(Celda[][] c) {
-        _celdas = c;
-        _tam = _celdas.length;
+    public Tablero(int tam, int posTabX, int posTabY, float celdaSize, float celdaDiam,
+                   int tabTamFont, Font celdaFont, GameState gm) {
+        _tam = tam;
+        _tabPos = new int[2];
+        _tabPos[0] = posTabX;
+        _tabPos[1] = posTabY;
+        _celdaSize = celdaSize;
+        _celdaDiam = celdaDiam;
+        _celdaTamFont = tabTamFont;
+        _celdaFont = celdaFont;
+        _gm = gm;
     }
 
     /**
-     * Constructora por defecto
+     * Inicializa los tableros de pruebas
+     * @return Devuelve el número de grises generados
      */
-    public Tablero() {
+    public int initTest(){
+        if (_tam > 4) {
+            randomTab();
+        } else {
+            testTab();
+        }
 
+        return _celdasGrises;
     }
-
 //---------------------------------------------------------------------------------------//
 
     /**
@@ -60,14 +86,46 @@ public class Tablero {
     }
 
     /**
-     * Guarda el numero de grises con las que comienza el tablero
-     */
-    public void setGrises(int g) { _celdasGrises = g; }
-
-    /**
      * Devuelve el numero de grises que tiene actualmente el tablero
      */
     public int getGrises() { return _celdasGrises; }
+
+    /**
+     * Muestra el valor de todas las celdas azules
+     */
+    public void showAllValues(){
+        for (int i = 0; i < _tam; i++) {
+            for (int j = 0; j < _tam; j++) {
+                if(!_celdas[i][j].isLock() && _celdas[i][j].getTipoCelda() == TipoCelda.AZUL){
+                    _numVisibles = 0;
+                    //-----------------ABAJO----------------//
+                    for (int n = i + 1; n < _tam; ++n) {
+                        if(_celdas[n][j].getTipoCelda() == TipoCelda.ROJO) break;
+                        _numVisibles++;
+                    }
+                    //-----------------ARRIBA----------------//
+                    for (int n = i - 1; n >= 0; --n) {
+                        if(_celdas[n][j].getTipoCelda() == TipoCelda.ROJO) break;
+                        _numVisibles++;
+                    }
+                    //-----------------DERECHA----------------//
+                    for (int m = j + 1; m < _tam; ++m) {
+                        if(_celdas[i][m].getTipoCelda() == TipoCelda.ROJO) break;
+                        _numVisibles++;
+                    }
+                    //-----------------IZQUIERDA----------------//
+                    for (int m = j - 1; m >= 0; --m) {
+                        if(_celdas[i][m].getTipoCelda() == TipoCelda.ROJO) break;
+                        _numVisibles++;
+                    }
+
+                    _celdas[i][j].setLock(true);
+                    _celdas[i][j].setValue(_numVisibles);
+                    _celdas[i][j].showText();
+                }
+            }
+        }
+    }
 
     /**
      * Cambia el color de la celda correspondiente
@@ -76,8 +134,8 @@ public class Tablero {
      * @param i: Fila de la celda
      * @param j: Columna de la celda
      */
-    public void changeCellColor(int i, int j) {
-        _celdas[i][j].setColor();
+    private void changeCellColor(int i, int j) {
+        _celdas[i][j].changeColor();
 
         //Si pasamos de gris a azul tenemos una gris menos
         if (_celdas[i][j].getTipoCelda() == TipoCelda.AZUL)
@@ -86,6 +144,8 @@ public class Tablero {
         //Si pasamos de roja a gris tenemos gris de nuevo
         if (_celdas[i][j].getTipoCelda() == TipoCelda.GRIS)
             _celdasGrises++;
+
+        _gm.stopTimer();
     }
 
     /**
@@ -94,7 +154,7 @@ public class Tablero {
      * @param i: Fila de la celda
      * @param j: Columna de la celda
      */
-    public void celdaBloqueada(int i, int j) {
+    private void celdaBloqueada(int i, int j) {
         _celdas[i][j].activeAnim();
 
         //Para activar o desactivar los candados
@@ -394,18 +454,196 @@ public class Tablero {
         pista.setTipo(tipo);
         pista.setPos(_celdas[i][j].getPos());
     }
-//---------------------------------------------------------------------------------------//
+
+//-----------------------------------GENERACIÓN-TABLERO-------------------------------------------//
+    /**
+     * Tablero random de pruebas
+     */
+    private void randomTab() {
+        Random rn = new Random();
+        _celdas = new Celda[_tam][_tam];
+
+        //Tablero
+        int[] pos;
+        pos = new int[2];
+        for (int i = 0; i < _tam; i++) {
+            pos[1] = (int) (_tabPos[1] + (_celdaSize * i) + (_celdaSize * 0.1));
+            for (int j = 0; j < _tam; j++) {
+                pos[0] = (int) (_tabPos[0] + (_celdaSize * j) + (_celdaSize * 0.1));
+
+                int choice = rn.nextInt(3);
+                int[] ind = new int[2];
+                ind[0] = i;
+                ind[1] = j;
+                switch (choice) {
+                    case 0: {
+                        _celdasGrises++;
+                        _celdas[i][j] = new Celda(TipoCelda.GRIS, _celdaFont, _celdaTamFont,
+                                0, pos, _celdaDiam, ind);
+                        _celdas[i][j].setCellCallback(new CellCallback() {
+                            @Override
+                            public void doSomething(int x, int y) {
+                                Pista pista = _gm.getPista();
+                                if (pista.getTipo() != TipoPista.NONE) {
+                                    pista.setTipo(TipoPista.NONE);
+                                }
+                                changeCellColor(x, y);
+                            }
+                        }, i, j);
+                        break;
+                    }
+                    case 1: {
+                        _celdas[i][j] = new Celda(TipoCelda.AZUL, _celdaFont, _celdaTamFont,
+                                rn.nextInt(9) + 1, pos, _celdaDiam, ind);
+                        _celdas[i][j].setCellCallback(new CellCallback() {
+                            @Override
+                            public void doSomething(int x, int y) {
+                                //System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                                celdaBloqueada(x, y);
+                            }
+                        }, i, j);
+                        break;
+                    }
+                    case 2: {
+                        _celdas[i][j] = new Celda(TipoCelda.ROJO, _celdaFont, _celdaTamFont,
+                                0, pos, _celdaDiam, ind);
+                        _celdas[i][j].setCellCallback(new CellCallback() {
+                            @Override
+                            public void doSomething(int x, int y) {
+                                //System.out.println("Animación Roja grande-pequeño.\nAlternar candado Rojas");
+                                celdaBloqueada(x, y);
+                            }
+                        }, i, j);
+                        break;
+                    }
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + choice);
+                }
+            }
+        }
+    }
+
+    /**
+     * Tablero de 4x4 del enunciado
+     */
+    private void testTab() {
+        _celdas = new Celda[_tam][_tam];
+
+        //Tablero
+        int[] pos;
+        pos = new int[2];
+        for (int i = 0; i < _tam; i++) {
+            pos[1] = (int) (_tabPos[1] + (_celdaSize * i) + (_celdaSize * 0.1));
+            for (int j = 0; j < _tam; j++) {
+                pos[0] = (int) (_tabPos[0] + (_celdaSize * j) + (_celdaSize * 0.1));
+
+                int[] ind = new int[2];
+                ind[0] = i;
+                ind[1] = j;
+                if (/*(i == 0 && j == 0) ||*/ (i == 0 && j == 1) || (i == 1 && j == 0) || (i == 1 && j == 1) || (i == 1 && j == 2) ||
+                        (i == 2 && j == 0) || (i == 2 && j == 3) || (i == 3 && j == 0) || (i == 3 && j == 1) ||
+                        (i == 3 && j == 3)) {
+                    _celdasGrises++;
+                    _celdas[i][j] = new Celda(TipoCelda.GRIS, _celdaFont, _celdaTamFont,
+                            0, pos, _celdaDiam, ind);
+                    _celdas[i][j].setCellCallback(new CellCallback() {
+                        @Override
+                        public void doSomething(int x, int y) {
+                            Pista pista = _gm.getPista();
+                            if (pista.getTipo() != TipoPista.NONE) {
+                                pista.setTipo(TipoPista.NONE);
+                            }
+                            changeCellColor(x, y);
+                        }
+                    }, i, j);
+                } else if (i == 2 && j == 2) {
+                    _celdas[i][j] = new Celda(TipoCelda.ROJO, _celdaFont, _celdaTamFont,
+                            0, pos, _celdaDiam, ind);
+                    _celdas[i][j].setCellCallback(new CellCallback() {
+                        @Override
+                        public void doSomething(int x, int y) {
+                            //System.out.println("Animación Roja grande-pequeño.\nAlternar candado Rojas");
+                            celdaBloqueada(x, y);
+                        }
+                    }, i, j);
+                } else {
+                    if ((i == 0 && j == 0) || (i == 2 && j == 1)) {
+                        _celdas[i][j] = new Celda(TipoCelda.AZUL, _celdaFont, _celdaTamFont, 1, pos, _celdaDiam, ind);
+                        _celdas[i][j].setCellCallback(new CellCallback() {
+                            @Override
+                            public void doSomething(int x, int y) {
+                                //System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                                celdaBloqueada(x, y);
+                            }
+                        }, i, j);
+                    } else {
+                        _celdas[i][j] = new Celda(TipoCelda.AZUL, _celdaFont, _celdaTamFont, 2, pos, _celdaDiam, ind);
+                        _celdas[i][j].setCellCallback(new CellCallback() {
+                            @Override
+                            public void doSomething(int x, int y) {
+                                //System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                                celdaBloqueada(x, y);
+                            }
+                        }, i, j);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Genera un tablero acorde a los
+     * requisitos del enunciado
+     */
+    private void generateTab(){
+
+    }
+//------------------------------------------------------------------------------------------------//
+
 
     // ATRIBUTOS DEL TABLERO
     /**
      * Array que contiene las celdas
      */
     Celda[][] _celdas;
+    /**
+     * Dimensión del tablero
+     * 4x4, 5x5, 6x6...
+     */
     int _tam;
     /**
      * Auxiliar para contar las celdas
      * visibles de una celda
      */
     int _numVisibles = 0;
+    /**
+     * Celdas grises que posee el tablero.
+     * Se usa para calcular el porcentaje
+     * de tablero completado
+     */
     int _celdasGrises = 0;
+    /**
+     * Posición del tablero en el juego
+     */
+    int[] _tabPos;
+    /**
+     * Tamaño de cada celda del tablero
+     */
+     float _celdaSize;
+    /**
+     * Diametro de los circulos de la celda
+     */
+    float _celdaDiam;
+    /**
+     * Tamaño de la fuente de las celdas
+     */
+    int _celdaTamFont;
+    /**
+     * Fuente de las celdas
+     */
+    Font _celdaFont;
+    /**
+     * Referencia al GameState
+     */
+    GameState _gm;
 }

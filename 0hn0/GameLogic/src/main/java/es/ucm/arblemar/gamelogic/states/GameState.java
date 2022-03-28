@@ -1,8 +1,8 @@
 package es.ucm.arblemar.gamelogic.states;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,11 +14,8 @@ import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
-import es.ucm.arblemar.gamelogic.CellCallback;
 import es.ucm.arblemar.gamelogic.tablero.Tablero;
-import es.ucm.arblemar.gamelogic.tablero.TipoCelda;
 import es.ucm.arblemar.gamelogic.tablero.TipoPista;
-import es.ucm.arblemar.gamelogic.tablero.Celda;
 import es.ucm.arblemar.gamelogic.tablero.Pista;
 
 public class GameState implements State {
@@ -34,23 +31,16 @@ public class GameState implements State {
             Graphics g = _engine.getGraphics();
 
             // INICIALIZACION DEL TABLERO
-            _sizeTab = (int) (_graphics.getLogWidth() * 0.85);
-            _tabX = (int) (_graphics.getLogWidth() - _sizeTab) / 2;
-            _tabY = (int) (_graphics.getLogHeight() - _sizeTab) / 2;
-            _celdaSize = (_sizeTab / _tam);
-            _diam = _celdaSize * 0.9f;
-            _tabFont = Assets.jose;
-            _tabTamFont = (int) Math.round(_diam * 0.614);
-            _totalGrises = 0;
+            Font tabFont = Assets.jose;
+            float sizeTab = (float) (_graphics.getLogWidth() * 0.85);
+            int posTabX = (int) (_graphics.getLogWidth() - sizeTab) / 2;
+            int posTabY = (int) (_graphics.getLogHeight() - sizeTab) / 2;
+            _celdaSize = (sizeTab / _tam);
+            _celdaDiam = _celdaSize * 0.9f;
+            int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
 
-            Celda[][] celdas;
-            if (_tam > 4) {
-                celdas = randomTab();
-            } else {
-                celdas = testTab();
-            }
-            _tablero = new Tablero(celdas);
-            _tablero.setGrises(_totalGrises);
+            _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont, this);
+            _totalGrises = _tablero.initTest();
 
             // BOTON VOLVER
             _sizeVolver = new int[2];
@@ -94,14 +84,23 @@ public class GameState implements State {
             _verPista = new ButtonCallback() {
                 @Override
                 public void doSomething() {
-                    System.out.println("Generamos una pista...");
+                    //System.out.println("Generamos una pista...");
                     if (_pista.getTipo() == TipoPista.NONE) {
-                        primerFor:
+                        List<Pista> pistasList = new ArrayList<>();
+
                         for (int i = 0; i < _tam; ++i) {
                             for (int j = 0; j < _tam; ++j) {
-                                _pista = _tablero.procesaPista(i, j);
-                                if (_pista.getTipo() != TipoPista.NONE) break primerFor;
+                                Pista p = _tablero.procesaPista(i, j);
+                                if (p.getTipo() != TipoPista.NONE) pistasList.add(p);
                             }
+                        }
+                        // Escoge una pista aleatoria de las que se encontraron
+                        if (!pistasList.isEmpty()) {
+                            Random rn = new Random();
+                            int max = pistasList.size();
+                            int choice = rn.nextInt(max);
+                            _pista = pistasList.get(choice);
+                            pistasList.clear();
                         }
                     } else {
                         _pista.setTipo(TipoPista.NONE);
@@ -154,13 +153,21 @@ public class GameState implements State {
 
     @Override
     public void update(double deltaTime) {
-        if (win) {
-            win = false;
-            SelectMenuState menu = new SelectMenuState(_engine);
-            _engine.reqNewState(menu);
+        if (win && _timer == null) {
+            _timer = new Timer();
+            _delay = 3000;
+            _timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    SelectMenuState menu = new SelectMenuState(_engine);
+                    _engine.reqNewState(menu);
+                }
+            };
+            _timer.schedule(_timerTask, _delay);
         } else {
             _tablero.update(deltaTime);
             _porcent = 100 - ((_tablero.getGrises() * 100) / _totalGrises);
+            procesaPorcentaje();
         }
     }
 
@@ -168,28 +175,34 @@ public class GameState implements State {
     public void render() {
         Graphics g = _engine.getGraphics();
 
-        // BOTONES
-        g.drawImage(_imVolver, _posVolver[0], _posVolver[1], _sizeVolver[0], _sizeVolver[1]);
-        g.drawImage(_imReset, _posReset[0], _posReset[1], _sizeReset[0], _sizeReset[1]);
-        g.drawImage(_imPista, _posPista[0], _posPista[1], _sizePista[0], _sizePista[1]);
-
-        //PORCENTAJE
-        g.setColor(_colorPorcent);
-        g.drawText(_porcent + "%", _posPorcent[0], _posPorcent[1] + _sizePorcent[1], _fontPorcent, _tamFPorcent);
-
-        // TITULO O TEXTO DE PISTA
-        if (_pista.getTipo() == TipoPista.NONE) {
+        if(win) {
             g.setColor(_colorTitulo);
-            g.drawText(_titulo, _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
-        } else {
-            g.setColor(_colorPistaTxt);
-            g.drawText(_pista.getTextoPista()[0], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[0]), _posPistaTxt[1], _fontPistaTxt, _tamFPistaTxt);
-            g.drawText(_pista.getTextoPista()[1], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[1]), _posPistaTxt[2], _fontPistaTxt, _tamFPistaTxt);
+            g.drawText("Super", _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
+        }
+        else {
+            // BOTONES
+            g.drawImage(_imVolver, _posVolver[0], _posVolver[1], _sizeVolver[0], _sizeVolver[1]);
+            g.drawImage(_imReset, _posReset[0], _posReset[1], _sizeReset[0], _sizeReset[1]);
+            g.drawImage(_imPista, _posPista[0], _posPista[1], _sizePista[0], _sizePista[1]);
 
-            g.setColor(0X313131FF);
-            int difTam = (int) (_celdaSize * 0.06);
-            g.fillCircle(_pista.getPos()[0] - difTam, _pista.getPos()[1] - difTam, _diam + (difTam * 2));
-            g.setColor(0XFFFFFFFF);
+            //PORCENTAJE
+            g.setColor(_colorPorcent);
+            g.drawText(_porcent + "%", _posPorcent[0], _posPorcent[1] + _sizePorcent[1], _fontPorcent, _tamFPorcent);
+
+            // TITULO O TEXTO DE PISTA
+            if (_pista.getTipo() == TipoPista.NONE) {
+                g.setColor(_colorTitulo);
+                g.drawText(_titulo, _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
+            } else {
+                g.setColor(_colorPistaTxt);
+                g.drawText(_pista.getTextoPista()[0], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[0]), _posPistaTxt[1], _fontPistaTxt, _tamFPistaTxt);
+                g.drawText(_pista.getTextoPista()[1], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[1]), _posPistaTxt[2], _fontPistaTxt, _tamFPistaTxt);
+
+                g.setColor(0X313131FF);
+                int difTam = (int) (_celdaSize * 0.06);
+                g.fillCircle(_pista.getPos()[0] - difTam, _pista.getPos()[1] - difTam, _celdaDiam + (difTam * 2));
+                g.setColor(0XFFFFFFFF);
+            }
         }
 
         // CELDAS
@@ -203,6 +216,8 @@ public class GameState implements State {
         for (int i = 0; i < events.size(); i++) {
             Input.TouchEvent currEvent = events.get(i);
             if (currEvent == Input.TouchEvent.touchDown) {
+                if (win) return;
+
                 // BOTON VOLVER
                 if (currEvent.getX() > _posVolver[0] &&
                         currEvent.getX() < _posVolver[0] + _sizeVolver[0] &&
@@ -226,7 +241,9 @@ public class GameState implements State {
                         currEvent.getY() < _posPista[1] + _sizePista[1]) {
                     _verPista.doSomething();
                     break;
-                } else {
+                }
+                // CELDAS
+                else {
                     _tablero.handleInput(currEvent.getX(), currEvent.getY());
                     break;
                 }
@@ -234,153 +251,78 @@ public class GameState implements State {
         }
     }
 
-//------------------------------------------------------------------------------------------------//
-
     /**
-     * Tablero random de pruebas
+     * Devuelve la pista actual
      */
-    private Celda[][] randomTab() {
-        Random rn = new Random();
-        Celda[][] celdas;
-        celdas = new Celda[_tam][_tam];
-
-        //Tablero
-        int[] pos;
-        pos = new int[2];
-        for (int i = 0; i < _tam; i++) {
-            pos[1] = (int) (_tabY + (_celdaSize * i) + (_celdaSize * 0.1));
-            for (int j = 0; j < _tam; j++) {
-                pos[0] = (int) (_tabX + (_celdaSize * j) + (_celdaSize * 0.1));
-
-                int choice = rn.nextInt(3);
-                int[] ind = new int[2];
-                ind[0] = i;
-                ind[1] = j;
-                switch (choice) {
-                    case 0: {
-                        _totalGrises++;
-                        celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
-                                0, pos, _diam, ind);
-                        celdas[i][j].setCellCallback(new CellCallback() {
-                            @Override
-                            public void doSomething(int x, int y) {
-                                if (_pista.getTipo() != TipoPista.NONE) {
-                                    _pista.setTipo(TipoPista.NONE);
-                                }
-                                _tablero.changeCellColor(x, y);
-                            }
-                        }, i, j);
-                        break;
-                    }
-                    case 1: {
-                        celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont,
-                                rn.nextInt(9) + 1, pos, _diam, ind);
-                        celdas[i][j].setCellCallback(new CellCallback() {
-                            @Override
-                            public void doSomething(int x, int y) {
-                                System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
-                                _tablero.celdaBloqueada(x, y);
-                            }
-                        }, i, j);
-                        break;
-                    }
-                    case 2: {
-                        celdas[i][j] = new Celda(TipoCelda.ROJO, _tabFont, _tabTamFont,
-                                0, pos, _diam, ind);
-                        celdas[i][j].setCellCallback(new CellCallback() {
-                            @Override
-                            public void doSomething(int x, int y) {
-                                System.out.println("Animación Roja grande-pequeño.\nAlternar candado Rojas");
-                                _tablero.celdaBloqueada(x, y);
-                            }
-                        }, i, j);
-                        break;
-                    }
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + choice);
-                }
-            }
-        }
-        return celdas;
+    public Pista getPista() {
+        return _pista;
     }
 
     /**
-     * Tablero de 4x4 del enunciado
+     * Detiene el timer que haya en marcha
      */
-    private Celda[][] testTab() {
-        Celda[][] celdas;
-        celdas = new Celda[_tam][_tam];
-
-        //Tablero
-        int[] pos;
-        pos = new int[2];
-        for (int i = 0; i < _tam; i++) {
-            pos[1] = (int) (_tabY + (_celdaSize * i) + (_celdaSize * 0.1));
-            for (int j = 0; j < _tam; j++) {
-                pos[0] = (int) (_tabX + (_celdaSize * j) + (_celdaSize * 0.1));
-
-                int[] ind = new int[2];
-                ind[0] = i;
-                ind[1] = j;
-                if ((i == 0 && j == 0) || (i == 0 && j == 1) || (i == 1 && j == 0) || (i == 1 && j == 1) || (i == 1 && j == 2) ||
-                        (i == 2 && j == 0) || (i == 2 && j == 3) || (i == 3 && j == 0) || (i == 3 && j == 1) ||
-                        (i == 3 && j == 3)) {
-                    _totalGrises++;
-                    celdas[i][j] = new Celda(TipoCelda.GRIS, _tabFont, _tabTamFont,
-                            0, pos, _diam, ind);
-                    celdas[i][j].setCellCallback(new CellCallback() {
-                        @Override
-                        public void doSomething(int x, int y) {
-                            if (_pista.getTipo() != TipoPista.NONE) {
-                                _pista.setTipo(TipoPista.NONE);
-                            }
-                            _tablero.changeCellColor(x, y);
-                        }
-                    }, i, j);
-                } else if (i == 2 && j == 2) {
-                    celdas[i][j] = new Celda(TipoCelda.ROJO, _tabFont, _tabTamFont,
-                            0, pos, _diam, ind);
-                    celdas[i][j].setCellCallback(new CellCallback() {
-                        @Override
-                        public void doSomething(int x, int y) {
-                            System.out.println("Animación Roja grande-pequeño.\nAlternar candado Rojas");
-                            _tablero.celdaBloqueada(x, y);
-                        }
-                    }, i, j);
-                } else {
-                    if (/*(i == 0 && j == 0) ||*/ (i == 2 && j == 1)) {
-                        celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont, 1, pos, _diam, ind);
-                        celdas[i][j].setCellCallback(new CellCallback() {
-                            @Override
-                            public void doSomething(int x, int y) {
-                                System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
-                                _tablero.celdaBloqueada(x, y);
-                            }
-                        }, i, j);
-                    } else {
-                        celdas[i][j] = new Celda(TipoCelda.AZUL, _tabFont, _tabTamFont, 2, pos, _diam, ind);
-                        celdas[i][j].setCellCallback(new CellCallback() {
-                            @Override
-                            public void doSomething(int x, int y) {
-                                System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
-                                _tablero.celdaBloqueada(x, y);
-                            }
-                        }, i, j);
-                    }
-                }
-            }
+    public void stopTimer() {
+        if (_timer != null) {
+            _timer.cancel();
+            _timer = null;
         }
-        return celdas;
     }
 
-//------------------------------------------------------------------------------------------------//
+    /**
+     * Procesa el porcentaje de tablero que se ha completado.
+     * En caso de llegar a 100 se mira que se haya completado
+     * correctamente
+     */
+    private void procesaPorcentaje() {
+        if (_porcent < 100 || _pista.getTipo() != TipoPista.NONE || _timer != null || win) return;
+
+        // Búsqueda de posibles pistas activas
+        _pistasList = new ArrayList<>();
+        for (int i = 0; i < _tam; ++i) {
+            for (int j = 0; j < _tam; ++j) {
+                Pista p = _tablero.procesaPista(i, j);
+                if (p.getTipo() != TipoPista.NONE) _pistasList.add(p);
+            }
+        }
+
+        _timer = new Timer();
+        // Si se encuentran pistas, se escoge una aleatoria y se muestra
+        if (!_pistasList.isEmpty()) {
+            _delay = 2000;
+            _timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    Random rn = new Random();
+                    int max = _pistasList.size();
+                    int choice = rn.nextInt(max);
+                    _pista = _pistasList.get(choice);
+                    _pistasList.clear();
+                }
+            };
+        }
+        // En caso de no encontrar pistas, significa que el nivel está completo
+        else {
+            _delay = 500;
+            _timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    win = true;
+                    _tablero.showAllValues();
+                    _timer = null;
+                }
+            };
+        }
+
+        _timer.schedule(_timerTask, _delay);
+    }
 
     // ATRIBUTOS DEL ESTADO
     Engine _engine;
     Graphics _graphics;
     boolean win = false;
-    Timer timer;
-    TimerTask timerTask;
+    Timer _timer;
+    TimerTask _timerTask;
+    int _delay;
 
     // ATRIBUTOS BOTON VOLVER
     Image _imVolver;
@@ -426,30 +368,13 @@ public class GameState implements State {
 
     // ATRIBUTOS DEL TABLERO
     /**
+     * Lista de las pistas disponibles en el tablero
+     */
+    List<Pista> _pistasList;
+    /**
      * Tipo de tablero: 4x4, 5x5, 6x6...
      */
     int _tam;
-    /**
-     * Tamaño de la cuadrícula del tablero dentro
-     * del canvas
-     */
-    float _sizeTab;
-    /**
-     * Coordenadas x del tablero
-     */
-    int _tabX;
-    /**
-     * Coordenadas y del tablero
-     */
-    int _tabY;
-    /**
-     * Fuente de la letra de las celdas
-     */
-    Font _tabFont;
-    /**
-     * Tamaño de la fuente de las celdas
-     */
-    int _tabTamFont;
     /**
      * Diámetro de las celdas
      */
@@ -457,7 +382,7 @@ public class GameState implements State {
     /**
      * Diámetro de las celdas
      */
-    float _diam;
+    float _celdaDiam;
     /**
      * Total de grises del tablero al empezar
      */
