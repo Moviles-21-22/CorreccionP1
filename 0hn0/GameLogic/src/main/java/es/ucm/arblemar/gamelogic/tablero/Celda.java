@@ -230,6 +230,21 @@ public class Celda {
         }
     }
 
+    public void backColor(){
+        switch (_tipoCelda) {
+            case AZUL: {
+                _tipoCelda = GRIS;
+                _color = 0XEEEEEEFF;
+                break;
+            }
+            case ROJO: {
+                _tipoCelda = AZUL;
+                _color = 0x1CC0E0FF;
+                break;
+            }
+        }
+    }
+
     /**
      * Activa la animación de celda bloqueada
      */

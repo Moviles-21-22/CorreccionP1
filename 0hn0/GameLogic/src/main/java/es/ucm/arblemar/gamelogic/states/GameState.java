@@ -14,6 +14,7 @@ import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
+import es.ucm.arblemar.gamelogic.tablero.Celda;
 import es.ucm.arblemar.gamelogic.tablero.Tablero;
 import es.ucm.arblemar.gamelogic.tablero.TipoPista;
 import es.ucm.arblemar.gamelogic.tablero.Pista;
@@ -66,10 +67,11 @@ public class GameState implements State {
             _posReset[0] = (g.getLogWidth() / 2) - (_sizeReset[0] / 2);
             _posReset[1] = (g.getLogHeight() / 8) * 7;
             _imReset = Assets.history;
+
             _reset = new ButtonCallback() {
                 @Override
                 public void doSomething() {
-                    System.out.println("Retrocedemos movimiento... Falta por hacer");
+                    _tablero.devuelveMovimiento();
                 }
             };
 

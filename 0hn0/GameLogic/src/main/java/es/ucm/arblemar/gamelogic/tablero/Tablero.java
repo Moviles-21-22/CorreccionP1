@@ -1,6 +1,7 @@
 package es.ucm.arblemar.gamelogic.tablero;
 
 import java.util.Random;
+import java.util.Stack;
 
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.engine.Graphics;
@@ -31,6 +32,7 @@ public class Tablero {
         _celdaTamFont = tabTamFont;
         _celdaFont = celdaFont;
         _gm = gm;
+        _stackMovs = new Stack<int[]>();
     }
 
     /**
@@ -135,7 +137,13 @@ public class Tablero {
      * @param j: Columna de la celda
      */
     private void changeCellColor(int i, int j) {
+
         _celdas[i][j].changeColor();
+
+        int[] coors = new int[2];
+        coors[0] = i;
+        coors[1] = j;
+        _stackMovs.add(coors);
 
         //Si pasamos de gris a azul tenemos una gris menos
         if (_celdas[i][j].getTipoCelda() == TipoCelda.AZUL)
@@ -162,6 +170,21 @@ public class Tablero {
             for (int y = 0; y < _tam; y++) {
                 _celdas[x][y].alternaCandado();
             }
+        }
+    }
+
+    public void devuelveMovimiento(){
+        if(!_stackMovs.empty()){
+            int[] coords = _stackMovs.peek();
+            _celdas[coords[0]][coords[1]].backColor();
+            //Si pasamos de gris a azul tenemos una gris menos
+            if ( _celdas[coords[0]][coords[1]].getTipoCelda() == TipoCelda.ROJO)
+                _celdasGrises--;
+
+            //Si pasamos de roja a gris tenemos gris de nuevo
+            if ( _celdas[coords[0]][coords[1]].getTipoCelda() == TipoCelda.GRIS)
+                _celdasGrises++;
+            _stackMovs.pop();
         }
     }
 
@@ -602,6 +625,13 @@ public class Tablero {
 
 
     // ATRIBUTOS DEL TABLERO
+
+    // PILA DE MOVIMIENTOS
+    /**
+     * Pila con los movimientos del jugador
+     * */
+    Stack<int[]> _stackMovs;
+
     /**
      * Array que contiene las celdas
      */
