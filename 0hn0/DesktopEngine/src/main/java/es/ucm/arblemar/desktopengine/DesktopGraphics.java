@@ -62,6 +62,7 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     public void clear(int color) {
         _graphics = getStrategy().getDrawGraphics();
         setColor(color);
+//        _graphics.clearRect(0, 0, getWidth(), getHeight());
         _graphics.fillRect(0, 0, getWidth(), getHeight());
     }
 

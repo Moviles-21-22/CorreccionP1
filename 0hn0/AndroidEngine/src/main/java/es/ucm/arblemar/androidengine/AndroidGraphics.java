@@ -188,10 +188,6 @@ public class AndroidGraphics extends AbstractGraphics {
         }
     }
 
-    public void setCanvas(Canvas canvas) {
-        _canvas = canvas;
-    }
-
     @Override
     public void scale(float x, float y) {
         _canvas.scale(x, y);

@@ -41,7 +41,8 @@ public class GameState implements State {
             int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
 
             _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont, this);
-            _totalGrises = _tablero.initTest();
+            //_totalGrises = _tablero.initTest();
+            _totalGrises = _tablero.generateTabSlow();
 
             // BOTON VOLVER
             _sizeVolver = new int[2];

@@ -26,8 +26,6 @@ public class AndroidInput extends AbstractInput implements View.OnTouchListener 
                 break;
 
             //case MotionEvent.ACTION_MOVE:
-            //    break;
-
             //case MotionEvent.ACTION_UP:
             //    break;
         }

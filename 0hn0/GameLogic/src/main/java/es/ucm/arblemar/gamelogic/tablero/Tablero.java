@@ -40,7 +40,7 @@ public class Tablero {
      * @return Devuelve el número de grises generados
      */
     public int initTest(){
-        if (_tam > 4) {
+        if (_tam > 3) {
             randomTab();
         } else {
             testTab();
@@ -480,14 +480,36 @@ public class Tablero {
 
 //-----------------------------------GENERACIÓN-TABLERO-------------------------------------------//
     /**
-     * Tablero random de pruebas
+     * Genera un tablero aleatorio
      */
     private void randomTab() {
         Random rn = new Random();
         _celdas = new Celda[_tam][_tam];
+        // Se escoge un porcentaje del tablero aleatorio que puede quedar resuleto mediante
+        // la generación de azules y rojas
+        int porc = rn.nextInt(_maxSolved - _minSolved) + _minSolved;
+        // Porcentaje azules y rojas
+        int azules = rn.nextInt(porc / 2) + porc / 2;
+        int rojas = porc - azules;
+        // Número de azules y rojas tel tablero
+        _celdasAzules = Math.round(_tam * _tam * ((float)azules) / 100);
+        _celdasRojas = Math.round(_tam * _tam * ((float)rojas) / 100);
+        // En caso de que no se generen rojas, forzamos que salga una a costa de otra azul
+        if(_celdasRojas == 0){
+            _celdasRojas = 1;
+            _celdasAzules--;
+        }
+        _celdasGrises = _tam * _tam - (_celdasAzules + _celdasRojas);
+
+        System.out.println("PORC: " + porc);
+        System.out.println("Azules: " + _celdasAzules);
+        System.out.println("Rojas: " + _celdasRojas);
+        System.out.println("Grises: " + _celdasGrises);
 
         //Tablero
         int[] pos;
+        int contG = 0, contA = 0, contR = 0;
+
         pos = new int[2];
         for (int i = 0; i < _tam; i++) {
             pos[1] = (int) (_tabPos[1] + (_celdaSize * i) + (_celdaSize * 0.1));
@@ -495,12 +517,23 @@ public class Tablero {
                 pos[0] = (int) (_tabPos[0] + (_celdaSize * j) + (_celdaSize * 0.1));
 
                 int choice = rn.nextInt(3);
+                if(choice == 0 && contG == _celdasGrises){
+                    choice = contA < _celdasAzules ? 1 : 2;
+                }
+                else if(choice == 1 && contA == _celdasAzules){
+                    choice = contR < _celdasRojas ? 2 : 0;
+                }
+                else if(choice == 2 && contR == _celdasRojas){
+                    choice = contG < _celdasGrises ? 0 : 1;
+                }
+
                 int[] ind = new int[2];
                 ind[0] = i;
                 ind[1] = j;
                 switch (choice) {
                     case 0: {
-                        _celdasGrises++;
+                        // GRISES
+                        contG++;
                         _celdas[i][j] = new Celda(TipoCelda.GRIS, _celdaFont, _celdaTamFont,
                                 0, pos, _celdaDiam, ind);
                         _celdas[i][j].setCellCallback(new CellCallback() {
@@ -516,8 +549,10 @@ public class Tablero {
                         break;
                     }
                     case 1: {
+                        //AZULES
+                        contA++;
                         _celdas[i][j] = new Celda(TipoCelda.AZUL, _celdaFont, _celdaTamFont,
-                                rn.nextInt(9) + 1, pos, _celdaDiam, ind);
+                                rn.nextInt(_tam) + 1, pos, _celdaDiam, ind);
                         _celdas[i][j].setCellCallback(new CellCallback() {
                             @Override
                             public void doSomething(int x, int y) {
@@ -528,6 +563,8 @@ public class Tablero {
                         break;
                     }
                     case 2: {
+                        //ROJAS
+                        contR++;
                         _celdas[i][j] = new Celda(TipoCelda.ROJO, _celdaFont, _celdaTamFont,
                                 0, pos, _celdaDiam, ind);
                         _celdas[i][j].setCellCallback(new CellCallback() {
@@ -616,10 +653,31 @@ public class Tablero {
 
     /**
      * Genera un tablero acorde a los
-     * requisitos del enunciado
+     * requisitos del enunciado.
+     * Es la versión bruta y lenta de generación
+     * de puzzles a partir de tableros aleatorios
      */
-    private void generateTab(){
+    public int generateTabSlow(){
+        /*  Los puzzles que genere el juego deben ser siempre resolubles, tener una única solución
+            y no tener números que superen el tamaño (ancho o alto). Para eso, el programa deberá
+            intentar resolver los puzzles que genere con la aplicación reiterada de las pistas, y descartar
+            aquellos que no consiga resolver*/
+        boolean isCorrect = false;
+        int test = 0;
+        while(!isCorrect){
+            System.out.println("----------");
+            randomTab();
+            System.out.println("----------");
+            isCorrect = solveTab(test);
+            test++;
+        }
 
+        return _celdasGrises;
+    }
+
+    private boolean solveTab(int test){
+        if(test < 3) return false;
+        return true;
     }
 //------------------------------------------------------------------------------------------------//
 
@@ -652,6 +710,24 @@ public class Tablero {
      * de tablero completado
      */
     int _celdasGrises = 0;
+    /**
+     * Número de azules que puede tener el tablero
+     */
+    int _celdasAzules;
+    /**
+     * Número de rojas que puede tener el tablero
+     */
+    int _celdasRojas;
+    /**
+     * Porcentaje mínimo del tablero que puede
+     * quedar resuleto al generarlo
+     */
+    final int _minSolved = 30;
+    /**
+     * Porcentaje máximo del tablero que puede
+     * quedar resuleto al generarlo
+     */
+    final int _maxSolved = 45;
     /**
      * Posición del tablero en el juego
      */
