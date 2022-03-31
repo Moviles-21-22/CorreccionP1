@@ -14,7 +14,6 @@ import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
-import es.ucm.arblemar.gamelogic.tablero.Celda;
 import es.ucm.arblemar.gamelogic.tablero.Tablero;
 import es.ucm.arblemar.gamelogic.tablero.TipoPista;
 import es.ucm.arblemar.gamelogic.tablero.Pista;
@@ -41,8 +40,8 @@ public class GameState implements State {
             int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
 
             _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont, this);
-            //_totalGrises = _tablero.initTest();
-            _totalGrises = _tablero.generateTabSlow();
+            //_totalGrises = _tablero.initTestTab();
+            _totalGrises = _tablero.generateTab();
 
             // BOTON VOLVER
             _sizeVolver = new int[2];
@@ -203,7 +202,7 @@ public class GameState implements State {
 
                 g.setColor(0X313131FF);
                 int difTam = (int) (_celdaSize * 0.06);
-                g.fillCircle(_pista.getPos()[0] - difTam, _pista.getPos()[1] - difTam, _celdaDiam + (difTam * 2));
+                g.fillCircle(_pista.getIndexCelda()[0] - difTam, _pista.getIndexCelda()[1] - difTam, _celdaDiam + (difTam * 2));
                 g.setColor(0XFFFFFFFF);
             }
         }

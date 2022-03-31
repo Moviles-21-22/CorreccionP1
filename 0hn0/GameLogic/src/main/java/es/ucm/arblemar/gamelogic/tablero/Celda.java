@@ -126,13 +126,9 @@ public class Celda {
     /**
      * Asocia el nuevo callback a la celda
      * @param cbc: Callback de tipo CellCallback
-     * @param i: Fila de la celda en el tablero
-     * @param j: Columna de la celda en el tablero
      */
-    public void setCellCallback(CellCallback cbc, int i, int j) {
+    public void setCellCallback(CellCallback cbc) {
         _cbc = cbc;
-        _i = i;
-        _j = j;
     }
 
 //------------------------------------------------------------------------------------------------//
@@ -171,6 +167,42 @@ public class Celda {
      * Devuelve la posición de renderizado de la celda
      */
     public int[] getPos() { return _pos; }
+
+    /**
+     * Devuelve la fila de la celda en el tablero
+     */
+    public int getRow(){
+        return _i;
+    }
+
+    /**
+     * Devuelve la columna de la celda en el tablero
+     */
+    public int getCol(){
+        return _j;
+    }
+
+    /**
+     * Asigna un nuevo tipo de celda
+     * @param c: El nuevo tipo de celda
+     */
+    public void setTipoCelda(TipoCelda c){
+        _tipoCelda = c;
+        switch (_tipoCelda) {
+            case GRIS: {
+                _color = 0XEEEEEEFF;
+                break;
+            }
+            case AZUL: {
+                _color = 0x1CC0E0FF;
+                break;
+            }
+            case ROJO: {
+                _color = 0xFF384BFF;
+                break;
+            }
+        }
+    }
 
     /**
      * Cambia el estado lock de la celda
@@ -315,6 +347,8 @@ public class Celda {
     private final int[] _pos;
     /**
      * Índice dentro del tablero
+     * _i -> Fila
+     * _j -> Columna
      */
     private int _i, _j;
     /**

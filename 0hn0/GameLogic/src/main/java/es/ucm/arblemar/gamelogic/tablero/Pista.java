@@ -3,17 +3,17 @@ package es.ucm.arblemar.gamelogic.tablero;
 public class Pista {
     public Pista() {
         _tipo = TipoPista.NONE;
-        _pos = new int[2];
+        indexCelda = new int[2];
         _size = new int[2];
         _st = new String[2];
     }
 
     public void setPos(int[] p) {
-        _pos = p;
+        indexCelda = p;
     }
 
-    public int[] getPos() {
-        return _pos;
+    public int[] getIndexCelda() {
+        return indexCelda;
     }
 
     public int[] getSize(int winWidthLog) {
@@ -95,9 +95,9 @@ public class Pista {
      */
     private TipoPista _tipo;
     /**
-     * Posición de la celda asociada a la pista
+     * Índice de la celda asociada a la pista
      */
-    private int[] _pos;
+    private int[] indexCelda;
     /**
      * Tamaño del texto de la pista
      */
