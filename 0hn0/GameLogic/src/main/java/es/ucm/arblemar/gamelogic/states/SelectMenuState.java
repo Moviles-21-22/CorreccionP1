@@ -27,10 +27,10 @@ public class SelectMenuState implements State {
             // INICIALIZACIÓN DE LAS CELDAS
             _celdas = new ArrayList<>();
 
-            int ind[] = new int[2];
+            int[] ind = new int[2];
             ind[0] = ind[1] = -1;
             float diam = 75;
-            int pos[] = new int[2];
+            int[] pos = new int[2];
             pos[0] = (g.getLogWidth() * 2 / 7) - ((int) diam / 2);
             pos[1] = (g.getLogHeight() * 2 / 5);
             Font f = Assets.jose;
@@ -141,10 +141,10 @@ public class SelectMenuState implements State {
         Graphics g = _engine.getGraphics();
 
         // TITULO
-        int size[] = new int[2];
+        int[] size = new int[2];
         size[0] = (g.getLogWidth() / 2);
         size[1] = (g.getLogWidth() / 7);
-        int pos[] = new int[2];
+        int[] pos = new int[2];
         pos[0] = (g.getLogWidth() / 2) - (size[0] / 2);
         pos[1] = (g.getLogHeight() / 10);
         int color = 0x313131FF;
@@ -191,11 +191,10 @@ public class SelectMenuState implements State {
                         currEvent.getY() < _posVolver[1] + _sizeVolver[1]) {
                     _goBack.doSomething();
                 } else {
-                    finding:
                     for (int m = 0; m < _celdas.size(); m++) {
                         if (_celdas.get(m).isClicked(currEvent.getX(), currEvent.getY())) {
-                            _celdas.get(m).runCallBack();
-                            break finding;
+                            _celdas.get(m).runCallBack(null);
+                            break;
                         }
                     }
 //                    boolean isClick = false;
@@ -212,12 +211,12 @@ public class SelectMenuState implements State {
         }
     }
 
-    private Engine _engine;
+    private final Engine _engine;
 
     // Atributos de los botones
     Image _backIm;
-    int _sizeVolver[];
-    int _posVolver[];
+    int[] _sizeVolver;
+    int[] _posVolver;
     ButtonCallback _goBack;
     private List<Celda> _celdas;
 }

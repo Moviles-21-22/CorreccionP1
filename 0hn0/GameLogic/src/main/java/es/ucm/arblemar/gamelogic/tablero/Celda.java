@@ -4,6 +4,7 @@ import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
+import es.ucm.arblemar.gamelogic.states.GameState;
 
 import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.AZUL;
 import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.GRIS;
@@ -105,13 +106,13 @@ public class Celda {
      * Pone en marcha la funcionalidad
      * asociada al callback
      */
-    public void runCallBack() {
+    public void runCallBack(GameState gm) {
         if (_cb != null) {
             _cb.doSomething();
         }
 
         if (_cbc != null) {
-            _cbc.doSomething(_i, _j);
+            _cbc.doSomething(_i, _j, gm);
         }
     }
 
@@ -126,13 +127,9 @@ public class Celda {
     /**
      * Asocia el nuevo callback a la celda
      * @param cbc: Callback de tipo CellCallback
-     * @param i: Fila de la celda en el tablero
-     * @param j: Columna de la celda en el tablero
      */
-    public void setCellCallback(CellCallback cbc, int i, int j) {
+    public void setCellCallback(CellCallback cbc) {
         _cbc = cbc;
-        _i = i;
-        _j = j;
     }
 
 //------------------------------------------------------------------------------------------------//
@@ -173,17 +170,46 @@ public class Celda {
     public int[] getPos() { return _pos; }
 
     /**
+     * Devuelve la fila de la celda en el tablero
+     */
+    public int getRow(){
+        return _i;
+    }
+
+    /**
+     * Devuelve la columna de la celda en el tablero
+     */
+    public int getCol(){
+        return _j;
+    }
+
+    /**
+     * Asigna un nuevo tipo de celda
+     * @param c: El nuevo tipo de celda
+     */
+    public void setTipoCelda(TipoCelda c){
+        _tipoCelda = c;
+        switch (_tipoCelda) {
+            case GRIS: {
+                _color = 0XEEEEEEFF;
+                break;
+            }
+            case AZUL: {
+                _color = 0x1CC0E0FF;
+                break;
+            }
+            case ROJO: {
+                _color = 0xFF384BFF;
+                break;
+            }
+        }
+    }
+
+    /**
      * Cambia el estado lock de la celda
      */
     public void setLock(boolean isLock){
         _lock = isLock;
-    }
-
-    /**
-     * Asigna un nuevo valor a la celda
-     */
-    public void setValue(int v){
-        _value = v;
     }
 
 //------------------------------------------------------------------------------------------------//
@@ -262,12 +288,16 @@ public class Celda {
 //------------------------------------------------------------------------------------------------//
 
     /**
-     * Cambia el estado de drawText para
-     * renderizar el valor asociado a la celda
+     * Muestra el valor de la celda o no en función de show
+     * @param show Determina si se debe mostrar el valor de la celda
+     * @param v Valor que se quiere mostrar de la celda
      */
-    public void showText(){
-        _drawText = true;
-        posicionaTexto();
+    public void showText(boolean show, int v) {
+        _drawText = show;
+        if (show) {
+            _value = v;
+            posicionaTexto();
+        }
     }
 
     /**
@@ -315,6 +345,8 @@ public class Celda {
     private final int[] _pos;
     /**
      * Índice dentro del tablero
+     * _i -> Fila
+     * _j -> Columna
      */
     private int _i, _j;
     /**
