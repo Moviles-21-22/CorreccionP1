@@ -40,7 +40,7 @@ public class GameState implements State {
             int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
 
             _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont, this);
-            //_totalGrises = _tablero.initTestTab();
+//            _totalGrises = _tablero.initTestTab();
             _totalGrises = _tablero.generateTab();
 
             // BOTON VOLVER
@@ -246,7 +246,7 @@ public class GameState implements State {
                 }
                 // CELDAS
                 else {
-                    _tablero.handleInput(currEvent.getX(), currEvent.getY());
+                    _tablero.handleInput(currEvent.getX(), currEvent.getY(), this);
                     break;
                 }
             }

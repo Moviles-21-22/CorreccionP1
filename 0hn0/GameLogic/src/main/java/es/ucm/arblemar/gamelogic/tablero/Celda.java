@@ -4,6 +4,7 @@ import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
+import es.ucm.arblemar.gamelogic.states.GameState;
 
 import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.AZUL;
 import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.GRIS;
@@ -105,13 +106,13 @@ public class Celda {
      * Pone en marcha la funcionalidad
      * asociada al callback
      */
-    public void runCallBack() {
+    public void runCallBack(GameState gm) {
         if (_cb != null) {
             _cb.doSomething();
         }
 
         if (_cbc != null) {
-            _cbc.doSomething(_i, _j);
+            _cbc.doSomething(_i, _j, gm);
         }
     }
 
@@ -211,13 +212,6 @@ public class Celda {
         _lock = isLock;
     }
 
-    /**
-     * Asigna un nuevo valor a la celda
-     */
-    public void setValue(int v){
-        _value = v;
-    }
-
 //------------------------------------------------------------------------------------------------//
 
 //------------------------------------------ANIMACIONES-------------------------------------------//
@@ -294,12 +288,16 @@ public class Celda {
 //------------------------------------------------------------------------------------------------//
 
     /**
-     * Cambia el estado de drawText para
-     * renderizar el valor asociado a la celda
+     * Muestra el valor de la celda o no en función de show
+     * @param show Determina si se debe mostrar el valor de la celda
+     * @param v Valor que se quiere mostrar de la celda
      */
-    public void showText(){
-        _drawText = true;
-        posicionaTexto();
+    public void showText(boolean show, int v) {
+        _drawText = show;
+        if (show) {
+            _value = v;
+            posicionaTexto();
+        }
     }
 
     /**

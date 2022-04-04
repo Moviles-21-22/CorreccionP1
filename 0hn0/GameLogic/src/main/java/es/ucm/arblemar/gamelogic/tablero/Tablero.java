@@ -6,6 +6,9 @@ import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.gamelogic.states.GameState;
 
+/**
+ * Clase gestora de las pistas y del tablero
+ */
 public class Tablero {
 
     /**
@@ -30,8 +33,9 @@ public class Tablero {
         _celdaDiam = celdaDiam;
         _celdaTamFont = tabTamFont;
         _celdaFont = celdaFont;
-        _gm = gm;
         _stackMovs = new Stack<>();
+        _celdas = new Celda[_tam][_tam];
+        _creation = new CreaTablero(this, _tam, _celdas);
     }
 
     /**
@@ -40,30 +44,36 @@ public class Tablero {
      * @return Devuelve el número de grises generados
      */
     public int initTestTab() {
-        CreaTablero creation = new CreaTablero(this, _tam);
-
         if (_tam > 4) {
             System.out.println("Para hacer test el de 4x4");
             _celdasGrises = 100;
         }
 
-        _celdasGrises = creation.testTab(_tabPos, _celdaSize, _celdaFont, _celdaTamFont, _celdaDiam, _gm);
-        _celdas = creation.getCeldas();
+        _celdasGrises = _creation.testTab(_tabPos, _celdaSize, _celdaFont, _celdaTamFont, _celdaDiam);
         return _celdasGrises;
     }
 
+    /**
+     * Generador del tablero
+     *
+     * @return Devuelve el número de celdas grises generadas
+     */
     public int generateTab() {
-        CreaTablero creation = new CreaTablero(this, _tam);
-
-        while (_celdas == null) {
-            _celdasGrises = creation.calcularCeldas();
-            _celdas = creation.randomTab(_tabPos, _celdaSize, _celdaFont, _celdaTamFont, _celdaDiam);
-            //_celdas = creation.generateTab();
+        while (true) {
+            _creation.calcularCeldas();
+            // Se inicializan todas las celdas en gris
+            _creation.initGreyTab(_tabPos, _celdaSize, _celdaFont, _celdaTamFont, _celdaDiam);
+            // Se busca un tablero con solución
+            if (_creation.creaTablero(_tabPos, _celdaSize, _celdaFont, _celdaTamFont, _celdaDiam))
+                break;
+            System.out.println("Tablero descartado");
         }
 
+        _celdasGrises = _creation.getGrises();
         return _celdasGrises;
     }
 //---------------------------------------------------------------------------------------//
+
     /**
      * Actualiza cada una de las celdas
      */
@@ -89,12 +99,12 @@ public class Tablero {
     /**
      * Procesa el input en cada una de las celdas
      */
-    public void handleInput(int x, int y) {
+    public void handleInput(int x, int y, GameState gm) {
         findingCelda:
         for (int n = 0; n < _tam; n++) {
             for (int m = 0; m < _tam; m++) {
                 if (_celdas[n][m].isClicked(x, y)) {
-                    _celdas[n][m].runCallBack();
+                    _celdas[n][m].runCallBack(gm);
                     break findingCelda;
                 }
             }
@@ -131,8 +141,7 @@ public class Tablero {
                     }
 
                     _celdas[i][j].setLock(true);
-                    _celdas[i][j].setValue(_numVisibles);
-                    _celdas[i][j].showText();
+                    _celdas[i][j].showText(true, _numVisibles);
                 }
             }
         }
@@ -153,11 +162,12 @@ public class Tablero {
         }
     }
 
-    public void addStackMov(int[] mov){
+    public void addStackMov(int[] mov) {
         _stackMovs.add(mov);
     }
 
 //-----------------------------------BÚSQUEDA-PISTAS----------------------------------------------//
+
     /**
      * Busca la pista que pueda existir en la casilla seleccionada
      *
@@ -448,11 +458,11 @@ public class Tablero {
 
 //-----------------------------------------CELDAS-------------------------------------------------//
 
-    public void changeCellColor(int i, int j){
+    public void changeCellColor(int i, int j) {
         _celdas[i][j].changeColor();
     }
 
-    public void addGreyCell(int grey){
+    public void addGreyCell(int grey) {
         _celdasGrises += grey;
     }
 
@@ -478,13 +488,10 @@ public class Tablero {
 //------------------------------------------------------------------------------------------------//
 
     // ATRIBUTOS DEL TABLERO
-
-    // PILA DE MOVIMIENTOS
     /**
-     * Pila con los movimientos del jugador
+     * Clase que se encarga de la creación del tablero
      */
-    Stack<int[]> _stackMovs;
-
+    CreaTablero _creation;
     /**
      * Array que contiene las celdas
      */
@@ -529,8 +536,9 @@ public class Tablero {
      * Fuente de las celdas
      */
     Font _celdaFont;
+    // PILA DE MOVIMIENTOS
     /**
-     * Referencia al GameState
+     * Pila con los movimientos del jugador
      */
-    GameState _gm;
+    Stack<int[]> _stackMovs;
 }

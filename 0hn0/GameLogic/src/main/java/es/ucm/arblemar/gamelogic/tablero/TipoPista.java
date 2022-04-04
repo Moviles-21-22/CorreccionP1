@@ -61,5 +61,5 @@ public enum TipoPista {
         return value;
     }
 
-    private int value;
+    private final int value;
 }

@@ -8,45 +8,39 @@ import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.CellCallback;
 import es.ucm.arblemar.gamelogic.states.GameState;
 
+/**
+ * Generador de tableros correctos
+ */
 public class CreaTablero {
-    public CreaTablero(Tablero t, int tam) {
+    public CreaTablero(Tablero t, int tam, Celda[][] celdas) {
         _tab = t;
         _tam = tam;
-        _celdas = new Celda[_tam][_tam];
-
+        _celdas = celdas;
         // Lista de direcciones
         _dirs = new ArrayList<>();
         int[] dir = new int[2];
         // Arriba
         dir[0] = -1;
-        dir[1] = 0;
         _dirs.add(dir);
         // Abajo
+        dir = new int[2];
         dir[0] = 1;
         _dirs.add(dir);
         // Izquierda
-        dir[0] = 0;
+        dir = new int[2];
         dir[1] = -1;
         _dirs.add(dir);
         // Derecha
+        dir = new int[2];
         dir[1] = 1;
         _dirs.add(dir);
-    }
-
-    /**
-     * Devuelve el tablero generado
-     */
-    public Celda[][] getCeldas() {
-        return _celdas;
     }
 
     /**
      * Tablero de 4x4 del enunciado
      */
     public int testTab(final int[] tabPos, final float cSize, final Font cFont,
-                       final int tamFont, final float diam, final GameState gm) {
-        _celdas = new Celda[_tam][_tam];
-
+                       final int tamFont, final float diam) {
         //Tablero
         int[] pos;
         pos = new int[2];
@@ -66,7 +60,7 @@ public class CreaTablero {
                             0, pos, diam, ind);
                     _celdas[i][j].setCellCallback(new CellCallback() {
                         @Override
-                        public void doSomething(int x, int y) {
+                        public void doSomething(int x, int y, GameState gm) {
                             Pista pista = gm.getPista();
                             if (pista.getTipo() != TipoPista.NONE) {
                                 pista.setTipo(TipoPista.NONE);
@@ -79,8 +73,7 @@ public class CreaTablero {
                             0, pos, diam, ind);
                     _celdas[i][j].setCellCallback(new CellCallback() {
                         @Override
-                        public void doSomething(int x, int y) {
-                            //System.out.println("Animación Roja grande-pequeño.\nAlternar candado Rojas");
+                        public void doSomething(int x, int y, GameState gm) {
                             celdaBloqueada(x, y);
                         }
                     });
@@ -90,8 +83,7 @@ public class CreaTablero {
                                 1, pos, diam, ind);
                         _celdas[i][j].setCellCallback(new CellCallback() {
                             @Override
-                            public void doSomething(int x, int y) {
-                                //System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                            public void doSomething(int x, int y, GameState gm) {
                                 celdaBloqueada(x, y);
                             }
                         });
@@ -100,8 +92,7 @@ public class CreaTablero {
                                 2, pos, diam, ind);
                         _celdas[i][j].setCellCallback(new CellCallback() {
                             @Override
-                            public void doSomething(int x, int y) {
-                                //System.out.println("\nAnimación Azul grande-pequeño.\nAlternar candado Rojas");
+                            public void doSomething(int x, int y, GameState gm) {
                                 celdaBloqueada(x, y);
                             }
                         });
@@ -114,194 +105,7 @@ public class CreaTablero {
     }
 
     /**
-     * Genera un tablero random a partir siguiendo una serie de restricciones
-     */
-    public Celda[][] randomTab(int[] tabPos, float cSize, Font cFont, int tamFont, float diam) {
-        Random r = new Random();
-
-        initRedTab(tabPos, cSize, cFont, tamFont, diam);
-
-        while (_celdasAzules > 0) {
-            int n = r.nextInt(_tam);
-            int m = r.nextInt(_tam);
-            Celda originalCell = _celdas[n][m];
-
-            if (!esPosibleAzul(originalCell)) {
-                continue;
-            }
-            // Número de visibles de la celda
-            int numVisibles = r.nextInt(_tam) + 1;
-            int initNumVisibles = numVisibles;
-            int j = 0;
-
-            // Intenta poner en azul celdas aleatorias de una dirección
-            while (numVisibles > 0 && j < 4 && _celdasAzules > 0) {
-                int totalNeighsInDir;
-                if (numVisibles > 1) {
-                    totalNeighsInDir = r.nextInt(numVisibles - 1) + 1;
-                } else totalNeighsInDir = 1;
-                int[] dir = _dirs.get(j);
-                int step = 1;
-                while (step <= totalNeighsInDir) {
-                    Celda c = _celdas[n + (dir[0] * step)][m + (dir[1] * step)];
-
-                    // Si se puede poner en azul, se hace
-                    if (c != null && esPosibleAzul(c)) {
-                        step++;
-                        _celdasAzules--;
-                    }
-                    // Si no, entonces esta dirección deja de ser una opción
-                    else break;
-                }
-                j++;
-                numVisibles -= (step - 1);
-            }
-
-            // Si no se han podido añadir azules, se resetea la celda
-            if (initNumVisibles == numVisibles)
-                originalCell.setTipoCelda(TipoCelda.ROJO);
-        }
-
-        // Después de asignar nuevos valores para cada celda, hay que actualizar
-        //for (int i = 0; i < _tam; i++) {
-        //    for (int j = 0; j < _tam; j++) {
-        //        Celda c = _celdas[i][j];
-        //        if (c.getTipoCelda() != TipoCelda.ROJO.Red) {
-        //            // Se calculan los vecinos de una celda
-        //            int n = solver.visibleNeighbours(c);
-        //            c.setNeigh(n);
-        //        }
-        //    }
-        //}
-
-        // Finalmente se ponen en gris aquellas celdas visibles de las azules
-        // and we need to reset the visible cells to a grey state for the next step
-        //for (int i = 0; i < _tam; i++) {
-        //    for (int j = 0; j < _tam; j++) {
-        //        solver._visibleCells.add(c);
-        //        solver._freeCells++;
-        //        _celdas[i][j].setTipoCelda(TipoCelda.GRIS);
-        //        _celdas[i][j].setLock(false);
-        //        _celdas[i][j].setCellCallback(new CellCallback() {
-        //            @Override
-        //            public void doSomething(int x, int y) {
-        //                Pista pista = _gm.getPista();
-        //                if (pista.getTipo() != TipoPista.NONE) {
-        //                    pista.setTipo(TipoPista.NONE);
-        //                }
-        //                changeCellColor(x, y);
-        //            }
-        //        }, i, j);
-        //    }
-        //}
-
-        return _celdas;
-    }
-
-    /**
-     * Calcula el número de celdas que se pondrán en el tablero de cada tipo
-     */
-    public int calcularCeldas() {
-        Random rn = new Random();
-        // Se escoge un porcentaje del tablero aleatorio que puede quedar resuleto mediante
-        // la generación de azules y rojas
-        int porc = rn.nextInt(_maxSolved - _minSolved) + _minSolved;
-        // Porcentaje azules y rojas
-        int azules = rn.nextInt(porc / 2) + porc / 2;
-        int rojas = porc - azules;
-        // Número de azules y rojas tel tablero
-        _celdasAzules = Math.round(_tam * _tam * ((float) azules) / 100);
-        _celdasRojas = Math.round(_tam * _tam * ((float) rojas) / 100);
-        // En caso de que no se generen rojas, forzamos que salga una a costa de otra azul
-        if (_celdasRojas == 0) {
-            _celdasRojas = 1;
-            _celdasAzules--;
-        }
-        _celdasGrises = _tam * _tam - (_celdasAzules + _celdasRojas);
-
-        //System.out.println("----------");
-        //System.out.println("PORC: " + porc);
-        //System.out.println("Azules: " + _celdasAzules);
-        //System.out.println("Rojas: " + _celdasRojas);
-        //System.out.println("Grises: " + _celdasGrises);
-        //System.out.println("----------");
-
-        return _celdasGrises;
-    }
-
-    public Celda[][] generateTab() {
-
-//        if (!isSolution(solver)) {
-//            // if its not able, load it from file
-//            solver.reset();
-//        }
-//
-//        finishGeneration(solver);
-
-        return _celdas;
-    }
-
-    /**
-     * Checks if a puzzle can be solved, following the tips a player would receive
-     * @param solver solver the solver to test
-     * @return whether the grid corresponding to the solver is solvable or no
-     */
-//    public boolean isSolution()
-//    {
-//        Random r = new Random();
-//        boolean solved = false;
-//
-//        // while the game isn't solved yet
-//        while(!solved){
-//            int i= 0;
-//            int j = 0;
-//            Pista p = new Pista();
-//            while(i < _tam && p.getTipo() == TipoPista.NONE) {
-//                p = _tab.procesaPista(i, j);
-//                // see if there is any clue remaining
-//                if (p.getTipo() == TipoPista.NONE) {
-//                    // if there is not any new clue, add a new grey cell as locked
-//                    int rand = r.nextInt(solver._visibleCells.size());
-//                    Celda c = solver._visibleCells.get(rand);
-//                    c.setLock(true);
-//                    if (c.getNeigh() > 0)
-//                        c.setTipoCelda(TipoCelda.AZUL);
-//                    else c.setTipoCelda(TipoCelda.ROJO);
-//                } else {
-//                    // if there are still clues, keep following them until the game is over or there isn't any
-//                    int x = p.correctState().col();
-//                    int y = clue.correctState().row();
-//                    Cell c = solver._grid.getCell(x, y);
-//                    if (!c.isLocked()) {
-//                        solver._visibleCells.remove(c);
-//                        c.setState(clue.correctState().getState());
-//                    } else {
-//                        // if the clue returns a locked cell to edit
-//                        System.err.println("Clue should not be editable: ");
-//                        System.err.println(c.col() + " " + c.row());
-//                        System.err.println(clue.message());
-//                    }
-//
-//                }
-//
-//                j++;
-//                if(j == _tam){
-//                    j = 0;
-//                    i++;
-//                }
-//            }
-//
-//            solved = solver._visibleCells.size() == 0;
-//        }
-//
-//        Clue c = solver.getClue();
-//        return c == null || c.correctState() == null;
-//    }
-
-//------------------------------------------------------------------------------------------------//
-
-    /**
-     * Inicializa un tablero con celdas rojas
+     * Inicializa un tablero con celdas grises
      *
      * @param cSize   Tamaño de cada celda en la ventana
      * @param cFont   Tipo de fuente usada en las celdas
@@ -309,7 +113,7 @@ public class CreaTablero {
      * @param tabPos  Posición inicial del tablero
      * @param diam    Diámetro de cada celda
      */
-    private void initRedTab(int[] tabPos, float cSize, Font cFont, int tamFont, float diam) {
+    public void initGreyTab(int[] tabPos, float cSize, Font cFont, int tamFont, float diam) {
         int[] pos;
         pos = new int[2];
         for (int i = 0; i < _tam; i++) {
@@ -319,54 +123,226 @@ public class CreaTablero {
                 int[] ind = new int[2];
                 ind[0] = i;
                 ind[1] = j;
-                _celdas[i][j] = new Celda(TipoCelda.ROJO, cFont, tamFont,
+                Celda c = new Celda(TipoCelda.GRIS, cFont, tamFont,
                         0, pos, diam, ind);
-                _celdas[i][j].setCellCallback(new CellCallback() {
+                c.setCellCallback(new CellCallback() {
                     @Override
-                    public void doSomething(int x, int y) {
-                        celdaBloqueada(x, y);
+                    public void doSomething(int x, int y, GameState gm) {
+                        Pista pista = gm.getPista();
+                        if (pista.getTipo() != TipoPista.NONE) {
+                            pista.setTipo(TipoPista.NONE);
+                        }
+                        changeCellColor(x, y, gm);
                     }
                 });
+                _celdas[i][j] = c;
             }
         }
     }
 
     /**
-     * Intenta asignar la celda como azul
-     *
-     * @param c La celda que se va a probar
-     * @return Devuelve si es posible o no
+     * Calcula el número máximo de azules y rojas que habrá en el tablero al completarlo
      */
-    private boolean esPosibleAzul(Celda c) {
-        c.setTipoCelda(TipoCelda.AZUL);
-        c.setCellCallback(new CellCallback() {
-            @Override
-            public void doSomething(int x, int y) {
-                celdaBloqueada(x, y);
-            }
-        });
-        int value;
-        for (int i = 0; i < _dirs.size(); i++) {
-            // and search if adding to blue the cell, will exceed the neighbours of one of its neighbours
-            for (int j = 0; j < _dirs.size(); j++) {
-                int row = c.getRow() + _dirs.get(i)[0] * j;
-                int col = c.getCol() + _dirs.get(j)[1] * j;
-                if (row >= _tam || row < 0 || col >= _tam || col < 0) break;
+    public void calcularCeldas() {
+        Random rn = new Random();
+        int result = rn.nextInt(_maxBlues - _minBlues) + _minBlues;
+        _celdasAzules = Math.round(_tam * _tam * (float) result / 100);
+        _celdasRojas = _tam * _tam - _celdasAzules;
+        System.out.println("ROJAS INIT: " + _celdasRojas);
+        System.out.println("AZULES INIT: " + _celdasAzules);
+    }
 
-                Celda ady = _celdas[row][col];
-                // Si se excede el número de vecinos, se resetea
-                value = numVisibles(ady);
-                if (value > _tam) {
-                    c.setTipoCelda(TipoCelda.ROJO);
-                    c.setCellCallback(new CellCallback() {
-                        @Override
-                        public void doSomething(int x, int y) {
-                            celdaBloqueada(x, y);
-                        }
-                    });
+    /**
+     * Genera un tablero aleatorio
+     *
+     * @param tabPos  Posición del tablero en la ventana del juego
+     * @param cSize   Tamaño de las celdas en la ventana del juego
+     * @param cFont   Fuente de las celdas
+     * @param tamFont Tamaño de la fuente de las celdas
+     * @param diam    Diámetro de las celdas en la ventana del juego
+     * @return Deuvelve si ha sido posible la creación de un tablero
+     */
+    public boolean creaTablero(final int[] tabPos, final float cSize, final Font cFont,
+                               final int tamFont, final float diam) {
+        _blueLeft = _celdasAzules;
+        _redLeft = _celdasRojas;
+
+        boolean created = false;
+        try {
+            created = creaTableroRec(tabPos, cSize, cFont, tamFont, diam, 0, 0);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return created;
+    }
+
+    public int getGrises() {
+        return _celdasGrises;
+    }
+
+//-------------------------------------RECURSIÓN--------------------------------------------------//
+
+    /**
+     * Genera un tablero aleatorio de forma recursiva usando BackTracking
+     * 1. Se añade una nueva celda
+     * 2. Se comprueba si es posible añadirla( rojo o azul)
+     * 3. Se mira si está lleno el tablero
+     * 4. Si está lleno, se comprueba que sea solución
+     * 5. Si es solución, se asignan las celdas grises
+     *
+     * @param tabPos  Posición del tablero en la ventana del juego
+     * @param cSize   Tamaño de las celdas en la ventana del juego
+     * @param cFont   Fuente de las celdas
+     * @param tamFont Tamaño de la fuente de las celdas
+     * @param diam    Diámetro de las celdas en la ventana del juego
+     * @return Deuvelve si ha sido posible la creación de un tablero
+     */
+    private boolean creaTableroRec(final int[] tabPos, final float cSize, final Font cFont,
+                                   final int tamFont, final float diam, int i, int j) {
+        // 3. ¿Está lleno?
+        if (i >= _tam) {
+            // 4. ¿Es solución?
+            if (isSolution()) {
+                // Se ponen en grises las celdas que toquen
+                makeGreyCells();
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        // 1. Asignación de una nueva celda
+        Random rn = new Random();
+        int tryCell = rn.nextInt(2);
+        TipoCelda initTipo = tryCell == 0 ? TipoCelda.AZUL : TipoCelda.ROJO;
+        Celda c = _celdas[i][j];
+        c.setTipoCelda(initTipo);
+
+        // 2. ¿Es posible añadirla?
+        if ((initTipo == TipoCelda.AZUL && !isPossibleToAddBlue(c, initTipo))
+                || (initTipo == TipoCelda.ROJO && !isPossibleToAddRed(c, initTipo))) {
+            c.setTipoCelda(TipoCelda.GRIS);
+            return false;
+        }
+
+        // Ha sido posible. ¿Qué color fue el que se añadió?
+        if (c.getTipoCelda() == TipoCelda.AZUL) {
+            _blueLeft--;
+        } else {
+            _redLeft--;
+        }
+
+        // Siguiente celda
+        j++;
+        if (j >= _tam) {
+            j = 0;
+            i++;
+        }
+
+        // ¿Hay solución con la celda actual en el color actual?
+        if (!creaTableroRec(tabPos, cSize, cFont, tamFont, diam, i, j)) {
+            // Si falla, entonces se intenta de nuevo con el otro tipo de celda
+            return tryAgain(initTipo, c, tabPos, cSize, cFont, tamFont, diam, i, j);
+        }
+
+        return true;
+    }
+
+    /**
+     * Vuelve a intentar la generación del tablero a partir de la celda donde falló
+     * @param initTipo Color de la celda inicialmente
+     * @param c Celda desde la que se quiere mirar
+     * @param tabPos  Posición del tablero en la ventana del juego
+     * @param cSize   Tamaño de las celdas en la ventana del juego
+     * @param cFont   Fuente de las celdas
+     * @param tamFont Tamaño de la fuente de las celdas
+     * @param diam    Diámetro de las celdas en la ventana del juego
+     * @param i Fila de la siguiente celda en el tablero
+     * @param j Columna de la siguiente celda en el tablero
+     * @return Devuelve si ha sido posible la generación
+     */
+    private  boolean tryAgain(TipoCelda initTipo, Celda c, final int[] tabPos, final float cSize, final Font cFont,
+                              final int tamFont, final float diam, int i, int j){
+        // ¿Ha cambiado el tipoCelda con el que empezó la celda?
+        // No: Entonces no se ha comprobado con el otro tipo
+        // Sí: Entonces ya se comprobó con el otro tipo y se cambió porque no fue posible
+        if (initTipo != c.getTipoCelda()) {
+            if (c.getTipoCelda() == TipoCelda.AZUL) {
+                _blueLeft++;
+            } else {
+                _redLeft++;
+            }
+
+            c.setTipoCelda(TipoCelda.GRIS);
+            return false;
+        }
+
+        // Cambio de tipo
+        if (initTipo == TipoCelda.AZUL) {
+            _blueLeft++;
+            // Si al cambiar de tipo no quedan más del otro tipo por colocar
+            // entonces no se puede hacer nada más
+            if (_redLeft == 0) {
+                c.setTipoCelda(TipoCelda.GRIS);
+                return false;
+            }
+            c.setTipoCelda(TipoCelda.ROJO);
+        } else {
+            _redLeft++;
+            // Si al cambiar de tipo no quedan más del otro tipo por colocar
+            // entonces no se puede hacer nada más
+            if (_blueLeft == 0) {
+                c.setTipoCelda(TipoCelda.GRIS);
+                return false;
+            }
+            c.setTipoCelda(TipoCelda.AZUL);
+        }
+
+        // ¿Es posible añadir el nuevo tipo?
+        if ((initTipo == TipoCelda.ROJO && !isPossibleToAddBlue(c, initTipo))
+                || (initTipo == TipoCelda.AZUL && !isPossibleToAddRed(c, initTipo))) {
+            c.setTipoCelda(TipoCelda.GRIS);
+            return false;
+        }
+
+        // ¿El nuevo tipo ya probó antes?
+        // Sí: eso significa que el tipo inicial de la celda y el tipo actual son el mismo
+        if (initTipo == c.getTipoCelda()) {
+            return false;
+        }
+        // No: Entonces se prueba el nuevo tipo
+        if (c.getTipoCelda() == TipoCelda.AZUL) {
+            _blueLeft--;
+        } else {
+            _redLeft--;
+        }
+
+        // ¿Se puede crear un tablero con el nuevo tipo?
+        // No: Entonces se descarta y se devuelve false
+        if (!creaTableroRec(tabPos, cSize, cFont, tamFont, diam, i, j)) {
+            if (c.getTipoCelda() == TipoCelda.AZUL) {
+                _blueLeft++;
+            } else {
+                _redLeft++;
+            }
+            c.setTipoCelda(TipoCelda.GRIS);
+            return false;
+        }
+        // Sí, ha sido posible
+        return true;
+    }
+
+    /**
+     * Comprueba que el tablero generado sea solución.
+     * En caso de que haya pistas significa que no es solución
+     */
+    private boolean isSolution() {
+        for (int i = 0; i < _tam; i++) {
+            for (int j = 0; j < _tam; j++) {
+                Pista p = _tab.procesaPista(i, j);
+                if (p.getTipo() != TipoPista.NONE) {
                     return false;
-                } else {
-                    c.setValue(value);
                 }
             }
         }
@@ -375,16 +351,111 @@ public class CreaTablero {
     }
 
     /**
-     * Cambia el color de la celda correspondiente
-     * Actualiza el contador de grises que tenemos en el tablero
+     * Comprueba si se puede añadir una celda azul
      *
-     * @param i: Fila de la celda
-     * @param j: Columna de la celda
+     * @param c        Celda que se va a cambiar a roja
+     * @param prevTipo Es el tipo de la celda que se probó antes
+     * @return Devuelve si ha sido posible la asignación a azul
+     */
+    private boolean isPossibleToAddBlue(Celda c, TipoCelda prevTipo) {
+        // No quedan más azules por colocar
+        if (_blueLeft == 0) {
+            // Si vino en azul, se prueba con el rojo
+            if (prevTipo == TipoCelda.AZUL) {
+                c.setTipoCelda(TipoCelda.ROJO);
+                return isPossibleToAddRed(c, TipoCelda.AZUL);
+            }
+            // Ya se probó con el rojo antes, así que se descarta
+            else if (prevTipo == TipoCelda.ROJO) {
+                return false;
+            }
+        }
+
+        // ¿Añadir la nueva celda ha roto el tablero?
+        for (int i = 0; i < _tam; i++) {
+            for (int j = 0; j < _tam; j++) {
+                Celda aux = _celdas[i][j];
+                if (aux.getTipoCelda() == TipoCelda.AZUL) {
+                    int n = numVisibles(aux);
+                    // Ninguna celda azul puede ver más que el tamaño del tablero
+                    if (n > _tam) {
+                        // Ya se intentó hacer el cambio de color, se descarta
+                        if (prevTipo == TipoCelda.ROJO) {
+                            return false;
+                        }
+                        c.setTipoCelda(TipoCelda.ROJO);
+                        return isPossibleToAddRed(c, TipoCelda.AZUL);
+                    }
+                    // Se le pone un valor a la celda
+                    aux.showText(true, n);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Comprueba si se puede añadir una celda roja
+     *
+     * @param c        Celda que se va a cambiar a roja
+     * @param prevTipo Es el tipo de la celda que se probó antes
+     * @return Devuelve si ha sido posible la asignación a rojo
+     */
+    private boolean isPossibleToAddRed(Celda c, TipoCelda prevTipo) {
+        // No quedan más rojas por colocar
+        if (_redLeft == 0) {
+            // Si vino en rojo, se prueba con el azul
+            if (prevTipo == TipoCelda.ROJO) {
+                c.setTipoCelda(TipoCelda.AZUL);
+                return isPossibleToAddBlue(c, TipoCelda.ROJO);
+            }
+            // Ya se probó con el azul antes, así que se descarta
+            else if (prevTipo == TipoCelda.AZUL) {
+                return false;
+            }
+        }
+
+        // ¿Añadir la nueva celda ha roto el tablero?
+        for (int i = 0; i < _tam; i++) {
+            for (int j = 0; j < _tam; j++) {
+                Celda aux = _celdas[i][j];
+                if (aux.getTipoCelda() == TipoCelda.AZUL) {
+                    int n = numVisibles(aux);
+                    // Todas las celdas azules deben ver al menos 1 celda contigua
+                    if (n < 1) {
+                        // Ya se intentó hacer el cambio de color, se descarta
+                        if (prevTipo == TipoCelda.AZUL) {
+                            return false;
+                        }
+                        c.setTipoCelda(TipoCelda.AZUL);
+                        return isPossibleToAddBlue(c, TipoCelda.ROJO);
+                    }
+                    // Se le pone un valor a la celda
+                    aux.showText(true, n);
+                }
+            }
+        }
+
+        return true;
+    }
+//------------------------------------------------------------------------------------------------//
+
+    /**
+     * Callback para cambiar el color de la celda correspondiente,
+     * actualizar el contador de grises del tablero, añadir movimientos
+     * a la pila de movimientos y para detener, si es posible, el temporizador
+     * activo del GameState
+     *
+     * @param i:  Fila de la celda
+     * @param j:  Columna de la celda
+     * @param gm: Referencia al GameState
      */
     private void changeCellColor(int i, int j, GameState gm) {
 
         _tab.changeCellColor(i, j);
 
+        // Se añade a la pila de movimientos
         int[] coors = new int[2];
         coors[0] = i;
         coors[1] = j;
@@ -398,11 +469,12 @@ public class CreaTablero {
         if (_tab.getCelda(i, j).getTipoCelda() == TipoCelda.GRIS)
             _tab.addGreyCell(1);
 
+        // Si hay algún temporizador activo, se para
         gm.stopTimer();
     }
 
     /**
-     * Hace vibrar a la celda pulsada y muestra/oculta los candados
+     * Callback para hacer  vibrar a la celda pulsada y mostrar/ocultar los candados
      * en las celdas bloqueadas rojas
      *
      * @param i: Fila de la celda
@@ -412,14 +484,83 @@ public class CreaTablero {
         _tab.getCelda(i, j).activeAnim();
 
         //Para activar o desactivar los candados
-        for (int x = 0; x < _tam; x++) {
-            for (int y = 0; y < _tam; y++) {
-                _tab.getCelda(i, j).alternaCandado();
+        for (int n = 0; n < _tam; n++) {
+            for (int m = 0; m < _tam; m++) {
+                _tab.getCelda(n, m).alternaCandado();
             }
         }
     }
 
-//------------------------------------------------------------------------------------------------//
+    /**
+     * Termina de generar el tablero asignando las celdas grises y azules fijas que
+     * correspondan en función de números aleatorios y de las rojas que se hayan generado.
+     */
+    private void makeGreyCells() {
+        Random rn = new Random();
+        float result = (float) (rn.nextInt(_maxGrey - _minGrey) + _minGrey) / 100;
+        _celdasGrises = Math.round(_tam * _tam * result);
+        int blue_red = Math.round((1 - result) * 100);
+        result = (float) (rn.nextInt(blue_red / 2) + blue_red / 2) / 100;
+        _celdasAzules = Math.round( _tam * _tam * result);
+        _celdasRojas =  _tam * _tam - _celdasAzules - _celdasGrises;
+
+        if(_celdasRojas == 0){
+            _celdasRojas = 1;
+            _celdasAzules -= 1;
+        }
+
+        System.out.println("ROJAS: " + _celdasRojas);
+        System.out.println("AZULES: " + _celdasAzules);
+        System.out.println("GRISES: " + _celdasGrises);
+
+        // Asignación de azules fijas aleatorias
+        while (_celdasAzules > 0) {
+            int i = rn.nextInt(_tam);
+            int j = rn.nextInt(_tam);
+            Celda c = _celdas[i][j];
+            if (c.getTipoCelda() == TipoCelda.AZUL && !c.isLock()) {
+                _celdasAzules--;
+                c.setLock(true);
+                c.setCellCallback(new CellCallback() {
+                    @Override
+                    public void doSomething(int x, int y, GameState gm) {
+                        celdaBloqueada(x, y);
+                    }
+                });
+                int value = numVisibles(c);
+                c.showText(true, value);
+            }
+        }
+
+        // Asignación de rojas fijas aleatorias
+        while (_celdasRojas > 0) {
+            int i = rn.nextInt(_tam);
+            int j = rn.nextInt(_tam);
+            Celda c = _celdas[i][j];
+            if (c.getTipoCelda() == TipoCelda.ROJO && !c.isLock()) {
+                _celdasRojas--;
+                c.setLock(true);
+                c.setCellCallback(new CellCallback() {
+                    @Override
+                    public void doSomething(int x, int y, GameState gm) {
+                        celdaBloqueada(x, y);
+                    }
+                });
+                c.showText(false, 0);
+            }
+        }
+
+        // Asignación de grises
+        for (int i = 0; i < _tam; i++) {
+            for (int j = 0; j < _tam; j++) {
+                Celda c = _celdas[i][j];
+                if (!c.isLock()) {
+                    c.setTipoCelda(TipoCelda.GRIS);
+                    c.showText(false, 0);
+                }
+            }
+        }
+    }
 
     /**
      * Cuenta el número de visibles de una celda
@@ -427,7 +568,7 @@ public class CreaTablero {
      * @param c Celda que se quiere mirar
      * @return Número de visibles
      */
-    public int numVisibles(Celda c) {
+    private int numVisibles(Celda c) {
         int n = 0;
         for (int[] d : _dirs) {
             n += visiblesOneDirection(c, d);
@@ -438,29 +579,39 @@ public class CreaTablero {
     /**
      * Número de celdas visibles en una dirección
      *
-     * @param c Celda desde la que se mira
-     * @param d Dirección en la que se mira
+     * @param initC Celda desde la que se mira
+     * @param d     Dirección en la que se mira
      * @return Cantidad de visibles
      */
-    private int visiblesOneDirection(Celda c, int[] d) {
-        int visibles = -1;
+    private int visiblesOneDirection(Celda initC, int[] d) {
+        int visibles = 0;
         int i = 1;
-        while (c.getTipoCelda() == TipoCelda.AZUL) {
-            int row = c.getRow() + d[0] * i;
-            int col = c.getCol() + d[1] * i;
-            if (row >= _tam || row < 0 || col >= _tam || col < 0) break;
+        int row = initC.getRow() + d[0] * i;
+        int col = initC.getCol() + d[1] * i;
 
-            c = _celdas[row][col];
+        while (row >= 0 && row < _tam && col < _tam && col >= 0
+                && _celdas[row][col].getTipoCelda() == TipoCelda.AZUL) {
             visibles++;
             i++;
+            // Siguiente
+            row = initC.getRow() + d[0] * i;
+            col = initC.getCol() + d[1] * i;
         }
         return visibles;
     }
-
 //------------------------------------------------------------------------------------------------//
 
+    /**
+     * Referencia a la clase gestora del tablero
+     */
     Tablero _tab;
+    /**
+     * Tamaño del tablero
+     */
     int _tam;
+    /**
+     * Array de celdas del tablero
+     */
     Celda[][] _celdas;
     /**
      * Celdas grises que posee el tablero.
@@ -477,15 +628,31 @@ public class CreaTablero {
      */
     int _celdasRojas;
     /**
-     * Porcentaje mínimo del tablero que puede
-     * quedar resuleto al generarlo
+     * Porcentaje mínimo de azules que habrá con el
+     * tablero completo
      */
-    final int _minSolved = 30;
+    final int _minBlues = 50;
     /**
-     * Porcentaje máximo del tablero que puede
-     * quedar resuleto al generarlo
+     * Porcentaje máximo de azules que habrá con el
+     * tablero completo
      */
-    final int _maxSolved = 45;
+    final int _maxBlues = 65;
+    /**
+     * Porcentaje mínimo de grises que habrá con el tablero
+     */
+    final int _minGrey = 55;
+    /**
+     * Porcentaje máximo de grises que habrá con el tablero
+     */
+    final int _maxGrey = 65;
+    /**
+     * Cuenta las azules que quedan por asignar
+     */
+    int _blueLeft;
+    /**
+     * Cuenta las rojas que quedan por asignar
+     */
+    int _redLeft;
     /**
      * Lista de direcciones
      */
