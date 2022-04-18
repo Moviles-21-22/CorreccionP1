@@ -148,8 +148,6 @@ public class CreaTablero {
         int result = rn.nextInt(_maxBlues - _minBlues) + _minBlues;
         _celdasAzules = Math.round(_tam * _tam * (float) result / 100);
         _celdasRojas = _tam * _tam - _celdasAzules;
-        System.out.println("ROJAS INIT: " + _celdasRojas);
-        System.out.println("AZULES INIT: " + _celdasAzules);
     }
 
     /**
@@ -251,19 +249,20 @@ public class CreaTablero {
 
     /**
      * Vuelve a intentar la generación del tablero a partir de la celda donde falló
+     *
      * @param initTipo Color de la celda inicialmente
-     * @param c Celda desde la que se quiere mirar
-     * @param tabPos  Posición del tablero en la ventana del juego
-     * @param cSize   Tamaño de las celdas en la ventana del juego
-     * @param cFont   Fuente de las celdas
-     * @param tamFont Tamaño de la fuente de las celdas
-     * @param diam    Diámetro de las celdas en la ventana del juego
-     * @param i Fila de la siguiente celda en el tablero
-     * @param j Columna de la siguiente celda en el tablero
+     * @param c        Celda desde la que se quiere mirar
+     * @param tabPos   Posición del tablero en la ventana del juego
+     * @param cSize    Tamaño de las celdas en la ventana del juego
+     * @param cFont    Fuente de las celdas
+     * @param tamFont  Tamaño de la fuente de las celdas
+     * @param diam     Diámetro de las celdas en la ventana del juego
+     * @param i        Fila de la siguiente celda en el tablero
+     * @param j        Columna de la siguiente celda en el tablero
      * @return Devuelve si ha sido posible la generación
      */
-    private  boolean tryAgain(TipoCelda initTipo, Celda c, final int[] tabPos, final float cSize, final Font cFont,
-                              final int tamFont, final float diam, int i, int j){
+    private boolean tryAgain(TipoCelda initTipo, Celda c, final int[] tabPos, final float cSize, final Font cFont,
+                             final int tamFont, final float diam, int i, int j) {
         // ¿Ha cambiado el tipoCelda con el que empezó la celda?
         // No: Entonces no se ha comprobado con el otro tipo
         // Sí: Entonces ya se comprobó con el otro tipo y se cambió porque no fue posible
@@ -496,40 +495,50 @@ public class CreaTablero {
      * correspondan en función de números aleatorios y de las rojas que se hayan generado.
      */
     private void makeGreyCells() {
+        // Generacción de grupos de azules
+        List<List<int[]>> groups = new ArrayList<>();
+        selectGroups(groups);
+
+        // Seleccion de grises
         Random rn = new Random();
         float result = (float) (rn.nextInt(_maxGrey - _minGrey) + _minGrey) / 100;
         _celdasGrises = Math.round(_tam * _tam * result);
+        // Seleccion de azules y rojas
         int blue_red = Math.round((1 - result) * 100);
-        result = (float) (rn.nextInt(blue_red / 2) + blue_red / 2) / 100;
-        _celdasAzules = Math.round( _tam * _tam * result);
-        _celdasRojas =  _tam * _tam - _celdasAzules - _celdasGrises;
+        // El mínimo de azules será el número de grupos de azules que haya
+        int minBlues = groups.size();
+        result = (float) (rn.nextInt(blue_red / 5) + blue_red * 2 / 5) / 100;
+        _celdasAzules = Math.round(_tam * _tam * result);
+        int tries = 0;
+        while (_celdasAzules < minBlues) {
+            result = (float) (rn.nextInt(blue_red / 5) + blue_red * 2 / 5) / 100;
+            _celdasAzules = Math.round(_tam * _tam * result);
+            tries++;
+        }
+        System.out.println("Azules generadas tras: " + tries + " intentos.");
 
-        if(_celdasRojas == 0){
+        _celdasRojas = _tam * _tam - _celdasAzules - _celdasGrises;
+
+        // Que se fije al menos una roja
+        if (_celdasRojas == 0) {
             _celdasRojas = 1;
             _celdasAzules -= 1;
         }
 
-        System.out.println("ROJAS: " + _celdasRojas);
-        System.out.println("AZULES: " + _celdasAzules);
-        System.out.println("GRISES: " + _celdasGrises);
-
-        // Asignación de azules fijas aleatorias
+        // Asignación de azules fijas en función de los grupos
+        // Se seleccionan las azules con mayor valor de cada grupo
         while (_celdasAzules > 0) {
-            int i = rn.nextInt(_tam);
-            int j = rn.nextInt(_tam);
-            Celda c = _celdas[i][j];
-            if (c.getTipoCelda() == TipoCelda.AZUL && !c.isLock()) {
-                _celdasAzules--;
-                c.setLock(true);
-                c.setCellCallback(new CellCallback() {
-                    @Override
-                    public void doSomething(int x, int y, GameState gm) {
-                        celdaBloqueada(x, y);
-                    }
-                });
-                int value = numVisibles(c);
-                c.showText(true, value);
-            }
+            Celda c = getMostFreqBlue(groups);
+            _celdasAzules--;
+            c.setLock(true);
+            c.setCellCallback(new CellCallback() {
+                @Override
+                public void doSomething(int x, int y, GameState gm) {
+                    celdaBloqueada(x, y);
+                }
+            });
+            int value = numVisibles(c);
+            c.showText(true, value);
         }
 
         // Asignación de rojas fijas aleatorias
@@ -560,6 +569,66 @@ public class CreaTablero {
                 }
             }
         }
+    }
+
+    /**
+     * Devuelve la celda con mayor frecuencia dentro de
+     * los grupos de azules para ponerla como fija
+     *
+     * @param groups Grupo de azules generado anteriormente
+     */
+    private Celda getMostFreqBlue(List<List<int[]>> groups) {
+        // 1. ¿Todos los grupos tienen al menos una fija?
+        int numPerman = 0;
+        for (int i = 0; i < groups.size(); i++) {
+            for (int j = 0; j < groups.get(i).size(); j++) {
+                int[] aux = groups.get(i).get(j);
+                Celda c = _celdas[aux[0]][aux[1]];
+                if (c.isLock()) {
+                    numPerman++;
+                    break;
+                }
+            }
+            // Si en la primera iteración no hay ninguna bloqueada
+            // entonces se puede trabajar con ella directamente
+            if (numPerman == 0)
+                break;
+        }
+
+        int value = 0;
+        // Azul
+        Celda blue = _celdas[groups.get(0).get(0)[0]][groups.get(0).get(0)[1]];
+
+        // 2. Si no están todos con fijas, se trabaja con la que toque
+        if (numPerman < groups.size()) {
+            for (int j = 0; j < groups.get(numPerman).size(); j++) {
+                int[] cell = groups.get(numPerman).get(j);
+                Celda c = _celdas[cell[0]][cell[1]];
+                if (c.getValue() > value) {
+                    // Nuevo valor maximo
+                    value = c.getValue();
+                    // Nuevo azul
+                    blue = c;
+                }
+            }
+        }
+        // 3. Si están todos, entonces se coge cualquiera no bloqueada
+        else {
+            for (int i = 0; i < groups.size(); i++) {
+                for (int j = 0; j < groups.get(i).size(); j++) {
+                    int[] cell = groups.get(i).get(j);
+                    Celda c = _celdas[cell[0]][cell[1]];
+                    if (c.getValue() > value && !c.isLock()) {
+                        // Nuevo valor maximo
+                        value = c.getValue();
+                        // Nuevo azul
+                        blue = c;
+                    }
+                }
+            }
+        }
+
+        return blue;
     }
 
     /**
@@ -599,6 +668,121 @@ public class CreaTablero {
         }
         return visibles;
     }
+
+    /**
+     * Genera una lista de grupos donde cada grupo
+     * contiene las azules que son visibles entre sí
+     *
+     * @param groups Lista de grupos de azules
+     */
+    private void selectGroups(List<List<int[]>> groups) {
+        int i = 0;
+        int j = 0;
+        while (i < _tam) {
+            Celda c = _celdas[i][j];
+            // 1. Búsqueda de azules
+            if (c.getTipoCelda() == TipoCelda.AZUL) {
+                int[] index = new int[2];
+                index[0] = c.getRow();
+                index[1] = c.getCol();
+                // 2. ¿Está añadida en algún grupo?
+                boolean added;
+                added = isAddedInGroup(groups, index[0], index[1]);
+                // NO
+                if (!added) {
+                    // 3 Se añade nuevo grupo
+                    groups.add(new ArrayList<int[]>());
+                    int g = groups.size() - 1;
+                    // 3.1 Se añade la celda
+                    groups.get(g).add(index);
+                    // 4. Se añaden todos los contiguos
+                    addAllVisiblesFromCell(groups, g);
+                }
+            }
+            // NEXT
+            j++;
+            if (j == _tam) {
+                j = 0;
+                i++;
+            }
+        }
+    }
+
+    /**
+     * Comprueba si la celda está añadida en algún grupo de azules
+     *
+     * @param groups Grupo de azules
+     * @param row    Fila de la celda
+     * @param col    Columna de la celda
+     * @return Devuelve si está añadida
+     */
+    boolean isAddedInGroup(final List<List<int[]>> groups, final int row, final int col) {
+        for (int i = 0; i < groups.size(); i++) {
+            List<int[]> blues = groups.get(i);
+            for (int j = 0; j < blues.size(); j++) {
+                int[] pair = blues.get(j);
+                if (pair[0] == row && pair[1] == col) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Añade todas las visibles y las contiguas de
+     * estas visibles al grupo de azules de la celda origen
+     *
+     * @param groups Grupo de azules
+     * @param g      Índice del grupo de azules de la celda origen
+     */
+    void addAllVisiblesFromCell(List<List<int[]>> groups, int g) {
+        // 4.1 Añadir todos los visibles (y los contiguos a éstos)
+        int k = 0;
+        int currRow = groups.get(g).get(k)[0];
+        int currCol = groups.get(g).get(k)[1];
+        int d = 0;
+
+        while (true) {
+            // 4.2 Reset de la siguiente celda
+            int i = 1;
+            int row = currRow + _dirs.get(d)[0] * i;
+            int col = currCol + _dirs.get(d)[1] * i;
+
+            // 4.3 Búsqueda de azules en una dirección
+            while (row >= 0 && row < _tam && col < _tam && col >= 0
+                    && _celdas[row][col].getTipoCelda() == TipoCelda.AZUL) {
+                boolean added = isAddedInGroup(groups, row, col);
+                // 4.4 ¿Está añadido?
+                if (!added) {
+                    // 4.5 Se añade la celda
+                    int[] index = new int[2];
+                    index[0] = row;
+                    index[1] = col;
+                    groups.get(g).add(index);
+                }
+
+                // Next cell
+                i++;
+                row = currRow + _dirs.get(d)[0] * i;
+                col = currCol + _dirs.get(d)[1] * i;
+            }
+
+            // Cambio de direccion
+            d++;
+            if (d == _dirs.size()) {
+                d = 0;
+                k++;
+                // 4.6 ¿Quedan más celdas en el grupo?
+                if (k >= groups.get(g).size())
+                    break;
+                currRow = groups.get(g).get(k)[0];
+                currCol = groups.get(g).get(k)[1];
+            }
+        }
+    }
+
 //------------------------------------------------------------------------------------------------//
 
     /**
