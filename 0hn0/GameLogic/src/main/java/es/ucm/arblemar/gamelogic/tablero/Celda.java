@@ -1,5 +1,8 @@
 package es.ucm.arblemar.gamelogic.tablero;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
@@ -18,6 +21,8 @@ public class Celda {
     public Celda(TipoCelda tc, Font f, int tamFont, int val, int[] pos,
                  float diam, int[] ind) {
         _tipoCelda = tc;
+        _visibles = new ArrayList<>();
+
         // La celda se bloquea cuando es distinta de gris
         _lock = _tipoCelda != TipoCelda.GRIS;
         _font = f;
@@ -102,6 +107,7 @@ public class Celda {
     }
 
 //-------------------------------------------CALLBACKS--------------------------------------------//
+
     /**
      * Pone en marcha la funcionalidad
      * asociada al callback
@@ -118,6 +124,7 @@ public class Celda {
 
     /**
      * Asocia un nuevo callback a la celda
+     *
      * @param cb: Callback de tipo ButtonCallback
      */
     public void setCallback(ButtonCallback cb) {
@@ -126,6 +133,7 @@ public class Celda {
 
     /**
      * Asocia el nuevo callback a la celda
+     *
      * @param cbc: Callback de tipo CellCallback
      */
     public void setCellCallback(CellCallback cbc) {
@@ -135,6 +143,7 @@ public class Celda {
 //------------------------------------------------------------------------------------------------//
 
 //--------------------------------------------GET-SET---------------------------------------------//
+
     /**
      * Devuelve si la celda está bloqueada o no
      */
@@ -162,32 +171,44 @@ public class Celda {
     /**
      * Devuelve el tipo de la celda
      */
-    public TipoCelda getTipoCelda() { return _tipoCelda; }
+    public TipoCelda getTipoCelda() {
+        return _tipoCelda;
+    }
 
     /**
      * Devuelve la posición de renderizado de la celda
      */
-    public int[] getPos() { return _pos; }
+    public int[] getPos() {
+        return _pos;
+    }
 
     /**
      * Devuelve la fila de la celda en el tablero
      */
-    public int getRow(){
+    public int getRow() {
         return _i;
     }
 
     /**
      * Devuelve la columna de la celda en el tablero
      */
-    public int getCol(){
+    public int getCol() {
         return _j;
     }
 
     /**
+     * Devuelve la lista de visibles
+     */
+    public List<Celda> getVisibles() {
+        return _visibles;
+    }
+
+    /**
      * Asigna un nuevo tipo de celda
+     *
      * @param c: El nuevo tipo de celda
      */
-    public void setTipoCelda(TipoCelda c){
+    public void setTipoCelda(TipoCelda c) {
         _tipoCelda = c;
         switch (_tipoCelda) {
             case GRIS: {
@@ -208,24 +229,42 @@ public class Celda {
     /**
      * Cambia el estado lock de la celda
      */
-    public void setLock(boolean isLock){
+    public void setLock(boolean isLock) {
         _lock = isLock;
     }
 
+    /**
+     * Añade una nueva celda a la lista de visibles
+     *
+     * @param c Celda visible
+     */
+    public void addVisible(Celda c) {
+        if (_visibles.contains(c))
+            return;
+        _visibles.add(c);
+    }
+
+    /**
+     * Limpia la lista de visibles
+     */
+    public void clearVisibles() {
+        _visibles.clear();
+    }
 //------------------------------------------------------------------------------------------------//
 
 //------------------------------------------ANIMACIONES-------------------------------------------//
+
     /**
      * Inicializa los atributos relacionados con animaciones
      */
-    private void initAnims(){
+    private void initAnims() {
         _actAnim = false;
         _lastFrame = 0;
         _currFrame = 0;
         _nextFrame = 1;
         _diametroMin = _diametro;
-        _diametroMax = (float)(_diametro * 1.1);
-        _dirAnim = (int)(_diametroMax / _diametro);
+        _diametroMax = (float) (_diametro * 1.1);
+        _dirAnim = (int) (_diametroMax / _diametro);
         _numAnims = 0;
         _candado = false;
         _posCand = new int[2];
@@ -256,7 +295,7 @@ public class Celda {
         }
     }
 
-    public void backColor(){
+    public void backColor() {
         switch (_tipoCelda) {
             case AZUL: {
                 _tipoCelda = GRIS;
@@ -274,7 +313,9 @@ public class Celda {
     /**
      * Activa la animación de celda bloqueada
      */
-    public void activeAnim() { _actAnim = true; }
+    public void activeAnim() {
+        _actAnim = true;
+    }
 
     /**
      * Alterna entre poner o no el candado
@@ -289,13 +330,27 @@ public class Celda {
 
     /**
      * Muestra el valor de la celda o no en función de show
+     *
      * @param show Determina si se debe mostrar el valor de la celda
-     * @param v Valor que se quiere mostrar de la celda
+     * @param v    Valor que se quiere mostrar de la celda
      */
     public void showText(boolean show, int v) {
         _drawText = show;
         if (show) {
             _value = v;
+            posicionaTexto();
+        }
+    }
+
+    /**
+     * Activa/Desactiva el valor de la celda
+     *
+     * @param show Determina si se debe mostrar el valor de la celda
+     */
+    public void showText(boolean show) {
+        _drawText = show;
+        if (show) {
+            _value = _visibles.size();
             posicionaTexto();
         }
     }
@@ -348,7 +403,8 @@ public class Celda {
      * _i -> Fila
      * _j -> Columna
      */
-    private int _i, _j;
+    private final int _i;
+    private final int _j;
     /**
      * Diámetro del circulo
      */
@@ -418,4 +474,8 @@ public class Celda {
      * Posicion del candado
      */
     private int[] _posCand;
+    /**
+     * Lista de las celdas visibles
+     */
+    private final List<Celda> _visibles;
 }
