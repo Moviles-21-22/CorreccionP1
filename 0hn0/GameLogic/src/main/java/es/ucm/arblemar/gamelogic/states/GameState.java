@@ -37,7 +37,7 @@ public class GameState implements State {
             _celdaDiam = _celdaSize * 0.9f;
             int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
 
-            _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont, this);
+            _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont);
 //            _totalGrises = _tablero.initTestTab();
             _totalGrises = _tablero.generateTab();
 
@@ -89,7 +89,7 @@ public class GameState implements State {
 
                         for (int i = 0; i < _tam; ++i) {
                             for (int j = 0; j < _tam; ++j) {
-                                Pista p = _tablero.procesaPista(i, j);
+                                Pista p = _tablero.procesaPista(i, j, null);
                                 if (p.getTipo() != TipoPista.NONE) pistasList.add(p);
                             }
                         }
@@ -326,7 +326,7 @@ public class GameState implements State {
         _pistasList = new ArrayList<>();
         for (int i = 0; i < _tam; ++i) {
             for (int j = 0; j < _tam; ++j) {
-                Pista p = _tablero.procesaPista(i, j);
+                Pista p = _tablero.procesaPista(i, j, null);
                 if (p.getTipo() != TipoPista.NONE) _pistasList.add(p);
             }
         }

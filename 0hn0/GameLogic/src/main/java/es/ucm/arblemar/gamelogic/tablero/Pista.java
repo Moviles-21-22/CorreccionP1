@@ -84,7 +84,7 @@ public class Pista {
             case AZUL_ES_ROJA:
                 _st[0] = "Una celda azul debe";
                 _st[1] = "ver al menos otra azul";
-
+                break;
             case NONE:
             default:
                 _st[0] = " ";

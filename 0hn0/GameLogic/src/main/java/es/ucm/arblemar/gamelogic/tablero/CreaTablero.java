@@ -142,6 +142,10 @@ public class CreaTablero {
         _celdasRojas = _tam * _tam - _celdasAzules;
     }
 
+    public int getGrises() {
+        return _celdasGrises;
+    }
+
     /**
      * Genera un tablero aleatorio
      *
@@ -165,10 +169,6 @@ public class CreaTablero {
         }
 
         return created;
-    }
-
-    public int getGrises() {
-        return _celdasGrises;
     }
 
 //-------------------------------------RECURSIÓN--------------------------------------------------//
@@ -331,7 +331,7 @@ public class CreaTablero {
     private boolean isSolution() {
         for (int i = 0; i < _tam; i++) {
             for (int j = 0; j < _tam; j++) {
-                Pista p = _tab.procesaPista(i, j);
+                Pista p = _tab.procesaPista(i, j, _celdas);
                 if (p.getTipo() != TipoPista.NONE) {
                     return false;
                 }
@@ -530,21 +530,22 @@ public class CreaTablero {
         _celdasAzules = 0;
         selectBlues(groups);
 
-        // 2. Selección de rojas mínimas
-        _celdasRojas = 0;
-        selectReds();
-
-        // 3. Asignación de grises
-        _celdasGrises = (_tam * _tam) - _celdasAzules - _celdasRojas;
+        // 2. Asignación de azules como grises
         for (int i = 0; i < _tam; i++) {
             for (int j = 0; j < _tam; j++) {
                 Celda c = _celdas[i][j];
-                if (!c.isLock()) {
+                if (c.getTipoCelda() == TipoCelda.AZUL && !c.isLock()) {
+                    _celdasGrises++;
                     c.setTipoCelda(TipoCelda.GRIS);
                     c.showText(false, 0);
+                } else if (c.getTipoCelda() == TipoCelda.ROJO) {
+                    c.setLock(true);
                 }
             }
         }
+
+        // 2. Selección de rojas mínimas
+        selectReds();
     }
 
     /**
@@ -553,22 +554,132 @@ public class CreaTablero {
      */
     private void selectReds() {
         // Asignación de rojas fijas aleatorias
-//        while (_celdasRojas > 0) {
-//            int i = rn.nextInt(_tam);
-//            int j = rn.nextInt(_tam);
-//            Celda c = _celdas[i][j];
-//            if (c.getTipoCelda() == TipoCelda.ROJO && !c.isLock()) {
-//                _celdasRojas--;
-//                c.setLock(true);
-//                c.setCellCallback(new CellCallback() {
-//                    @Override
-//                    public void doSomething(int x, int y, GameState gm) {
-//                        celdaBloqueada(x, y);
-//                    }
-//                });
-//                c.showText(false);
-//            }
-//        }
+        int i = 0;
+        int j = 0;
+        while (i < _tam) {
+            Celda c = _celdas[i][j];
+            if (c.getTipoCelda() == TipoCelda.ROJO) {
+                // 1. Conversión de roja a azul
+                c.setLock(false);
+                c.setTipoCelda(TipoCelda.AZUL);
+                // 2. ¿Tiene solución?
+                boolean isSolv = solveTablero();
+                // Si - Entonces se bloquea
+                if (isSolv) {
+                    c.setLock(true);
+                    c.setTipoCelda(TipoCelda.ROJO);
+                    _celdas[i][j].setCellCallback(new CellCallback() {
+                        @Override
+                        public void doSomething(int x, int y, GameState gm) {
+                            celdaBloqueada(x, y);
+                        }
+                    });
+                }
+                // No - Entonces se puede poner gris
+                else {
+                    _celdasGrises++;
+                    c.setTipoCelda(TipoCelda.GRIS);
+                }
+            }
+
+            j++;
+            if (j >= _tam) {
+                j = 0;
+                i++;
+            }
+        }
+    }
+
+    /**
+     * Soluciona el tablero para comprobar que sea solución única.
+     * A partir del tablero generado con backtracking se han seleccionado
+     * las azules obligatorias. Luego se han puesto en gris las azules
+     * restantes y ahora, se busca solución poniendo una roja como azul
+     * siguiendo las pistas
+     *
+     * @return Devuelve si encontró solución o no
+     */
+    boolean solveTablero() {
+        // 1. Copia del tablero para resolverlo
+        Celda[][] tabAux = new Celda[_tam][_tam];
+        for (int i = 0; i < _tam; ++i) {
+            for (int j = 0; j < _tam; ++j) {
+                Celda c = _celdas[i][j];
+                int[] indx = {i, j};
+                tabAux[i][j] = new Celda(TipoCelda.AZUL, null, 0, c.getValue(), null, 0, indx);
+
+                if (c.getTipoCelda() == TipoCelda.AZUL && !c.isLock()) {
+                    tabAux[i][j].setTipoCelda(TipoCelda.GRIS);
+                    tabAux[i][j].setLock(false);
+                } else if (c.getTipoCelda() == TipoCelda.ROJO) {
+                    tabAux[i][j].setTipoCelda(TipoCelda.ROJO);
+                }
+            }
+        }
+
+        // 2. Procesa pista
+        Pista p = new Pista();
+        int i = 0;
+        int j = 0;
+
+        while (i < _tam) {
+            p = _tab.procesaPista(i, j, tabAux);
+
+            // 3. Clasificación de la pista
+            switch (p.getTipo()) {
+                case CERRAR_CASILLA:
+                    closeCell(tabAux, i, j);
+                    break;
+                case DEBE_SER_PARED:
+                    int[] pos = _tab.getIndRelPista();
+                    tabAux[pos[0]][pos[1]].setTipoCelda(TipoCelda.ROJO);
+                    break;
+                case DEBE_SER_AZUL:
+
+                    break;
+            }
+
+            //Si no encontramos pista, seguimos buscando
+            if (p.getTipo() == TipoPista.NONE) {
+                j++;
+                if (j >= _tam) {
+                    j = 0;
+                    i++;
+                }
+            }
+            //Si hay pista reseteamos el indice
+            else {
+                i = 0;
+                j = 0;
+            }
+        }
+
+        return true;
+    }
+
+    private void closeCell(Celda[][] tabAux, int i, int j) {
+        int nxt = 1;
+        Celda c = tabAux[i][j];
+        for (int[] d : _dirs) {
+            int row = c.getRow() + d[0] * nxt;
+            int col = c.getCol() + d[1] * nxt;
+
+            while (row >= 0 && row < _tam && col < _tam && col >= 0) {
+                if (tabAux[row][col].getTipoCelda() != TipoCelda.AZUL) {
+                    if (tabAux[row][col].getTipoCelda() == TipoCelda.GRIS) {
+                        tabAux[row][col].setTipoCelda(TipoCelda.ROJO);
+                    }
+                    break;
+                }
+
+                // Siguiente
+                nxt++;
+                row = c.getRow() + d[0] * nxt;
+                col = c.getCol() + d[1] * nxt;
+            }
+
+            nxt = 1;
+        }
     }
 
     /**

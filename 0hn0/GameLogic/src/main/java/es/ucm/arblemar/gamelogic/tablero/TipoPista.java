@@ -7,7 +7,6 @@ public enum TipoPista {
     NONE(1),
 
     //Pistas básicas
-
     /**
      * Si un número tiene ya visibles el número de celdas que dice, entonces se puede
      * “cerrar”, es decir, poner paredes en los extremos
