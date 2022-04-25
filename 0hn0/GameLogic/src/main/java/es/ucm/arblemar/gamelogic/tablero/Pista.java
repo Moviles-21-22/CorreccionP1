@@ -27,6 +27,7 @@ public class Pista {
                 _size[1] = (winWidthLog / 9) * 4;
                 break;
             case DEBE_SER_AZUL:
+            case AZULES_ALCANZABLES:
                 _size[0] = (winWidthLog / 5) * 2;
                 _size[1] = (winWidthLog / 5) * 2;
                 break;
@@ -40,6 +41,7 @@ public class Pista {
                 _size[1] = (winWidthLog / 8);
                 break;
             case AZUL_ES_ROJA:
+            case UNA_DIRECCION:
                 _size[0] = (winWidthLog / 12) * 4;
                 _size[1] = (winWidthLog / 11) * 4;
                 break;
@@ -66,8 +68,13 @@ public class Pista {
                 _st[1] = "dirección se supera el valor";
                 break;
             case DEBE_SER_AZUL:
+            case AZULES_ALCANZABLES:
                 _st[0] = "Se debe poner celda azul";
                 _st[1] = "para alcanzar las vecinas";
+                break;
+            case UNA_DIRECCION:
+                _st[0] = "Solo existe una";
+                _st[1] = "direccón posible";
                 break;
             case DEMASIADAS_AZULES:
                 _st[0] = "La celda tiene";

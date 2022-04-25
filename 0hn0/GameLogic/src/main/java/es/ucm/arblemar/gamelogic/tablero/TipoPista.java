@@ -24,6 +24,16 @@ public enum TipoPista {
      * número
      */
     DEBE_SER_AZUL(4),
+    /**
+     * Un número que no ve suficientes puntos no está aún cerrado y solo tiene abierta una
+     * dirección
+     */
+    UNA_DIRECCION(5),
+    /**
+     * Un número no está cerrado y tiene varias direcciones, pero la suma alcanzable es el
+     * valor que hay que conseguir. Basta con llenar el resto de celdas vacías para resolverlo.
+     */
+    AZULES_ALCANZABLES(6),
 
     //Pistas sobre celdas sin número
 
@@ -31,26 +41,26 @@ public enum TipoPista {
      * Si una celda está vacía y cerrada y no ve ninguna celda azul, entonces es pared (todos
      * los puntos azules deben ver al menos a otro)
      */
-    GRIS_ES_ROJA(5),
+    GRIS_ES_ROJA(7),
 
     /**
      * En sentido opuesto, si hay una celda azul puesta por el usuario que está cerrada
      * y no ve a ninguna otra, entonces se trata de un error por el mismo motivo.
      */
-    AZUL_ES_ROJA(6),
+    AZUL_ES_ROJA(8),
 
     //Pistas cuando el jugador se ha equivocado
 
     /**
      * Un número tiene más casillas azules visibles de las que debería
      */
-    DEMASIADAS_AZULES(7),
+    DEMASIADAS_AZULES(9),
 
     /**
      * Un número tiene una cantidad insuficiente de casillas azules visibles y sin embargo
      * ya está “cerrada” (no puede ampliarse más por culpa de paredes)
      */
-    INSUFICIENTES_AZULES(8);
+    INSUFICIENTES_AZULES(10);
 
     private TipoPista(int i) {
         this.value = i;

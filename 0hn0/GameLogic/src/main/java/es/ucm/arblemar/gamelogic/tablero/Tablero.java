@@ -1,5 +1,7 @@
 package es.ucm.arblemar.gamelogic.tablero;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import es.ucm.arblemar.engine.Font;
@@ -36,6 +38,20 @@ public class Tablero {
         _celdas = new Celda[_tam][_tam];
         _creation = new CreaTablero(this, _tam, _celdas);
         _indRelPista = new int[2];
+        // Lista de direcciones
+        _dirs = new ArrayList<>();
+        int[] u = {-1, 0};
+        // Arriba
+        _dirs.add(u);
+        // Abajo
+        int[] d = {1, 0};
+        _dirs.add(d);
+        // Izquierda
+        int[] l = {0, -1};
+        _dirs.add(l);
+        // Derecha
+        int[] r = {0, 1};
+        _dirs.add(r);
     }
 
     /**
@@ -60,7 +76,6 @@ public class Tablero {
      */
     public int generateTab() {
         while (true) {
-            _creation.calcularCeldas();
             // Se inicializan todas las celdas en gris
             _creation.initGreyTab(_tabPos, _celdaSize, _celdaFont, _celdaTamFont, _celdaDiam);
             // Se busca un tablero con solución
@@ -176,7 +191,7 @@ public class Tablero {
      * @return Devuelve la pista generada. Puede ser NONE.
      */
     public Pista procesaPista(int i, int j, Celda[][] tab) {
-        if(tab == null){
+        if (tab == null) {
             tab = _celdas;
         }
 
@@ -317,79 +332,41 @@ public class Tablero {
         boolean gris = false;
         int nuevoVal = _numVisibles;
 
-        // i/n --> FILAS // j/m --> COLUMNAS
-        //-----------------ABAJO----------------//
-        for (int n = i + 1; n < _tam; ++n) {
-            if (!gris && tab[n][j].getTipoCelda() == TipoCelda.GRIS) {
-                gris = true;
-                _indRelPista[0] = n;
-                _indRelPista[1] = j;
-                nuevoVal++;
-            } else if (gris && tab[n][j].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
-            else if (!gris && tab[n][j].getTipoCelda() == TipoCelda.AZUL) continue;
-            else break;
-            if (nuevoVal > tab[i][j].getValue()) {
-                pista.setTipo(TipoPista.DEBE_SER_PARED);
-                pista.setPos(tab[i][j].getPos());
-                return;
-            }
-        }
-        gris = false;
-        nuevoVal = _numVisibles;
+        int nxt = 1;
+        Celda c = tab[i][j];
+        for (int[] d : _dirs) {
+            int row = c.getRow() + d[0] * nxt;
+            int col = c.getCol() + d[1] * nxt;
 
-        //-----------------ARRIBA----------------//
-        for (int n = i - 1; n >= 0; --n) {
-            if (!gris && tab[n][j].getTipoCelda() == TipoCelda.GRIS) {
-                gris = true;
-                _indRelPista[0] = n;
-                _indRelPista[1] = j;
-                nuevoVal++;
-            } else if (gris && tab[n][j].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
-            else if (!gris && tab[n][j].getTipoCelda() == TipoCelda.AZUL) continue;
-            else break;
-            if (nuevoVal > tab[i][j].getValue()) {
-                pista.setTipo(TipoPista.DEBE_SER_PARED);
-                pista.setPos(tab[i][j].getPos());
-                return;
-            }
-        }
-        gris = false;
-        nuevoVal = _numVisibles;
+            // Mientras esté en los límites del tablero
+            // Mientras sea (gris y no haya encontrado gris) o mientras se azul
+            // es cuando interesa seguir buscando
+            while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
+                    ((tab[row][col].getTipoCelda() == TipoCelda.GRIS && !gris) ||
+                            tab[row][col].getTipoCelda() == TipoCelda.AZUL)) {
 
-        //-----------------DERECHA----------------//
-        for (int m = j + 1; m < _tam; ++m) {
-            if (!gris && tab[i][m].getTipoCelda() == TipoCelda.GRIS) {
-                gris = true;
-                _indRelPista[0] = i;
-                _indRelPista[1] = m;
-                nuevoVal++;
-            } else if (gris && tab[i][m].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
-            else if (!gris && tab[i][m].getTipoCelda() == TipoCelda.AZUL) continue;
-            else break;
-            if (nuevoVal > tab[i][j].getValue()) {
-                pista.setTipo(TipoPista.DEBE_SER_PARED);
-                pista.setPos(tab[i][j].getPos());
-                return;
-            }
-        }
-        gris = false;
-        nuevoVal = _numVisibles;
+                if (tab[row][col].getTipoCelda() == TipoCelda.GRIS) {
+                    gris = true;
+                    _indRelPista[0] = row;
+                    _indRelPista[1] = col;
+                    nuevoVal++;
+                } else if (gris && tab[row][col].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
 
-        //-----------------IZQUIERDA----------------//
-        for (int m = j - 1; m >= 0; --m) {
-            if (!gris && tab[i][m].getTipoCelda() == TipoCelda.GRIS) {
-                gris = true;
-                _indRelPista[0] = i;
-                _indRelPista[1] = m;
-                nuevoVal++;
-            } else if (gris && tab[i][m].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
-            else if (!gris && tab[i][m].getTipoCelda() == TipoCelda.AZUL) continue;
-            else break;
-            if (nuevoVal > tab[i][j].getValue()) {
-                pista.setTipo(TipoPista.DEBE_SER_PARED);
-                pista.setPos(tab[i][j].getPos());
-                return;
+                if (nuevoVal > tab[i][j].getValue()) {
+                    pista.setTipo(TipoPista.DEBE_SER_PARED);
+                    pista.setPos(tab[i][j].getPos());
+                    return;
+                }
+
+                // Siguiente
+                nxt++;
+                row = c.getRow() + d[0] * nxt;
+                col = c.getCol() + d[1] * nxt;
             }
+
+            gris = false;
+            nuevoVal = _numVisibles;
+            nxt = 1;
         }
     }
 
@@ -402,45 +379,65 @@ public class Tablero {
      */
     private void ponerAzul(int i, int j, Pista pista, Celda[][] tab) {
         int[] valLinea = new int[4];
+        int nxt = 1;
+        int line = 0;
+        Celda c = tab[i][j];
+        for (int[] d : _dirs) {
+            int row = c.getRow() + d[0] * nxt;
+            int col = c.getCol() + d[1] * nxt;
 
-        // i/n --> FILAS // j/m --> COLUMNAS
-        //-----------------ABAJO----------------//
-        for (int n = i + 1; n < _tam; ++n) {
-            if (tab[n][j].getTipoCelda() != TipoCelda.ROJO &&
-                    valLinea[0] < tab[i][j].getValue())
-                valLinea[0]++;
-            else break;
-        }
-        //-----------------ARRIBA----------------//
-        for (int n = i - 1; n >= 0; --n) {
-            if (tab[n][j].getTipoCelda() != TipoCelda.ROJO &&
-                    valLinea[1] < tab[i][j].getValue())
-                valLinea[1]++;
-            else break;
-        }
-        //-----------------DERECHA----------------//
-        for (int m = j + 1; m < _tam; ++m) {
-            if (tab[i][m].getTipoCelda() != TipoCelda.ROJO &&
-                    valLinea[2] < tab[i][j].getValue())
-                valLinea[2]++;
-            else break;
-        }
-        //-----------------IZQUIERDA----------------//
-        for (int m = j - 1; m >= 0; --m) {
-            if (tab[i][m].getTipoCelda() != TipoCelda.ROJO &&
-                    valLinea[3] < tab[i][j].getValue())
-                valLinea[3]++;
-            else break;
+            while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
+                    tab[row][col].getTipoCelda() != TipoCelda.ROJO &&
+                    valLinea[line] < c.getValue()) {
+
+                valLinea[line]++;
+
+                // Siguiente
+                nxt++;
+                row = c.getRow() + d[0] * nxt;
+                col = c.getCol() + d[1] * nxt;
+            }
+
+            line++;
+            nxt = 1;
         }
 
+        boolean oneDir = false;
+        for(int k = 0; k < 4; k++){
+            // Si es mayor que 0 se anota la dirección
+            if(valLinea[k] > 0){
+                // Si entra de nuevo cuando ya se puso
+                // una dirección previamente, entonces
+                // no es dirección única
+                if(oneDir) {
+                    oneDir = false;
+                    break;
+                }
+                _indRelPista[0] = _dirs.get(k)[0];
+                _indRelPista[1] = _dirs.get(k)[1];
+                oneDir = true;
+            }
+        }
+
+        // Pista 8 del enunciado. Si la celda solo tiene una dirección, entonces es por ahí
+        if(oneDir){
+            pista.setTipo(TipoPista.UNA_DIRECCION);
+            pista.setPos(c.getPos());
+        }
+        // Pista 9 del enunciado. Si las contiguas suman el valor de la celda, basta con ponerlas
+        // todas en azul para resolverlo
+        else if(valLinea[0] + valLinea[1] + valLinea[2] + valLinea[3] == c.getValue()){
+            pista.setTipo(TipoPista.AZULES_ALCANZABLES);
+            pista.setPos(c.getPos());
+        }
         //Para que sea pista tres, el valor maximo entre tres de las direcciones debe ser menor
         //estricto que el valor buscado por la celda
-        if (valLinea[0] + valLinea[1] + valLinea[2] < tab[i][j].getValue() ||
-                valLinea[0] + valLinea[1] + valLinea[3] < tab[i][j].getValue() ||
-                valLinea[0] + valLinea[2] + valLinea[3] < tab[i][j].getValue() ||
-                valLinea[1] + valLinea[2] + valLinea[3] < tab[i][j].getValue()) {
+        else if (valLinea[0] + valLinea[1] + valLinea[2] < c.getValue() ||
+                valLinea[0] + valLinea[1] + valLinea[3] < c.getValue() ||
+                valLinea[0] + valLinea[2] + valLinea[3] < c.getValue() ||
+                valLinea[1] + valLinea[2] + valLinea[3] < c.getValue()) {
             pista.setTipo(TipoPista.DEBE_SER_AZUL);
-            pista.setPos(tab[i][j].getPos());
+            pista.setPos(c.getPos());
         }
     }
 
@@ -497,7 +494,13 @@ public class Tablero {
         return _celdas[i][j];
     }
 
-    public int[] getIndRelPista() { return _indRelPista; }
+    /**
+     * Devuelve el índce de la celda relacionada a la pista
+     * que se haya generado
+     */
+    public int[] getIndRelPista() {
+        return _indRelPista;
+    }
 
 //------------------------------------------------------------------------------------------------//
 
@@ -543,8 +546,13 @@ public class Tablero {
      */
     int _celdaTamFont;
     /**
-     * Posicion de la celda que hay que cambiar
-     * para algunas pistas en concreto
+     * Lista de direcciones
+     */
+    public List<int[]> _dirs;
+    /**
+     * Integer auxiliar relacionado con
+     * la pista generada. Puede guardar
+     * posiciones o direcciones
      */
     int[] _indRelPista;
     /**

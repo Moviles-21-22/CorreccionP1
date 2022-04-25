@@ -18,8 +18,7 @@ import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.ROJO;
  * color podrá tener unos comportamientos u otros.
  */
 public class Celda {
-    public Celda(TipoCelda tc, Font f, int tamFont, int val, int[] pos,
-                 float diam, int[] ind) {
+    public Celda(TipoCelda tc, Font f, int tamFont, int val, int[] pos, float diam, int[] ind) {
         _tipoCelda = tc;
         _visibles = new ArrayList<>();
 
