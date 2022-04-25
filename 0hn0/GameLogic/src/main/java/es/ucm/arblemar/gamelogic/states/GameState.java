@@ -19,17 +19,15 @@ import es.ucm.arblemar.gamelogic.tablero.TipoPista;
 import es.ucm.arblemar.gamelogic.tablero.Pista;
 
 public class GameState implements State {
-    GameState(Engine _engine, int t) {
-        this._engine = _engine;
+    GameState(Engine engine, int t) {
+        _engine = engine;
         _tam = t;
-        _graphics = this._engine.getGraphics();
+        _graphics = _engine.getGraphics();
     }
 
     @Override
     public boolean init() {
         try {
-            Graphics g = _engine.getGraphics();
-
             // INICIALIZACION DEL TABLERO
             Font tabFont = Assets.jose;
             float sizeTab = (float) (_graphics.getLogWidth() * 0.85);
@@ -40,16 +38,16 @@ public class GameState implements State {
             int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
 
             _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont, this);
-//            _totalGrises = _tablero.initTestTab();
-            _totalGrises = _tablero.generateTab();
+            _totalGrises = _tablero.initTestTab();
+//            _totalGrises = _tablero.generateTab();
 
             // BOTON VOLVER
             _sizeVolver = new int[2];
-            _sizeVolver[0] = (g.getLogWidth() / 15);
-            _sizeVolver[1] = (g.getLogWidth() / 15);
+            _sizeVolver[0] = (_graphics.getLogWidth() / 15);
+            _sizeVolver[1] = (_graphics.getLogWidth() / 15);
             _posVolver = new int[2];
-            _posVolver[0] = (g.getLogWidth() / 4) + (_sizeVolver[0] / 3);
-            _posVolver[1] = (g.getLogHeight() / 8) * 7;
+            _posVolver[0] = (_graphics.getLogWidth() / 4) + (_sizeVolver[0] / 3);
+            _posVolver[1] = (_graphics.getLogHeight() / 8) * 7;
             _imVolver = Assets.close;
             _goBack = new ButtonCallback() {
                 @Override
@@ -61,11 +59,11 @@ public class GameState implements State {
 
             // BOTON RESET
             _sizeReset = new int[2];
-            _sizeReset[0] = (g.getLogWidth() / 14);
-            _sizeReset[1] = (g.getLogWidth() / 14);
+            _sizeReset[0] = (_graphics.getLogWidth() / 14);
+            _sizeReset[1] = (_graphics.getLogWidth() / 14);
             _posReset = new int[2];
-            _posReset[0] = (g.getLogWidth() / 2) - (_sizeReset[0] / 2);
-            _posReset[1] = (g.getLogHeight() / 8) * 7;
+            _posReset[0] = (_graphics.getLogWidth() / 2) - (_sizeReset[0] / 2);
+            _posReset[1] = (_graphics.getLogHeight() / 8) * 7;
             _imReset = Assets.history;
 
             _reset = new ButtonCallback() {
@@ -77,16 +75,15 @@ public class GameState implements State {
 
             // BOTON PISTA
             _sizePista = new int[2];
-            _sizePista[0] = (g.getLogWidth() / 13);
-            _sizePista[1] = (g.getLogWidth() / 13);
+            _sizePista[0] = (_graphics.getLogWidth() / 13);
+            _sizePista[1] = (_graphics.getLogWidth() / 13);
             _posPista = new int[2];
-            _posPista[0] = (g.getLogWidth() / 3) * 2;
-            _posPista[1] = (g.getLogHeight() / 8) * 7;
+            _posPista[0] = (_graphics.getLogWidth() / 3) * 2;
+            _posPista[1] = (_graphics.getLogHeight() / 8) * 7;
             _imPista = Assets.eye;
             _verPista = new ButtonCallback() {
                 @Override
                 public void doSomething() {
-                    //System.out.println("Generamos una pista...");
                     if (_pista.getTipo() == TipoPista.NONE) {
                         List<Pista> pistasList = new ArrayList<>();
 
@@ -98,13 +95,19 @@ public class GameState implements State {
                         }
                         // Escoge una pista aleatoria de las que se encontraron
                         if (!pistasList.isEmpty()) {
+                            // animación fade-in/out
+                            _animFadeText = true;
                             Random rn = new Random();
                             int max = pistasList.size();
                             int choice = rn.nextInt(max);
                             _pista = pistasList.get(choice);
+                            _lastPistaTxt[0] = _pista.getTextoPista()[0];
+                            _lastPistaTxt[1] = _pista.getTextoPista()[1];
                             pistasList.clear();
                         }
                     } else {
+                        // animación fade-in/out
+                        _animFadeText = true;
                         _pista.setTipo(TipoPista.NONE);
                     }
                 }
@@ -112,11 +115,11 @@ public class GameState implements State {
 
             // PORCENTAJE
             _sizePorcent = new int[2];
-            _sizePorcent[0] = (g.getLogWidth() / 12);
-            _sizePorcent[1] = (g.getLogWidth() / 12);
+            _sizePorcent[0] = (_graphics.getLogWidth() / 12);
+            _sizePorcent[1] = (_graphics.getLogWidth() / 12);
             _posPorcent = new int[2];
-            _posPorcent[0] = (g.getLogWidth() / 2) - (_sizePorcent[0] / 2);
-            _posPorcent[1] = (g.getLogHeight() / 80) * 67;
+            _posPorcent[0] = (_graphics.getLogWidth() / 2) - (_sizePorcent[0] / 2);
+            _posPorcent[1] = (_graphics.getLogHeight() / 80) * 67;
             _colorPorcent = 0X999999FF;
             _fontPorcent = Assets.jose;
             _tamFPorcent = 24;
@@ -124,11 +127,12 @@ public class GameState implements State {
 
             // TITULO
             _sizeTitulo = new int[2];
-            _sizeTitulo[0] = (g.getLogWidth() / 9) * 3;
-            _sizeTitulo[1] = (g.getLogWidth() / 8);
+            _sizeTitulo[0] = (_graphics.getLogWidth() / 9) * 3;
+            _sizeTitulo[1] = (_graphics.getLogWidth() / 8);
             _posTitulo = new int[2];
-            _posTitulo[0] = (g.getLogWidth() / 2) - (_sizeTitulo[0] / 2);
-            _posTitulo[1] = (g.getLogHeight() / 10);
+            _posTitulo[0] = (_graphics.getLogWidth() / 2) - (_sizeTitulo[0] / 2);
+            _posTitulo[1] = (_graphics.getLogHeight() / 10);
+            _currColorTitulo = 0X313131FF;
             _colorTitulo = 0X313131FF;
             _fontTitulo = Assets.jose;
             _tamFTitulo = 64;
@@ -136,15 +140,19 @@ public class GameState implements State {
 
             // PISTAS
             _pista = new Pista();
-            _altoPistaTxt = (g.getLogWidth() / 10);                 //Tamaño del texto a lo alto
+            _heightPistaTxt = (_graphics.getLogWidth() / 10);     //Tamaño del texto a lo alto
             _posPistaTxt = new int[3];
-            _posPistaTxt[0] = (g.getLogWidth() / 2);                //A lo ancho
-            _posPistaTxt[1] = (g.getLogHeight() / 8);               //A lo alto primera linea
-            _posPistaTxt[2] = _posPistaTxt[1] + _altoPistaTxt;    //A lo alto segunda linea
-            _colorPistaTxt = 0X313131FF;
+            _posPistaTxt[0] = (_graphics.getLogWidth() / 2);    //A lo ancho
+            _posPistaTxt[1] = (_graphics.getLogHeight() / 8);   //A lo alto primera linea
+            _posPistaTxt[2] = _posPistaTxt[1] + _heightPistaTxt;  //A lo alto segunda linea
+            _currColorPista = 0X31313100;
             _fontPistaTxt = Assets.jose;
             _tamFPistaTxt = 32;
-
+            _lastPistaTxt = new String[2];
+            _lastPistaTxt[0] = " ";
+            _lastPistaTxt[1] = " ";
+            _offsetPista = (int) (_celdaSize * 0.06);
+            _diamPista = _celdaDiam + (_offsetPista * 2);
         } catch (Exception e) {
             System.out.println("Fallo al intenar generar GameState");
             System.out.println(e);
@@ -157,7 +165,7 @@ public class GameState implements State {
     public void update(double deltaTime) {
         if (win && _timer == null) {
             _timer = new Timer();
-            _delay = 3000;
+            _delay = 2000;
             _timerTask = new TimerTask() {
                 @Override
                 public void run() {
@@ -171,44 +179,68 @@ public class GameState implements State {
             _porcent = 100 - ((_tablero.getGrises() * 100) / _totalGrises);
             procesaPorcentaje();
         }
+
+        // FADE IN/OUT TEXTO
+        if (_animFadeText) {
+            _ticksAnimText += _velFadeAnim * deltaTime;
+            if (_ticksAnimText >= 1) {
+                // PISTA: Si hay una pista +1 - Si no -1
+                _currColorPista += _pista.getTipo() != TipoPista.NONE ? 1 : -1;
+                // TITULO: Si hay una pista -1 - Si no +1
+                _currColorTitulo += _pista.getTipo() != TipoPista.NONE ? -1 : 1;
+                if (_currColorPista == _colorTitulo || _currColorTitulo == _colorTitulo) {
+                    // PISTA: Si hay una pista color del titulo - Si no color sin alpha
+                    _currColorPista = _pista.getTipo() != TipoPista.NONE ? _colorTitulo : 0X31313100;
+                    // Titulo: Si hay una pista color sin alpha - Si no color del titulo
+                    _currColorTitulo = _pista.getTipo() != TipoPista.NONE ? 0X31313100 : _colorTitulo;
+                    _animFadeText = false;
+                }
+
+                _ticksAnimText = 0;
+            }
+        }
     }
 
     @Override
     public void render() {
-        Graphics g = _engine.getGraphics();
-
-        if(win) {
-            g.setColor(_colorTitulo);
-            g.drawText("Super", _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
-        }
-        else {
+        if (win) {
+            _graphics.setColor(_colorTitulo);
+            _graphics.drawText("Super", _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
+        } else {
             // BOTONES
-            g.drawImage(_imVolver, _posVolver[0], _posVolver[1], _sizeVolver[0], _sizeVolver[1]);
-            g.drawImage(_imReset, _posReset[0], _posReset[1], _sizeReset[0], _sizeReset[1]);
-            g.drawImage(_imPista, _posPista[0], _posPista[1], _sizePista[0], _sizePista[1]);
+            _graphics.drawImage(_imVolver, _posVolver[0], _posVolver[1], _sizeVolver[0], _sizeVolver[1]);
+            _graphics.drawImage(_imReset, _posReset[0], _posReset[1], _sizeReset[0], _sizeReset[1]);
+            _graphics.drawImage(_imPista, _posPista[0], _posPista[1], _sizePista[0], _sizePista[1]);
 
             //PORCENTAJE
-            g.setColor(_colorPorcent);
-            g.drawText(_porcent + "%", _posPorcent[0], _posPorcent[1] + _sizePorcent[1], _fontPorcent, _tamFPorcent);
+            _graphics.setColor(_colorPorcent);
+            _graphics.drawText(String.format("%s %s", _porcent, "%"), _posPorcent[0], _posPorcent[1] + _sizePorcent[1], _fontPorcent, _tamFPorcent);
 
-            // TITULO O TEXTO DE PISTA
-            if (_pista.getTipo() == TipoPista.NONE) {
-                g.setColor(_colorTitulo);
-                g.drawText(_titulo, _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
-            } else {
-                g.setColor(_colorPistaTxt);
-                g.drawText(_pista.getTextoPista()[0], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[0]), _posPistaTxt[1], _fontPistaTxt, _tamFPistaTxt);
-                g.drawText(_pista.getTextoPista()[1], _posPistaTxt[0] - (_pista.getSize(g.getLogWidth())[1]), _posPistaTxt[2], _fontPistaTxt, _tamFPistaTxt);
+            // TITULO
+            _graphics.setColor(_currColorTitulo);
+            _graphics.drawText(_titulo, _posTitulo[0], _posTitulo[1] + _sizeTitulo[1], _fontTitulo, _tamFTitulo);
 
-                g.setColor(0X313131FF);
-                int difTam = (int) (_celdaSize * 0.06);
-                g.fillCircle(_pista.getIndexCelda()[0] - difTam, _pista.getIndexCelda()[1] - difTam, _celdaDiam + (difTam * 2));
-                g.setColor(0XFFFFFFFF);
+            // PISTA
+            _graphics.setColor(_currColorPista);
+            int x = _posPistaTxt[0] - (_pista.getSize(_graphics.getLogWidth())[0]);
+            int y = _posPistaTxt[1];
+            _graphics.drawText(_lastPistaTxt[0], x, y, _fontPistaTxt, _tamFPistaTxt);
+            x = _posPistaTxt[0] - (_pista.getSize(_graphics.getLogWidth())[1]);
+            y = _posPistaTxt[2];
+            _graphics.drawText(_lastPistaTxt[1], x, y, _fontPistaTxt, _tamFPistaTxt);
+
+            // CELDA ASOCIADA A LA PISTA
+            if (_pista.getTipo() != TipoPista.NONE) {
+                _graphics.setColor(_currColorPista);
+                x = _pista.getIndexCelda()[0] - _offsetPista;
+                y =  _pista.getIndexCelda()[1] - _offsetPista;
+                _graphics.fillCircle(x, y, _diamPista);
+                _graphics.setColor(0XFFFFFFFF);
             }
         }
 
         // CELDAS
-        _tablero.render(g);
+        _tablero.render(_graphics);
     }
 
     @Override
@@ -353,20 +385,42 @@ public class GameState implements State {
     Font _fontPorcent;
 
     // ATRIBUTOS TITULO
+    /**
+     * Cuenta los ticks para aplicar el fade-in/out
+     */
+    float _ticksAnimText = 0;
+    /**
+     * Velocidad de los ticks de la animación fade-int/out
+     */
+    final float _velFadeAnim = 1200;
     int[] _sizeTitulo;
     int[] _posTitulo;
     int _tamFTitulo;
+    int _currColorTitulo;
     int _colorTitulo;
     String _titulo;
     Font _fontTitulo;
+    boolean _animFadeText = false;
 
     // ATRIBUTOS PARA EL TEXTO DE PISTAS
-    int _altoPistaTxt;
+    int _heightPistaTxt;
     int[] _posPistaTxt;
+    String[] _lastPistaTxt;
     int _tamFPistaTxt;
-    int _colorPistaTxt;
+    int _currColorPista;
     Font _fontPistaTxt;
     Pista _pista;
+    /**
+     * Diferencia de tamaño de la celda
+     * asociada a la pista y la circunferencia
+     * negra que la rodea
+     */
+    int _offsetPista;
+    /**
+     * Diámetro de la celda negra que rodea
+     * a la celda asociada a la pista
+     */
+    float _diamPista;
 
     // ATRIBUTOS DEL TABLERO
     /**

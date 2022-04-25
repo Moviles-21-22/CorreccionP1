@@ -2,7 +2,7 @@ package es.ucm.arblemar.engine;
 
 public interface Engine {
     /**
-     * Solicita un cambio de estado a newState
+     * Solicita un cambio de estado para cambiar a newState en diferido
      * */
     public void reqNewState(State newState);
 
