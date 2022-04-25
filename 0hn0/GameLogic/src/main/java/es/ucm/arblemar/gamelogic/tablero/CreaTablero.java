@@ -61,10 +61,6 @@ public class CreaTablero {
                     _celdas[i][j].setCellCallback(new CellCallback() {
                         @Override
                         public void doSomething(int x, int y, GameState gm) {
-                            Pista pista = gm.getPista();
-                            if (pista.getTipo() != TipoPista.NONE) {
-                                pista.setTipo(TipoPista.NONE);
-                            }
                             changeCellColor(x, y, gm);
                         }
                     });
@@ -128,10 +124,6 @@ public class CreaTablero {
                 c.setCellCallback(new CellCallback() {
                     @Override
                     public void doSomething(int x, int y, GameState gm) {
-                        Pista pista = gm.getPista();
-                        if (pista.getTipo() != TipoPista.NONE) {
-                            pista.setTipo(TipoPista.NONE);
-                        }
                         changeCellColor(x, y, gm);
                     }
                 });
@@ -468,7 +460,7 @@ public class CreaTablero {
         if (_tab.getCelda(i, j).getTipoCelda() == TipoCelda.GRIS)
             _tab.addGreyCell(1);
 
-        // Si hay algún temporizador activo, se para
+        gm.disablePista();
         gm.stopTimer();
     }
 
@@ -542,7 +534,7 @@ public class CreaTablero {
         _celdasRojas = 0;
         selectReds();
 
-        // Asignación de grises
+        // 3. Asignación de grises
         _celdasGrises = (_tam * _tam) - _celdasAzules - _celdasRojas;
         for (int i = 0; i < _tam; i++) {
             for (int j = 0; j < _tam; j++) {

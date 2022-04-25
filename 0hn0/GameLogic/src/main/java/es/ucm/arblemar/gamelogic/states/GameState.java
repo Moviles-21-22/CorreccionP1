@@ -38,8 +38,8 @@ public class GameState implements State {
             int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
 
             _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont, this);
-            _totalGrises = _tablero.initTestTab();
-//            _totalGrises = _tablero.generateTab();
+//            _totalGrises = _tablero.initTestTab();
+            _totalGrises = _tablero.generateTab();
 
             // BOTON VOLVER
             _sizeVolver = new int[2];
@@ -233,7 +233,7 @@ public class GameState implements State {
             if (_pista.getTipo() != TipoPista.NONE) {
                 _graphics.setColor(_currColorPista);
                 x = _pista.getIndexCelda()[0] - _offsetPista;
-                y =  _pista.getIndexCelda()[1] - _offsetPista;
+                y = _pista.getIndexCelda()[1] - _offsetPista;
                 _graphics.fillCircle(x, y, _diamPista);
                 _graphics.setColor(0XFFFFFFFF);
             }
@@ -282,6 +282,18 @@ public class GameState implements State {
                     break;
                 }
             }
+        }
+    }
+
+    /**
+     * Desactiva la pista actual y activa la animación
+     * para mostrar el título del tablero
+     */
+    public void disablePista() {
+        if (_pista.getTipo() != TipoPista.NONE) {
+            // animación fade-in/out
+            _animFadeText = true;
+            _pista.setTipo(TipoPista.NONE);
         }
     }
 
