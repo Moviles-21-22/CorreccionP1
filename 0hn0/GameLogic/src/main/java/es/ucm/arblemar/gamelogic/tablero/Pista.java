@@ -19,6 +19,7 @@ public class Pista {
     public int[] getSize(int winWidthLog) {
         switch (_tipo) {
             case CERRAR_CASILLA:
+            case UNA_DIRECCION:
                 _size[0] = winWidthLog / 4;
                 _size[1] = (winWidthLog / 15) * 4;
                 break;
@@ -28,8 +29,8 @@ public class Pista {
                 break;
             case DEBE_SER_AZUL:
             case AZULES_ALCANZABLES:
-                _size[0] = (winWidthLog / 5) * 2;
-                _size[1] = (winWidthLog / 5) * 2;
+                _size[0] = (winWidthLog / 20) * 8;
+                _size[1] = (winWidthLog / 20) * 8;
                 break;
             case DEMASIADAS_AZULES:
             case INSUFICIENTES_AZULES:
@@ -41,7 +42,6 @@ public class Pista {
                 _size[1] = (winWidthLog / 8);
                 break;
             case AZUL_ES_ROJA:
-            case UNA_DIRECCION:
                 _size[0] = (winWidthLog / 12) * 4;
                 _size[1] = (winWidthLog / 11) * 4;
                 break;
@@ -69,12 +69,12 @@ public class Pista {
                 break;
             case DEBE_SER_AZUL:
             case AZULES_ALCANZABLES:
-                _st[0] = "Se debe poner celda azul";
-                _st[1] = "para alcanzar las vecinas";
+                _st[0] = "Una celda está en todas";
+                _st[1] = "las soluciones imaginables";
                 break;
             case UNA_DIRECCION:
                 _st[0] = "Solo existe una";
-                _st[1] = "direccón posible";
+                _st[1] = "dirección posible";
                 break;
             case DEMASIADAS_AZULES:
                 _st[0] = "La celda tiene";

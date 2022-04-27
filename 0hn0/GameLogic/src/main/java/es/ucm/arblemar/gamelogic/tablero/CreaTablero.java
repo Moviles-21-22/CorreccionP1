@@ -173,14 +173,9 @@ public class CreaTablero {
                                    final int tamFont, final float diam, int i, int j) {
         // 3. ¿Está lleno?
         if (i >= _tam) {
-            // 4. ¿Es solución?
-            if (isSolution()) {
-                // Se ponen en grises las celdas que toquen
-                makeGreyCells();
-                return true;
-            } else {
-                return false;
-            }
+            // Se ponen en grises las celdas que toquen
+            makeGreyCells();
+            return true;
         }
 
         // 1. Asignación de una nueva celda
@@ -302,23 +297,6 @@ public class CreaTablero {
             return false;
         }
         // Sí, ha sido posible
-        return true;
-    }
-
-    /**
-     * Comprueba que el tablero generado sea solución.
-     * En caso de que haya pistas significa que no es solución
-     */
-    private boolean isSolution() {
-        for (int i = 0; i < _tam; i++) {
-            for (int j = 0; j < _tam; j++) {
-                Pista p = _tab.procesaPista(i, j, _celdas);
-                if (p.getTipo() != TipoPista.NONE) {
-                    return false;
-                }
-            }
-        }
-
         return true;
     }
 
@@ -691,7 +669,8 @@ public class CreaTablero {
             for (int j = 0; j < _tam; ++j) {
                 Celda c = _celdas[i][j];
                 int[] indx = {i, j};
-                tabAux[i][j] = new Celda(TipoCelda.AZUL, null, 0, c.getValue(), null, 0, indx);
+                int[] pos = {0, 0};
+                tabAux[i][j] = new Celda(TipoCelda.AZUL, null, 0, c.getValue(), pos, 0, indx);
 
                 if (c.getTipoCelda() == TipoCelda.AZUL && !c.isLock()) {
                     tabAux[i][j].setTipoCelda(TipoCelda.GRIS);
@@ -708,31 +687,40 @@ public class CreaTablero {
         int j = 0;
 
         while (i < _tam) {
-            p = _tab.procesaPista(i, j, tabAux);
+            p = _tab.buscaPista(i, j, tabAux);
 
             // 3. Clasificación de la pista
             switch (p.getTipo()) {
                 case CERRAR_CASILLA:
                     closeCell(tabAux, i, j);
                     break;
-                case DEBE_SER_PARED: {
+                case DEBE_SER_PARED:
+                case GRIS_ES_ROJA: {
                     int[] pos = _tab.getIndRelPista();
                     tabAux[pos[0]][pos[1]].setTipoCelda(TipoCelda.ROJO);
                     break;
                 }
                 case DEBE_SER_AZUL:
-
+                    putBlueInDir(tabAux, i, j);
                     break;
                 case UNA_DIRECCION:
-                    int[] dir = _tab.getIndRelPista();
-                    closeOneDir(tabAux, i, i, dir);
+                    closeOneDir(tabAux, i, j);
                     break;
                 case AZULES_ALCANZABLES:
                     allBlues(tabAux, i, j);
                     break;
+                case AZUL_ES_ROJA: {
+                    int[] pos = _tab.getIndRelPista();
+                    tabAux[pos[0]][pos[1]].setTipoCelda(TipoCelda.AZUL);
+                    break;
+                }
+                // PISTAS DE FALLO
+                case DEMASIADAS_AZULES:
+                case INSUFICIENTES_AZULES:
+                    return false;
             }
 
-            //Si no encontramos pista, seguimos buscando
+            // Si no encontramos pista, seguimos buscando
             if (p.getTipo() == TipoPista.NONE) {
                 j++;
                 if (j >= _tam) {
@@ -740,7 +728,7 @@ public class CreaTablero {
                     i++;
                 }
             }
-            //Si hay pista reseteamos el indice
+            // Si hay pista reseteamos el indice
             else {
                 i = 0;
                 j = 0;
@@ -799,6 +787,7 @@ public class CreaTablero {
 
             while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
                     tabAux[row][col].getTipoCelda() != TipoCelda.ROJO) {
+
                 if (tabAux[row][col].getTipoCelda() == TipoCelda.GRIS) {
                     tabAux[row][col].setTipoCelda(TipoCelda.AZUL);
                 }
@@ -813,16 +802,63 @@ public class CreaTablero {
         }
     }
 
-    private void closeOneDir(Celda[][] tabAux, int i, int j, int[] dir){
+    /**
+     * Busca en una dirección la primera gris que encuentre y la pone en azul
+     *
+     * @param tabAux Tablero auxiliar de celdas
+     * @param i      Fila de la celda
+     * @param j      Columna de la celda
+     */
+    private void putBlueInDir(Celda[][] tabAux, int i, int j) {
+        // Dirección donde poner la azul
+        int[] dir = _tab.getIndRelPista();
         Celda c = tabAux[i][j];
-//        int k = c.getV;
-//        int max = c.getValue();
-//        int row = c.getRow() + dir[0] * nxt;
-//        int col = c.getCol() + dir[1] * nxt;
-//        for(int k = 0; k < max; k++){
-//
-//        }
+        int next = 1;
+        int row = c.getRow() + dir[0] * next;
+        int col = c.getCol() + dir[1] * next;
+        Celda cAux = tabAux[row][col];
+        while (cAux.getTipoCelda() != TipoCelda.GRIS) {
+            next++;
+            row = c.getRow() + dir[0] * next;
+            col = c.getCol() + dir[1] * next;
+            cAux = tabAux[row][col];
+        }
+
+        cAux.setTipoCelda(TipoCelda.AZUL);
     }
+
+
+    /**
+     * Rellena la dirección única de la celda con azules
+     * hasta que se alcancen todas las visibles posibles
+     *
+     * @param tabAux Tablero auxiliar de celdas
+     * @param i      Fila de la celda
+     * @param j      Columna de la celda
+     */
+    private void closeOneDir(Celda[][] tabAux, int i, int j) {
+        // Dirección que se quiere rellenar
+        int[] dir = _tab.getIndRelPista();
+        // Numero de visibles de la celda
+        int _numVisibles = _tab.getNumVisibles();
+        Celda c = tabAux[i][j];
+        // Visibles que quedan por rellenar
+        int leftVisibles = c.getValue() - _numVisibles;
+        int next = 1;
+        int row;
+        int col;
+        while (next <= leftVisibles) {
+            row = c.getRow() + dir[0] * next;
+            col = c.getCol() + dir[1] * next;
+            Celda cAux = tabAux[row][col];
+            if (cAux.getTipoCelda() == TipoCelda.GRIS) {
+                cAux.setTipoCelda(TipoCelda.AZUL);
+            }
+
+            next++;
+        }
+    }
+
 //---------------------------------------CALLBACK-------------------------------------------------//
 
     /**

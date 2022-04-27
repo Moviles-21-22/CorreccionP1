@@ -190,7 +190,7 @@ public class Tablero {
      * @param j: Columna de la celda
      * @return Devuelve la pista generada. Puede ser NONE.
      */
-    public Pista procesaPista(int i, int j, Celda[][] tab) {
+    public Pista buscaPista(int i, int j, Celda[][] tab) {
         if (tab == null) {
             tab = _celdas;
         }
@@ -378,66 +378,26 @@ public class Tablero {
      * @param pista: Variable de la pista que se va a modificar
      */
     private void ponerAzul(int i, int j, Pista pista, Celda[][] tab) {
-        int[] valLinea = new int[4];
-        int nxt = 1;
-        int line = 0;
+        // Calculo de alcanzables
         Celda c = tab[i][j];
-        for (int[] d : _dirs) {
-            int row = c.getRow() + d[0] * nxt;
-            int col = c.getCol() + d[1] * nxt;
+        int[] alcanzables = possibleVisibles(c, tab);
 
-            while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
-                    tab[row][col].getTipoCelda() != TipoCelda.ROJO &&
-                    valLinea[line] < c.getValue()) {
-
-                valLinea[line]++;
-
-                // Siguiente
-                nxt++;
-                row = c.getRow() + d[0] * nxt;
-                col = c.getCol() + d[1] * nxt;
-            }
-
-            line++;
-            nxt = 1;
-        }
-
-        boolean oneDir = false;
-        for(int k = 0; k < 4; k++){
-            // Si es mayor que 0 se anota la dirección
-            if(valLinea[k] > 0){
-                // Si entra de nuevo cuando ya se puso
-                // una dirección previamente, entonces
-                // no es dirección única
-                if(oneDir) {
-                    oneDir = false;
-                    break;
-                }
-                _indRelPista[0] = _dirs.get(k)[0];
-                _indRelPista[1] = _dirs.get(k)[1];
-                oneDir = true;
-            }
-        }
-
-        // Pista 8 del enunciado. Si la celda solo tiene una dirección, entonces es por ahí
-        if(oneDir){
+        // Pista 8 del enunciado. Si la celda solo tiene una dirección, entonces se ponen azules
+        // en esa dirección
+        boolean oneDir = isOneDir(alcanzables, c);
+        if (oneDir) {
             pista.setTipo(TipoPista.UNA_DIRECCION);
             pista.setPos(c.getPos());
         }
         // Pista 9 del enunciado. Si las contiguas suman el valor de la celda, basta con ponerlas
         // todas en azul para resolverlo
-        else if(valLinea[0] + valLinea[1] + valLinea[2] + valLinea[3] == c.getValue()){
+        else if (alcanzables[0] + alcanzables[1] + alcanzables[2] + alcanzables[3] == c.getValue()) {
             pista.setTipo(TipoPista.AZULES_ALCANZABLES);
             pista.setPos(c.getPos());
         }
-        //Para que sea pista tres, el valor maximo entre tres de las direcciones debe ser menor
-        //estricto que el valor buscado por la celda
-        else if (valLinea[0] + valLinea[1] + valLinea[2] < c.getValue() ||
-                valLinea[0] + valLinea[1] + valLinea[3] < c.getValue() ||
-                valLinea[0] + valLinea[2] + valLinea[3] < c.getValue() ||
-                valLinea[1] + valLinea[2] + valLinea[3] < c.getValue()) {
-            pista.setTipo(TipoPista.DEBE_SER_AZUL);
-            pista.setPos(c.getPos());
+        // Pista 3 del enunciado. Se escoge la dirección donde hay que poner azules
+        else {
+            putBlueInDir(alcanzables, pista, c);
         }
     }
 
@@ -463,8 +423,120 @@ public class Tablero {
                 TipoPista.GRIS_ES_ROJA : TipoPista.AZUL_ES_ROJA;
         pista.setTipo(tipo);
         pista.setPos(tab[i][j].getPos());
+        _indRelPista[0] = i;
+        _indRelPista[1] = j;
     }
 
+    /**
+     * Comprueba si la celda tiene una sola dirección
+     * para poner celdas azules
+     *
+     * @param alcanzables Visibles alcanzables para cada dirección
+     * @param c           Celda desde la que quiere hacer la comprobación
+     * @return Devuelve si tiene una sola dirección o no
+     */
+    private boolean isOneDir(final int[] alcanzables, final Celda c) {
+        boolean oneDir = false;
+        int d = 0;
+        for (int val : alcanzables) {
+            if (val > 0) {
+                int next = 1;
+                int row;
+                int col;
+                while (next <= val) {
+                    row = c.getRow() + _dirs.get(d)[0] * next;
+                    col = c.getCol() + _dirs.get(d)[1] * next;
+
+                    // 1. La siguiente celda es gris, por tanto se puede rellenar por ahí
+                    if (_celdas[row][col].getTipoCelda() == TipoCelda.GRIS) {
+                        if (!oneDir) {
+                            oneDir = true;
+                            _indRelPista[0] = _dirs.get(d)[0];
+                            _indRelPista[1] = _dirs.get(d)[1];
+                            break;
+                        }
+                        // 2. Se vuelve a encontrar otro camino en gris, por tanto no es
+                        // una única dirección
+                        return false;
+                    }
+                    next++;
+                }
+            }
+            d++;
+        }
+
+        return oneDir;
+    }
+
+    /**
+     * Busca las posibles visibles para cada dirección de la celda
+     *
+     * @param c   Celda desde la que se inicia la búsqueda
+     * @param tab Tablero donde se realiza la búsqueda
+     * @return Devuelve el número de posibles visibles para cada dirección
+     */
+    private int[] possibleVisibles(Celda c, Celda[][] tab) {
+        int[] alcanzables = new int[4];
+        int nxt = 1;
+        int line = 0;
+        for (int[] d : _dirs) {
+            int row = c.getRow() + d[0] * nxt;
+            int col = c.getCol() + d[1] * nxt;
+
+            while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
+                    tab[row][col].getTipoCelda() != TipoCelda.ROJO &&
+                    alcanzables[line] < c.getValue()) {
+
+                alcanzables[line]++;
+
+                // Siguiente
+                nxt++;
+                row = c.getRow() + d[0] * nxt;
+                col = c.getCol() + d[1] * nxt;
+            }
+
+            line++;
+            nxt = 1;
+        }
+
+        return alcanzables;
+    }
+
+    private void putBlueInDir(int[] alcanzables, Pista pista, Celda c) {
+        // 1. Se escoge el camino que tenga más alcanzables
+        int max = Math.max(
+                Math.max(alcanzables[0], alcanzables[1]),
+                Math.max(alcanzables[2], alcanzables[3])
+        );
+        // 2. Cálculo de celdas que quedan por ver
+        int leftVisibles = c.getValue() - _numVisibles;
+        boolean unique = false;
+        for (int k = 0; k < 4; k++) {
+            if (max == alcanzables[k] && alcanzables[k] <= leftVisibles) {
+                // 3. ¿Las alcanzables en la dirección k son las que quedan por ver?
+                if (alcanzables[k] == leftVisibles) {
+                    // 3.1 Si ya se asignó un caminó entonces no es único. Por tanto,
+                    // no forma parte de la pista. Si hay más de un camino con EXACTAMENTE
+                    // el número de celdas alcanzables igual a las que quedan por ver
+                    // entonces no se puede dar una pista de este tipo
+                    if (unique) {
+                        pista.setTipo(TipoPista.NONE);
+                        return;
+                    }
+
+                    unique = true;
+                }
+
+                // 4. Asignación de la pista
+                if (pista.getTipo() != TipoPista.NONE)
+                    continue;
+                pista.setTipo(TipoPista.DEBE_SER_AZUL);
+                pista.setPos(c.getPos());
+                _indRelPista[0] = _dirs.get(k)[0];
+                _indRelPista[1] = _dirs.get(k)[1];
+            }
+        }
+    }
 //-----------------------------------------CELDAS-------------------------------------------------//
 
     public void changeCellColor(int i, int j) {
@@ -500,6 +572,14 @@ public class Tablero {
      */
     public int[] getIndRelPista() {
         return _indRelPista;
+    }
+
+    /**
+     * Devuelve el número de celdas visibles de la
+     * última celda que se proceso en procesaPista
+     */
+    public int getNumVisibles(){
+        return _numVisibles;
     }
 
 //------------------------------------------------------------------------------------------------//
