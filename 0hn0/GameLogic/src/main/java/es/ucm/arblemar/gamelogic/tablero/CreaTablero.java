@@ -400,6 +400,7 @@ public class CreaTablero {
         // 1. División de las azules por grupos - Selección de azules mínimas
         List<List<Celda>> groups = new ArrayList<>();
         _celdasAzules = 0;
+        saveSolution();
         selectBlues(groups);
 
         // 2. Asignación de azules como grises
@@ -420,6 +421,20 @@ public class CreaTablero {
         selectReds();
     }
 
+    /**
+     * Se hace una copia de la solución generada. Sin grises.
+     */
+    private void saveSolution() {
+        _solution = new Celda[_tam][_tam];
+        for (int i = 0; i < _tam; i++) {
+            for (int j = 0; j < _tam; j++) {
+                Celda c = _celdas[i][j];
+                int[] ind = {i, j};
+                _solution[i][j] = new Celda(c.getTipoCelda(), null, 0,
+                        c.getValue(), c.getPos(), 0, ind);
+            }
+        }
+    }
     //----------------------------AZULES-------------------------------//
 
     /**
@@ -625,10 +640,10 @@ public class CreaTablero {
                 // 1. Conversión de roja a azul
                 c.setLock(false);
                 c.setTipoCelda(TipoCelda.AZUL);
-                // 2. ¿Tiene solución?
-                boolean isSolv = solveTablero();
-                // Si - Entonces se bloquea
-                if (isSolv) {
+                // 2. ¿Tiene solución o es diferente a la original?
+                boolean isNewSol = isNewSolution();
+                // Si y es diferente - Entonces se bloquea
+                if (isNewSol) {
                     c.setLock(true);
                     c.setTipoCelda(TipoCelda.ROJO);
                     _celdas[i][j].setCellCallback(new CellCallback() {
@@ -643,6 +658,8 @@ public class CreaTablero {
                     _celdasGrises++;
                     c.setTipoCelda(TipoCelda.GRIS);
                 }
+
+                c.showText(false, 0);
             }
 
             j++;
@@ -662,7 +679,7 @@ public class CreaTablero {
      *
      * @return Devuelve si encontró solución o no
      */
-    boolean solveTablero() {
+    boolean isNewSolution() {
         // 1. Copia del tablero para resolverlo
         Celda[][] tabAux = new Celda[_tam][_tam];
         for (int i = 0; i < _tam; ++i) {
@@ -670,13 +687,11 @@ public class CreaTablero {
                 Celda c = _celdas[i][j];
                 int[] indx = {i, j};
                 int[] pos = {0, 0};
-                tabAux[i][j] = new Celda(TipoCelda.AZUL, null, 0, c.getValue(), pos, 0, indx);
+                tabAux[i][j] = new Celda(c.getTipoCelda(), null, 0,
+                        c.getValue(), pos, 0, indx);
 
                 if (c.getTipoCelda() == TipoCelda.AZUL && !c.isLock()) {
-                    tabAux[i][j].setTipoCelda(TipoCelda.GRIS);
                     tabAux[i][j].setLock(false);
-                } else if (c.getTipoCelda() == TipoCelda.ROJO) {
-                    tabAux[i][j].setTipoCelda(TipoCelda.ROJO);
                 }
             }
         }
@@ -694,8 +709,7 @@ public class CreaTablero {
                 case CERRAR_CASILLA:
                     closeCell(tabAux, i, j);
                     break;
-                case DEBE_SER_PARED:
-                case GRIS_ES_ROJA: {
+                case DEBE_SER_PARED: {
                     int[] pos = _tab.getIndRelPista();
                     tabAux[pos[0]][pos[1]].setTipoCelda(TipoCelda.ROJO);
                     break;
@@ -709,18 +723,17 @@ public class CreaTablero {
                 case AZULES_ALCANZABLES:
                     allBlues(tabAux, i, j);
                     break;
-                case AZUL_ES_ROJA: {
-                    int[] pos = _tab.getIndRelPista();
-                    tabAux[pos[0]][pos[1]].setTipoCelda(TipoCelda.AZUL);
+                case AZUL_ES_ROJA:
+                case GRIS_ES_ROJA:
+                    tabAux[i][j].setTipoCelda(TipoCelda.ROJO);
                     break;
-                }
                 // PISTAS DE FALLO
                 case DEMASIADAS_AZULES:
                 case INSUFICIENTES_AZULES:
                     return false;
             }
 
-            // Si no encontramos pista, seguimos buscando
+            // 4. Si no encontramos pista, seguimos buscando
             if (p.getTipo() == TipoPista.NONE) {
                 j++;
                 if (j >= _tam) {
@@ -735,7 +748,16 @@ public class CreaTablero {
             }
         }
 
-        return true;
+        // 5. ¿La soución nueva es igual a la original?
+        for (int n = 0; n < _tam; n++) {
+            for (int m = 0; m < _tam; m++) {
+                if (tabAux[n][m].getTipoCelda() != _solution[n][m].getTipoCelda()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -831,6 +853,7 @@ public class CreaTablero {
     /**
      * Rellena la dirección única de la celda con azules
      * hasta que se alcancen todas las visibles posibles
+     * o se encuentre una roja
      *
      * @param tabAux Tablero auxiliar de celdas
      * @param i      Fila de la celda
@@ -844,18 +867,29 @@ public class CreaTablero {
         Celda c = tabAux[i][j];
         // Visibles que quedan por rellenar
         int leftVisibles = c.getValue() - _numVisibles;
+        // Numero de celdas cambiadas
+        int changed = 0;
+        // Siguiente celda para mirar
         int next = 1;
-        int row;
-        int col;
-        while (next <= leftVisibles) {
-            row = c.getRow() + dir[0] * next;
-            col = c.getCol() + dir[1] * next;
-            Celda cAux = tabAux[row][col];
+        int row = c.getRow() + dir[0] * next;
+        int col = c.getCol() + dir[1] * next;
+        Celda cAux = tabAux[row][col];
+        while (changed < leftVisibles) {
             if (cAux.getTipoCelda() == TipoCelda.GRIS) {
                 cAux.setTipoCelda(TipoCelda.AZUL);
+                changed++;
+            }
+            else if(cAux.getTipoCelda() == TipoCelda.ROJO){
+                break;
+            }
+            next++;
+            row = c.getRow() + dir[0] * next;
+            col = c.getCol() + dir[1] * next;
+            if(row < 0 || row >= _tam || col < 0 || col >= _tam){
+                break;
             }
 
-            next++;
+            cAux = tabAux[row][col];
         }
     }
 
@@ -975,6 +1009,10 @@ public class CreaTablero {
      * Array de celdas del tablero
      */
     Celda[][] _celdas;
+    /**
+     * Array de la solución del tablero
+     */
+    Celda[][] _solution;
     /**
      * Celdas grises que posee el tablero.
      * Se usa para calcular el porcentaje
