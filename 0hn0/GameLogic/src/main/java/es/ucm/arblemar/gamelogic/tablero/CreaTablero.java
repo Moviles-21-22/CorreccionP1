@@ -152,6 +152,9 @@ public class CreaTablero {
         return _celdasGrises;
     }
 
+    public Celda[][] getSolution(){
+        return  _solution;
+    }
 //-------------------------------------RECURSIÓN--------------------------------------------------//
 
     /**
@@ -173,6 +176,12 @@ public class CreaTablero {
                                    final int tamFont, final float diam, int i, int j) {
         // 3. ¿Está lleno?
         if (i >= _tam) {
+            Celda last = _celdas[_tam - 1][_tam - 1];
+            if(last.getTipoCelda() == TipoCelda.AZUL && last.getValue() == 0){
+                last.setTipoCelda(TipoCelda.ROJO);
+                last.showText(false);
+            }
+
             // Se ponen en grises las celdas que toquen
             makeGreyCells();
             return true;
@@ -184,6 +193,7 @@ public class CreaTablero {
         TipoCelda initTipo = tryCell == 0 ? TipoCelda.AZUL : TipoCelda.ROJO;
         Celda c = _celdas[i][j];
         c.setTipoCelda(initTipo);
+        c.showText(false);
 
         // 2. ¿Es posible añadirla?
         if ((initTipo == TipoCelda.AZUL && !isPossibleToAddBlue(c, initTipo))
@@ -250,6 +260,7 @@ public class CreaTablero {
             _blueLeft++;
             // Si al cambiar de tipo no quedan más del otro tipo por colocar
             // entonces no se puede hacer nada más
+            c.showText(false);
             if (_redLeft == 0) {
                 c.setTipoCelda(TipoCelda.GRIS);
                 return false;
@@ -313,6 +324,7 @@ public class CreaTablero {
             // Si vino en azul, se prueba con el rojo
             if (prevTipo == TipoCelda.AZUL) {
                 c.setTipoCelda(TipoCelda.ROJO);
+                c.showText(false);
                 return isPossibleToAddRed(c, TipoCelda.AZUL);
             }
             // Ya se probó con el rojo antes, así que se descarta
@@ -334,6 +346,7 @@ public class CreaTablero {
                             return false;
                         }
                         c.setTipoCelda(TipoCelda.ROJO);
+                        c.showText(false);
                         return isPossibleToAddRed(c, TipoCelda.AZUL);
                     }
                     // Se le pone un valor a la celda
@@ -403,6 +416,7 @@ public class CreaTablero {
         saveSolution();
         selectBlues(groups);
 
+        _celdasGrises = 0;
         // 2. Asignación de azules como grises
         for (int i = 0; i < _tam; i++) {
             for (int j = 0; j < _tam; j++) {

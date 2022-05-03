@@ -185,10 +185,10 @@ public class GameState implements State {
             _ticksAnimText += _velFadeAnim * deltaTime;
             if (_ticksAnimText >= 1) {
                 // PISTA: Si hay una pista +1 - Si no -1
-                _currColorPista += _pista.getTipo() != TipoPista.NONE ? 1 : -1;
+                _currColorPista += _pista.getTipo() != TipoPista.NONE ? 10 : -10;
                 // TITULO: Si hay una pista -1 - Si no +1
-                _currColorTitulo += _pista.getTipo() != TipoPista.NONE ? -1 : 1;
-                if (_currColorPista == _colorTitulo || _currColorTitulo == _colorTitulo) {
+                _currColorTitulo += _pista.getTipo() != TipoPista.NONE ? -10 : 10;
+                if (_currColorPista >= _colorTitulo || _currColorTitulo >= _colorTitulo) {
                     // PISTA: Si hay una pista color del titulo - Si no color sin alpha
                     _currColorPista = _pista.getTipo() != TipoPista.NONE ? _colorTitulo : 0X31313100;
                     // Titulo: Si hay una pista color sin alpha - Si no color del titulo
@@ -227,6 +227,7 @@ public class GameState implements State {
             _graphics.drawText(_lastPistaTxt[0], x, y, _fontPistaTxt, _tamFPistaTxt);
             x = _posPistaTxt[0] - (_pista.getSize(_graphics.getLogWidth())[1]);
             y = _posPistaTxt[2];
+            _graphics.setColor(_currColorPista);
             _graphics.drawText(_lastPistaTxt[1], x, y, _fontPistaTxt, _tamFPistaTxt);
 
             // CELDA ASOCIADA A LA PISTA
@@ -334,14 +335,17 @@ public class GameState implements State {
         _timer = new Timer();
         // Si se encuentran pistas, se escoge una aleatoria y se muestra
         if (!_pistasList.isEmpty()) {
-            _delay = 2000;
+            _delay = 1000;
             _timerTask = new TimerTask() {
                 @Override
                 public void run() {
+                    _animFadeText = true;
                     Random rn = new Random();
                     int max = _pistasList.size();
                     int choice = rn.nextInt(max);
                     _pista = _pistasList.get(choice);
+                    _lastPistaTxt[0] = _pista.getTextoPista()[0];
+                    _lastPistaTxt[1] = _pista.getTextoPista()[1];
                     _pistasList.clear();
                 }
             };

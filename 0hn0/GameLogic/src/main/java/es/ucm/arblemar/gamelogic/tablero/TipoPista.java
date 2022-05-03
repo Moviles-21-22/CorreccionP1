@@ -62,7 +62,7 @@ public enum TipoPista {
      */
     INSUFICIENTES_AZULES(10);
 
-    private TipoPista(int i) {
+    TipoPista(int i) {
         this.value = i;
     }
 

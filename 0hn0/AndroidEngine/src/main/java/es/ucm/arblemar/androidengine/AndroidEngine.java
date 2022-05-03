@@ -58,13 +58,6 @@ public class AndroidEngine extends AbstractEngine implements Runnable {
         }
     }
 
-    private void updateDeltaTime() {
-        _currentTime = System.nanoTime();
-        long nanoElapsedTime = _currentTime - _lastFrameTime;
-        _lastFrameTime = _currentTime;
-        _deltaTime = (double) nanoElapsedTime / 1.0E9;
-    }
-
     public void onResume() {
         if (!running) {
             running = true;
@@ -88,9 +81,6 @@ public class AndroidEngine extends AbstractEngine implements Runnable {
     // ATRIBUTOS
     private volatile boolean running = false;
     private Thread thread;
-    private long _lastFrameTime = 0;
-    private long _currentTime = 0;
-    private double _deltaTime = 0;
     private AppCompatActivity _activity;
 
 }

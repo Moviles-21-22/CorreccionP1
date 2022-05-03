@@ -4,9 +4,6 @@ import java.awt.image.BufferStrategy;
 
 import es.ucm.arblemar.engine.AbstractEngine;
 import es.ucm.arblemar.engine.State;
-import es.ucm.arblemar.engine.Engine;
-import es.ucm.arblemar.engine.Graphics;
-import es.ucm.arblemar.engine.Input;
 
 public class DesktopEngine extends AbstractEngine {
     public DesktopEngine(){
@@ -60,20 +57,5 @@ public class DesktopEngine extends AbstractEngine {
             }
         }
     }
-
-    /**
-     * Cálculo del deltaTime
-     * */
-    private void updateDeltaTime(){
-        _currentTime = System.nanoTime();
-        long nanoElapsedTime = _currentTime - _lastFrameTime;
-        _lastFrameTime = _currentTime;
-        _deltaTime = (double) nanoElapsedTime / 1.0E9;
-    }
-
-    // ATRIBUTOS
-    private long _lastFrameTime = 0;
-    private long _currentTime = 0;
-    private double _deltaTime = 0;
 }
 

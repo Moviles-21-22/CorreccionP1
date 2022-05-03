@@ -84,8 +84,24 @@ public class Tablero {
             System.out.println("Tablero descartado");
         }
 
+        _solution = _creation.getSolution();
         _celdasGrises = _creation.getGrises();
         return _celdasGrises;
+    }
+
+    /**
+     * Comprueba si el tablero es la solución final
+     */
+    public boolean isSolution() {
+        for (int i = 0; i < _tam; i++) {
+            for (int j = 0; j < _tam; j++) {
+                if (_celdas[i][j].getTipoCelda() != _solution[i][j].getTipoCelda()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 //---------------------------------------------------------------------------------------//
 
@@ -130,6 +146,7 @@ public class Tablero {
      * Muestra el valor de todas las celdas azules
      */
     public void showAllValues() {
+        int a = 0;
         for (int i = 0; i < _tam; i++) {
             for (int j = 0; j < _tam; j++) {
                 if (!_celdas[i][j].isLock() && _celdas[i][j].getTipoCelda() == TipoCelda.AZUL) {
@@ -578,7 +595,7 @@ public class Tablero {
      * Devuelve el número de celdas visibles de la
      * última celda que se proceso en procesaPista
      */
-    public int getNumVisibles(){
+    public int getNumVisibles() {
         return _numVisibles;
     }
 
@@ -593,6 +610,10 @@ public class Tablero {
      * Array que contiene las celdas
      */
     Celda[][] _celdas;
+    /**
+     * Solución final del tablero
+     */
+    Celda[][] _solution;
     /**
      * Dimensión del tablero
      * 4x4, 5x5, 6x6...

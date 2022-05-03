@@ -1,8 +1,5 @@
 package es.ucm.arblemar.desktopengine;
 
-import org.w3c.dom.css.CSSPrimitiveValue;
-import org.w3c.dom.css.Rect;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ComponentEvent;
@@ -17,11 +14,10 @@ import es.ucm.arblemar.engine.Image;
 
 public class DesktopGraphics extends AbstractGraphics implements ComponentListener {
     // VARIABLES
-    private Engine _mainEngine;
-    private String _titulo;
+    private final Engine _mainEngine;
+    private final String _titulo;
     private DesktopScreen _screen;
     private java.awt.Graphics _graphics;
-    private AffineTransform _old;
 
     public DesktopGraphics(String titulo, Engine engine, int w, int h) {
         super(w, h);
@@ -71,7 +67,7 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
         float r = ((newColor >> 24) & 0xff) / 255.0f;
         float g = ((newColor >> 16) & 0xff) / 255.0f;
         float b = ((newColor >> 8) & 0xff) / 255.0f;
-        float a = ((newColor >> 0) & 0xff) / 255.0f;
+        float a = ((newColor) & 0xff) / 255.0f;
         Color c = new Color(r, g, b, a);
         _graphics.setColor(c);
     }
@@ -155,7 +151,7 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
 
     @Override
     public void save() {
-        _old = ((Graphics2D) _graphics).getTransform();
+        AffineTransform _old = ((Graphics2D) _graphics).getTransform();
     }
 
     @Override

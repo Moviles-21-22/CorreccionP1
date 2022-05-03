@@ -22,7 +22,6 @@ import es.ucm.arblemar.engine.Image;
 
 import android.graphics.Rect;
 import android.view.SurfaceView;
-import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -42,14 +41,14 @@ public class AndroidGraphics extends AbstractGraphics {
             _mainWin.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
             _mainWin.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-            _surface = new SurfaceView(activity.getApplicationContext());
-            _surface.setOnTouchListener(input);
-            activity.setContentView(_surface);
+            SurfaceView surface = new SurfaceView(activity.getApplicationContext());
+            surface.setOnTouchListener(input);
+            activity.setContentView(surface);
             Point winSize = new Point();
             _winManager.getDefaultDisplay().getSize(winSize);
             _winSize = winSize;
 
-            _holder = _surface.getHolder();
+            _holder = surface.getHolder();
         } catch (Exception e) {
             return false;
         }
@@ -61,7 +60,7 @@ public class AndroidGraphics extends AbstractGraphics {
     public Image newImage(String name) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = null;
-        Bitmap currBitMap = null;
+        Bitmap currBitMap;
         InputStream inputStream = null;
 
         try {
@@ -96,7 +95,7 @@ public class AndroidGraphics extends AbstractGraphics {
 
     @Override
     public void setColor(int color) {
-        int red = (int) ((color & 0xffffffffL) >> 24);
+        int red = (color & 0xff000000) >> 24;
         int green = (color & 0x00ff0000) >> 16;
         int blue = (color & 0x0000ff00) >> 8;
         int alpha = color & 0x000000ff;
@@ -165,7 +164,7 @@ public class AndroidGraphics extends AbstractGraphics {
 
     @Override
     public void updateGraphics() {
-        while (!_holder.getSurface().isValid()) ;
+        while (!_holder.getSurface().isValid());
         _canvas = _holder.lockCanvas();
     }
 
@@ -199,7 +198,6 @@ public class AndroidGraphics extends AbstractGraphics {
     private final Paint _paint;
     private final AssetManager _assetMng;
 
-    private SurfaceView _surface;
     private Canvas _canvas;
     private Point _winSize;
     private SurfaceHolder _holder;
