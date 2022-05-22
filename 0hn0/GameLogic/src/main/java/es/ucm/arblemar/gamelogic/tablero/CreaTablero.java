@@ -925,7 +925,6 @@ public class CreaTablero {
 
         // Se añade a la pila de movimientos
         int[] coors = {i, j};
-        _tab.addStackMov(coors);
 
         //Si pasamos de gris a azul tenemos una gris menos
         if (_tab.getCelda(i, j).getTipoCelda() == TipoCelda.AZUL)

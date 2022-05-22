@@ -3,19 +3,29 @@ package es.ucm.arblemar.gamelogic.tablero;
 public class Pista {
     public Pista() {
         _tipo = TipoPista.NONE;
-        indexCelda = new int[2];
+        _posCelda = new int[2];
         _size = new int[2];
         _st = new String[2];
     }
 
-    public void setPos(int[] p) {
-        indexCelda = p;
+    /**
+     * Asigna la posición en pantalla de la celda asociada a la pista
+     */
+    public void setPosCelda(int[] p) {
+        _posCelda = p;
     }
 
-    public int[] getIndexCelda() {
-        return indexCelda;
+    /**
+     * Devuelve la posición en pantalla de la celda asociada a la pista
+     */
+    public int[] getPosCelda() {
+        return _posCelda;
     }
 
+    /**
+     * Devuelve el tamaño del texto de la pista que se haya generado
+     * @param winWidthLog Ancho lógico de la ventana
+     */
     public int[] getSize(int winWidthLog) {
         switch (_tipo) {
             case CERRAR_CASILLA:
@@ -49,14 +59,23 @@ public class Pista {
         return _size;
     }
 
+    /**
+     * Asigan un tipo de pista recibido por parámetro
+     */
     public void setTipo(TipoPista tipo) {
         _tipo = tipo;
     }
 
+    /**
+     * Devuelve el tipo de pista generado
+     */
     public TipoPista getTipo() {
         return _tipo;
     }
 
+    /**
+     * Devuelve el texto de la pista actual
+     */
     public String[] getTextoPista() {
         switch (_tipo) {
             case CERRAR_CASILLA:
@@ -108,7 +127,7 @@ public class Pista {
     /**
      * Índice de la celda asociada a la pista
      */
-    private int[] indexCelda;
+    private int[] _posCelda;
     /**
      * Tamaño del texto de la pista
      */

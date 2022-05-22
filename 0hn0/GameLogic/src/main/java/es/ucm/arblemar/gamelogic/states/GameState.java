@@ -65,13 +65,43 @@ public class GameState implements State {
             _posReset[0] = (_graphics.getLogWidth() / 2) - (_sizeReset[0] / 2);
             _posReset[1] = (_graphics.getLogHeight() / 8) * 7;
             _imReset = Assets.history;
-
             _reset = new ButtonCallback() {
                 @Override
                 public void doSomething() {
-                    _tablero.devuelveMovimiento();
+                    _canUndo = _tablero.resetMovement();
+                    if (!_canUndo) {
+                        // Si el color está activado, se reinicia y se muestra el título
+                        // si está la animación de fade del título y pista, se para
+                        if (_currColorReset == 0X313131FF) {
+                            _animFadeText = false;
+                            _currColorTitulo = 0X313131FF;
+                            _currColorReset = 0X31313100;
+                        } else {
+                            _currColorReset = 0X313131FF;
+                            _currColorTitulo = 0X31313100;
+                            _resetText = "Nada que deshacer";
+                            _posResetTxt[0] = (_graphics.getLogWidth() / 5);
+                        }
+                    } else {
+                        _currColorTitulo = 0X31313100;
+                        _currColorReset = 0X313131FF;
+                        _resetText = "Celda devuelta a gris";
+                        _posResetTxt[0] = (_graphics.getLogWidth() / 13) * 2;
+                    }
+
+                    _currColorPista = 0X31313100;
+                    _pista.setTipo(TipoPista.NONE);
+                    _posResetTxt[1] = (_graphics.getLogHeight() / 7);
                 }
             };
+
+            // TEXTO DE RESET
+            _currColorReset = 0X31313100;
+            _tamFontReset = 32;
+            _resetText = "";
+            _fontReset = Assets.jose;
+            _posResetTxt = new int[2];
+
 
             // BOTON PISTA
             _sizePista = new int[2];
@@ -184,9 +214,9 @@ public class GameState implements State {
         if (_animFadeText) {
             _ticksAnimText += _velFadeAnim * deltaTime;
             if (_ticksAnimText >= 1) {
-                // PISTA: Si hay una pista +1 - Si no -1
+                // PISTA: Si hay una pista +10 - Si no -10
                 _currColorPista += _pista.getTipo() != TipoPista.NONE ? 10 : -10;
-                // TITULO: Si hay una pista -1 - Si no +1
+                // TITULO: Si hay una pista -10 - Si no +10
                 _currColorTitulo += _pista.getTipo() != TipoPista.NONE ? -10 : 10;
                 if (_currColorPista >= _colorTitulo || _currColorTitulo >= _colorTitulo) {
                     // PISTA: Si hay una pista color del titulo - Si no color sin alpha
@@ -230,11 +260,26 @@ public class GameState implements State {
             _graphics.setColor(_currColorPista);
             _graphics.drawText(_lastPistaTxt[1], x, y, _fontPistaTxt, _tamFPistaTxt);
 
+            // RESET
+            _graphics.setColor(_currColorReset);
+            _graphics.drawText(_resetText, _posResetTxt[0], _posResetTxt[1], _fontReset, _tamFontReset);
+
             // CELDA ASOCIADA A LA PISTA
             if (_pista.getTipo() != TipoPista.NONE) {
                 _graphics.setColor(_currColorPista);
-                x = _pista.getIndexCelda()[0] - _offsetPista;
-                y = _pista.getIndexCelda()[1] - _offsetPista;
+                int[] index = _pista.getPosCelda();
+                x = index[0] - _offsetPista;
+                y = index[1] - _offsetPista;
+                _graphics.fillCircle(x, y, _diamPista);
+                _graphics.setColor(0XFFFFFFFF);
+            }
+
+            // CELDA ASOCIADA AL UNDO
+            if (_canUndo) {
+                _graphics.setColor(_currColorReset);
+                int[] index = _tablero.getUndoCellPos();
+                x = index[0] - _offsetPista;
+                y = index[1] - _offsetPista;
                 _graphics.fillCircle(x, y, _diamPista);
                 _graphics.setColor(0XFFFFFFFF);
             }
@@ -274,6 +319,9 @@ public class GameState implements State {
                         currEvent.getX() < _posPista[0] + _sizePista[0] &&
                         currEvent.getY() > _posPista[1] &&
                         currEvent.getY() < _posPista[1] + _sizePista[1]) {
+                    // Si está activado lo del deshacer, se quita
+                    _canUndo = false;
+                    _currColorReset = 0X31313100;
                     _verPista.doSomething();
                     break;
                 }
@@ -437,6 +485,17 @@ public class GameState implements State {
      * a la celda asociada a la pista
      */
     float _diamPista;
+
+    // ATRIBUTOS PARA EL TEXTO DEL BOTON RESET
+    int _currColorReset;
+    int _tamFontReset;
+    String _resetText;
+    int[] _posResetTxt;
+    Font _fontReset;
+    /**
+     * Determina si hay
+     */
+    boolean _canUndo = false;
 
     // ATRIBUTOS DEL TABLERO
     /**

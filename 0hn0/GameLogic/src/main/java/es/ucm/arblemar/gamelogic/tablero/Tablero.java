@@ -34,10 +34,12 @@ public class Tablero {
         _celdaDiam = celdaDiam;
         _celdaTamFont = tabTamFont;
         _celdaFont = celdaFont;
-        _stackMovs = new Stack<>();
+        _movements = new Stack<>();
         _celdas = new Celda[_tam][_tam];
         _creation = new CreaTablero(this, _tam, _celdas);
         _indRelPista = new int[2];
+        _undoCellPos = new int[2];
+
         // Lista de direcciones
         _dirs = new ArrayList<>();
         int[] u = {-1, 0};
@@ -85,8 +87,9 @@ public class Tablero {
         }
 
         _solution = _creation.getSolution();
-        _celdasGrises = _creation.getGrises();
-        return _celdasGrises;
+        _totalGrises = _creation.getGrises();
+        _celdasGrises = _totalGrises;
+        return _totalGrises;
     }
 
     /**
@@ -179,23 +182,31 @@ public class Tablero {
         }
     }
 
-    public void devuelveMovimiento() {
-        if (!_stackMovs.empty()) {
-            int[] coords = _stackMovs.peek();
-            _celdas[coords[0]][coords[1]].backColor();
-            //Si pasamos de gris a azul tenemos una gris menos
-            if (_celdas[coords[0]][coords[1]].getTipoCelda() == TipoCelda.ROJO)
-                _celdasGrises--;
-
-            //Si pasamos de roja a gris tenemos gris de nuevo
-            if (_celdas[coords[0]][coords[1]].getTipoCelda() == TipoCelda.GRIS)
-                _celdasGrises++;
-            _stackMovs.pop();
+    /**
+     * Reinicia el último movimiento hecho.
+     *
+     * @return devuelve si hay algo que deshacer o no
+     */
+    public boolean resetMovement() {
+        if (_movements.empty()) {
+            return false;
         }
+
+        Celda c = _movements.peek();
+        // Si es distinta de gris, se resetea a gris
+        if (c.getTipoCelda() != TipoCelda.GRIS) {
+            c.setTipoCelda(TipoCelda.GRIS);
+            _celdasGrises++;
+        }
+
+        _undoCellPos = c.getPos();
+        _movements.pop();
+        return true;
     }
 
-    public void addStackMov(int[] mov) {
-        _stackMovs.add(mov);
+    private void addStackMov(Celda c) {
+        if(!_movements.isEmpty() && _movements.peek() == c) return;
+        _movements.add(c);
     }
 
 //-----------------------------------BÚSQUEDA-PISTAS----------------------------------------------//
@@ -213,7 +224,7 @@ public class Tablero {
         }
 
         Pista pista = new Pista();
-        pista.setPos(tab[i][j].getPos());
+        pista.setPosCelda(tab[i][j].getPos());
 
         if (tab[i][j].isLock() && tab[i][j].getTipoCelda() == TipoCelda.AZUL) {
             pistaCeldaAzul(i, j, pista, tab);
@@ -242,7 +253,7 @@ public class Tablero {
         if (yaCerrada) {    //Pueden estar las azules justas o faltar
             if (_numVisibles < tab[i][j].getValue()) {
                 pista.setTipo(TipoPista.INSUFICIENTES_AZULES);
-                pista.setPos(tab[i][j].getPos());
+                pista.setPosCelda(tab[i][j].getPos());
             }
             //En caso de estar la celda completa y cerrada no puede tener pista
             return;
@@ -286,7 +297,7 @@ public class Tablero {
             // Si se excede el valor de la celda, hay demasiadas azules
             if (_numVisibles > tab[i][j].getValue()) {
                 pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                pista.setPos(tab[i][j].getPos());
+                pista.setPosCelda(tab[i][j].getPos());
                 return false;
             }
         }
@@ -300,7 +311,7 @@ public class Tablero {
             // Si se excede el valor de la celda, hay demasiadas azules
             if (_numVisibles > tab[i][j].getValue()) {
                 pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                pista.setPos(tab[i][j].getPos());
+                pista.setPosCelda(tab[i][j].getPos());
                 return false;
             }
         }
@@ -314,7 +325,7 @@ public class Tablero {
             // Si se excede el valor de la celda, hay demasiadas azules
             if (_numVisibles > tab[i][j].getValue()) {
                 pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                pista.setPos(tab[i][j].getPos());
+                pista.setPosCelda(tab[i][j].getPos());
                 return false;
             }
         }
@@ -328,7 +339,7 @@ public class Tablero {
             // Si se excede el valor de la celda, hay demasiadas azules
             if (_numVisibles > tab[i][j].getValue()) {
                 pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                pista.setPos(tab[i][j].getPos());
+                pista.setPosCelda(tab[i][j].getPos());
                 return false;
             }
         }
@@ -371,7 +382,7 @@ public class Tablero {
 
                 if (nuevoVal > tab[i][j].getValue()) {
                     pista.setTipo(TipoPista.DEBE_SER_PARED);
-                    pista.setPos(tab[i][j].getPos());
+                    pista.setPosCelda(tab[i][j].getPos());
                     return;
                 }
 
@@ -404,13 +415,13 @@ public class Tablero {
         boolean oneDir = isOneDir(alcanzables, c);
         if (oneDir) {
             pista.setTipo(TipoPista.UNA_DIRECCION);
-            pista.setPos(c.getPos());
+            pista.setPosCelda(c.getPos());
         }
         // Pista 9 del enunciado. Si las contiguas suman el valor de la celda, basta con ponerlas
         // todas en azul para resolverlo
         else if (alcanzables[0] + alcanzables[1] + alcanzables[2] + alcanzables[3] == c.getValue()) {
             pista.setTipo(TipoPista.AZULES_ALCANZABLES);
-            pista.setPos(c.getPos());
+            pista.setPosCelda(c.getPos());
         }
         // Pista 3 del enunciado. Se escoge la dirección donde hay que poner azules
         else {
@@ -439,7 +450,7 @@ public class Tablero {
         TipoPista tipo = tab[i][j].getTipoCelda() == TipoCelda.GRIS ?
                 TipoPista.GRIS_ES_ROJA : TipoPista.AZUL_ES_ROJA;
         pista.setTipo(tipo);
-        pista.setPos(tab[i][j].getPos());
+        pista.setPosCelda(tab[i][j].getPos());
         _indRelPista[0] = i;
         _indRelPista[1] = j;
     }
@@ -548,7 +559,7 @@ public class Tablero {
                 if (pista.getTipo() != TipoPista.NONE)
                     continue;
                 pista.setTipo(TipoPista.DEBE_SER_AZUL);
-                pista.setPos(c.getPos());
+                pista.setPosCelda(c.getPos());
                 _indRelPista[0] = _dirs.get(k)[0];
                 _indRelPista[1] = _dirs.get(k)[1];
             }
@@ -558,6 +569,7 @@ public class Tablero {
 
     public void changeCellColor(int i, int j) {
         _celdas[i][j].changeColor();
+        addStackMov(_celdas[i][j]);
     }
 
     public void addGreyCell(int grey) {
@@ -599,6 +611,14 @@ public class Tablero {
         return _numVisibles;
     }
 
+    /**
+     * Devuelve el índice de la celda relacionada al
+     * último movimiento deshecho
+     */
+    public int[] getUndoCellPos(){
+        return _undoCellPos;
+    }
+
 //------------------------------------------------------------------------------------------------//
 
     // ATRIBUTOS DEL TABLERO
@@ -631,6 +651,11 @@ public class Tablero {
      */
     int _celdasGrises = 0;
     /**
+     * Número total de grises que tenía
+     * el tablero al incio
+     */
+    int _totalGrises = 0;
+    /**
      * Posición del tablero en el juego
      */
     int[] _tabPos;
@@ -660,9 +685,13 @@ public class Tablero {
      * Fuente de las celdas
      */
     Font _celdaFont;
+    /**
+     * Indice de la celda que se ha deshecho
+     */
+    int[] _undoCellPos;
     // PILA DE MOVIMIENTOS
     /**
-     * Pila con los movimientos del jugador
+     * Registro de los movimiento de la partida
      */
-    Stack<int[]> _stackMovs;
+    Stack<Celda> _movements;
 }
