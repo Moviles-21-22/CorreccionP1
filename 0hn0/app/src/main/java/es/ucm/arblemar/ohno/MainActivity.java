@@ -19,7 +19,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (!engine.init(assets,this,400,600)) {
             System.err.println("Error al inicializar el engine");
-            return;
         }
     }
 

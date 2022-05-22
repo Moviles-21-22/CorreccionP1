@@ -13,13 +13,16 @@ import es.ucm.arblemar.engine.Engine;
 import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
-import es.ucm.arblemar.gamelogic.ButtonCallback;
+import es.ucm.arblemar.gamelogic.interfaces.ButtonCallback;
 import es.ucm.arblemar.gamelogic.enums.FadeAnimation;
 import es.ucm.arblemar.gamelogic.enums.TipoUndo;
 import es.ucm.arblemar.gamelogic.tablero.Tablero;
 import es.ucm.arblemar.gamelogic.enums.TipoPista;
 import es.ucm.arblemar.gamelogic.tablero.Pista;
 
+/**
+ * Estado de la escena del tablero
+ */
 public class GameState implements State {
     GameState(Engine engine, int t) {
         _engine = engine;
@@ -217,6 +220,7 @@ public class GameState implements State {
         int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
 
         _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont);
+
 //            _totalGrises = _tablero.initTestTab();
         _totalGrises = _tablero.generateTab();
     }

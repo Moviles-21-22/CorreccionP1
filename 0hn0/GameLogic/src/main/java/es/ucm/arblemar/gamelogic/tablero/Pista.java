@@ -2,6 +2,9 @@ package es.ucm.arblemar.gamelogic.tablero;
 
 import es.ucm.arblemar.gamelogic.enums.TipoPista;
 
+/**
+ * Clase encarga de almacenar la información de las pistas
+ */
 public class Pista {
     public Pista() {
         _tipo = TipoPista.NONE;

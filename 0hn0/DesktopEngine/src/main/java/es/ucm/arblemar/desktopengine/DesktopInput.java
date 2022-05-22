@@ -32,7 +32,6 @@ public class DesktopInput extends AbstractInput implements MouseListener, MouseM
 
     }
 
-
     @Override
     public void mouseReleased(MouseEvent e) {
     }

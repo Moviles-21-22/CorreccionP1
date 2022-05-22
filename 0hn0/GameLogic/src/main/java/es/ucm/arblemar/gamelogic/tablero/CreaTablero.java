@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Random;
 
 import es.ucm.arblemar.engine.Font;
-import es.ucm.arblemar.gamelogic.CellCallback;
+import es.ucm.arblemar.gamelogic.interfaces.CellCallback;
 import es.ucm.arblemar.gamelogic.enums.TipoCelda;
 import es.ucm.arblemar.gamelogic.enums.TipoPista;
 import es.ucm.arblemar.gamelogic.states.GameState;
 
 /**
- * Generador de tableros correctos
+ * Generador de tableros
  */
 public class CreaTablero {
     public CreaTablero(Tablero t, int tam, Celda[][] celdas) {
@@ -713,7 +713,7 @@ public class CreaTablero {
         }
 
         // 2. Procesa pista
-        Pista p = new Pista();
+        Pista p;
         int i = 0;
         int j = 0;
 

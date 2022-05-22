@@ -1,12 +1,16 @@
 package es.ucm.arblemar.gamelogic.enums;
 
+/**
+ * Enumera los diferentes tipos de acciones de deshacer
+ * movimiento que se pueden dar en el juego
+ */
 public enum TipoUndo {
     NONE(0),
     GRIS(1),
     AZUL(2),
     ROJO(3);
 
-    private TipoUndo(int i) {
+    TipoUndo(int i) {
         this.value = i;
     }
 

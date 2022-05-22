@@ -1,4 +1,4 @@
-package es.ucm.arblemar.gamelogic;
+package es.ucm.arblemar.gamelogic.interfaces;
 
 public interface ButtonCallback {
     /**

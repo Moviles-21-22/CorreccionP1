@@ -169,11 +169,6 @@ public class AndroidGraphics extends AbstractGraphics {
     }
 
     @Override
-    public void save() {
-
-    }
-
-    @Override
     public void restore() {
         _holder.unlockCanvasAndPost(_canvas);
     }

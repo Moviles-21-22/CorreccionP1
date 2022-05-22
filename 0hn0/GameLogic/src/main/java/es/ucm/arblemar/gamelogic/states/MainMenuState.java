@@ -9,8 +9,11 @@ import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.engine.Input.TouchEvent;
 import es.ucm.arblemar.gamelogic.Assets;
-import es.ucm.arblemar.gamelogic.ButtonCallback;
+import es.ucm.arblemar.gamelogic.interfaces.ButtonCallback;
 
+/**
+ * Estado del menú principal del juego
+ */
 public class MainMenuState implements State {
     public MainMenuState(Engine engine) {
         _engine = engine;

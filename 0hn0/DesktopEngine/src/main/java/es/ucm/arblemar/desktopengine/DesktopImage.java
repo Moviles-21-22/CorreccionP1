@@ -1,18 +1,11 @@
 package es.ucm.arblemar.desktopengine;
 
-
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-
 import javax.imageio.ImageIO;
 
 import es.ucm.arblemar.engine.Image;
-
-import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class DesktopImage implements Image {
     public DesktopImage(String filename){
@@ -47,5 +40,5 @@ public class DesktopImage implements Image {
     }
 
     private java.awt.Image _javaImage;
-    private String _fileName;
+    private final String _fileName;
 }

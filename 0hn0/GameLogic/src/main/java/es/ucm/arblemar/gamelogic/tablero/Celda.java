@@ -5,8 +5,8 @@ import java.util.List;
 
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.Assets;
-import es.ucm.arblemar.gamelogic.ButtonCallback;
-import es.ucm.arblemar.gamelogic.CellCallback;
+import es.ucm.arblemar.gamelogic.interfaces.ButtonCallback;
+import es.ucm.arblemar.gamelogic.interfaces.CellCallback;
 import es.ucm.arblemar.gamelogic.enums.TipoCelda;
 import es.ucm.arblemar.gamelogic.states.GameState;
 

@@ -108,9 +108,5 @@ public interface Graphics {
     /**
      *
      * */
-    void save();
-    /**
-     *
-     * */
     void restore();
 }

@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 
 import es.ucm.arblemar.engine.AbstractGraphics;
@@ -13,12 +12,6 @@ import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.engine.Image;
 
 public class DesktopGraphics extends AbstractGraphics implements ComponentListener {
-    // VARIABLES
-    private final Engine _mainEngine;
-    private final String _titulo;
-    private DesktopScreen _screen;
-    private java.awt.Graphics _graphics;
-
     public DesktopGraphics(String titulo, Engine engine, int w, int h) {
         super(w, h);
         _mainEngine = engine;
@@ -79,22 +72,22 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
 
     @Override
     public void drawImage(Image image, int x, int y, float w, float h) {
-        int newPos[] = realPos(x, y);
-        int newSize[] = realSize(w, h);
+        int[] newPos = realPos(x, y);
+        int[] newSize = realSize(w, h);
         _graphics.drawImage(((DesktopImage) image).getImage(), newPos[0], newPos[1],
                 newSize[0], newSize[1], null);
     }
 
     @Override
     public void drawRect(int x, int y, float width, float height) {
-        int newPos[] = realPos(x, y);
-        int newSize[] = realSize(width, height);
+        int[] newPos = realPos(x, y);
+        int[] newSize = realSize(width, height);
         _graphics.drawRect(newPos[0], newPos[1], newSize[0], newSize[1]);
     }
 
     @Override
     public void drawCircle(int x, int y, float radio) {
-        int newPos[] = realPos(x, y);
+        int[] newPos = realPos(x, y);
         int newSize = realSize(radio);
         _graphics.drawOval(newPos[0], newPos[1], newSize, newSize);
     }
@@ -103,21 +96,21 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     public void drawText(String text, int x, int y, Font font, int tam) {
         font.setSize(realSize(tam));
         _graphics.setFont(((DesktopFont) font).getJavaFont());
-        int newPos[] = realPos(x, y);
+        int[] newPos = realPos(x, y);
         _graphics.drawString(text, newPos[0], newPos[1]);
     }
 
     @Override
     public void fillCircle(int x, int y, float dm) {
-        int newPos[] = realPos(x, y);
+        int[] newPos = realPos(x, y);
         int newSize = realSize(dm);
         _graphics.fillOval(newPos[0], newPos[1], newSize, newSize);
     }
 
     @Override
     public void fillRect(int x, int y, int width, int height) {
-        int newPos[] = realPos(x, y);
-        int newSize[] = realSize(width, height);
+        int[] newPos = realPos(x, y);
+        int[] newSize = realSize(width, height);
         _graphics.fillRect(newPos[0], newPos[1], newSize[0], newSize[1]);
     }
 
@@ -147,11 +140,6 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     @Override
     public void scale(float x, float y) {
         ((Graphics2D) _graphics).scale(x, y);
-    }
-
-    @Override
-    public void save() {
-        AffineTransform _old = ((Graphics2D) _graphics).getTransform();
     }
 
     @Override
@@ -188,4 +176,10 @@ public class DesktopGraphics extends AbstractGraphics implements ComponentListen
     public void componentHidden(ComponentEvent e) {
 
     }
+
+    // VARIABLES
+    private final Engine _mainEngine;
+    private final String _titulo;
+    private DesktopScreen _screen;
+    private java.awt.Graphics _graphics;
 }

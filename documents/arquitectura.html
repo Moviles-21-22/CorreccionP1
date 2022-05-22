@@ -370,29 +370,47 @@ code {
 <p><img src="https://user-images.githubusercontent.com/47497948/141697394-0b9e7560-50cf-4004-b82f-39043564833f.png" alt="image"></p>
 <ul>
 <li><strong>Engine</strong>: es el módulo que contiene las interfaces y clases comunes para ambas plataformas. No tiene dependencias.</li>
-<li><strong>GameLogic</strong>: módulo contenedor de todas las clases necesesarias para implementar la lógica del juego, es decir, contiene cada uno de los estados del juego (clases que implementan la interfaz <strong>App</strong> de <strong>Engine</strong>) así como todos los objetos, funciones y algoritmos necesarios para la resolución del tablero, pistas, renderizado, etc. Tiene una dependencia de <strong>Engine</strong>.</li>
-<li><strong>AndroidEngine</strong>: contiene las clases que implementan cada unas de las interfaces del módulo Engine para que funcione en dispositivos Android. Tiene una dependencia con <strong>Engine</strong></li>
-<li><strong>DesktopEngine</strong>: análogamente igual que AndroidEngine, también con la dependencia de <strong>Engine</strong>.</li>
 </ul>
-<img src = "https://user-images.githubusercontent.com/47497948/141701064-c2fab299-0f91-4463-ae87-bbfb5be2f8d8.png" width = "300" allignment = "left">
-<img src = "https://user-images.githubusercontent.com/47497948/141701264-c99aa58a-5a7e-48a9-a6cb-469ce9100964.png" width = "280">
+<img src = "https://user-images.githubusercontent.com/47497948/169718242-a53749c8-b8aa-4fd7-8e82-ea2658f23fdc.png" width = "300" alligment = "left">
 <ul>
-<li><strong>app / DesktopGame</strong>: sirven únicamente para inicializar el juego en dispositivos Android y en PC respectivamente, de manera que dependen del módulo <strong>GameLogic</strong> y de <strong>Engine</strong>, puesto que hace falta poner en marcha el motor.</li>
+<li><strong>GameLogic</strong>: módulo contenedor de todas las clases necesesarias para implementar la lógica del juego, es decir, contiene cada uno de los estados del juego (clases que implementan la interfaz <strong>State</strong> de <strong>Engine</strong>) así como todos los objetos, funciones y algoritmos necesarios para la resolución del tablero, pistas, renderizado, etc. Tiene una dependencia de <strong>Engine</strong>.</li>
+</ul>
+<img src = "https://user-images.githubusercontent.com/47497948/169716480-88c48e10-0406-462c-adb1-94c77bc17c7c.png" width = 200>
+<ul>
+<li><strong>AndroidEngine</strong>: contiene las clases que implementan cada unas de las interfaces del módulo Engine para que funcione en dispositivos Android. Tiene una dependencia con <strong>Engine</strong>.</li>
+</ul>
+<img src = "https://user-images.githubusercontent.com/47497948/169718211-a890d272-864a-4f1f-9ef1-be2179065579.png" width = "300" allignment = "left">
+<ul>
+<li><strong>DesktopEngine</strong>: análogamente igual que AndroidEngine, pero para que funcione en PC. También con la dependencia de <strong>Engine</strong>.</li>
+</ul>
+<img src = "https://user-images.githubusercontent.com/47497948/169715878-253cc924-d739-4fd1-b212-01146c090df7.png" width = "280">
+<ul>
+<li><strong>app / DesktopGame</strong>: sirven únicamente para inicializar el juego en dispositivos Android y en PC respectivamente, de manera que dependen del módulo <strong>GameLogic</strong> y <strong>Engine</strong> puesto que hace falta poner en marcha el motor. Luego, cada uno tiene una dependencia de su respectiva plataforma, app de <strong>AndroidEngine</strong>, DesktopGame de <strong>DesktopEngine</strong>.</li>
 </ul>
  <div style="page-break-after: always;"></div>
 <h1 id="m%C3%B3dulo-engine">Módulo: Engine</h1>
-<p>Se han creado las iterfaces pedidas en el enunciado de la práctica, ampliando debidamente con <strong>AbstractGraphics</strong>, <strong>ButtonCallback</strong> y <strong>Vector2</strong>.</p>
+<p>Se han creado las iterfaces pedidas en el enunciado de la práctica, ampliando debidamente con <strong>AbstractEngine</strong>, <strong>AbstractGraphics</strong> y <strong>AbstractInput</strong>.</p>
 <p><img src="https://user-images.githubusercontent.com/47497948/141698235-68754608-9643-4bd3-9869-0dded8306fe3.png" alt="image"></p>
 <ul>
-<li><strong>AbstractGraphics</strong>: implementa la interfaz de Graphics, de manera que contiene cálculos comunes para las transformaciones de los objetos en Android y PC.</li>
-<li><strong>ButtonCallback</strong>: interfaz que contiene un método <strong>doSomething</strong> diseñado para crear callbacks en los botones del juego.</li>
-<li><strong>Vector2</strong>: contiene dos enteros (x, y) para ser utilizados a forma de vector o <strong>Pair</strong>.</li>
+<li>
+<p><strong>AbstractEngine</strong>: implementa la interfaz Engine, de manera que contiene aquella funcionalidad común para ambas plataformas: getGraphics, getInput, reqNewState(para solicitar un cambio de estado) y updateDeltaTime (para actualizar el deltaTime). Además, declara aquellos atributos comunes en ambas plataformas que sean necesarios.</p>
+</li>
+<li>
+<p><strong>AbstractGraphics</strong>: implementa la interfaz de Graphics, de manera que contiene cálculos comunes para las transformaciones de los objetos en Android y PC. También contiene todos aquellos atributos que se necesiten para los cálculos mencionados.</p>
+</li>
+<li>
+<p><strong>AbstractInput</strong>: implementa la intefaz Input y posee los atributos y métodos comunes para ambas plataformas: GetTouchEvents (devuelve una lista de los eventos del input) y onTouchDownEvent(que convierte las coordenadas del input en coordenadas lógicas y las añade a la listad e eventos).</p>
+</li>
 </ul>
  <div style="page-break-after: always;"></div>
 <h1 id="m%C3%B3dulo-gamelogic">Módulo: GameLogic</h1>
-<img src = "https://user-images.githubusercontent.com/47497948/141700937-1f7c9a29-b5a9-41c3-884a-7931d59332f7.png" width = 200>
-<p>Para la lógica hemos utilizado un sistema polimórfico a través de la herencia de <strong>GameObject</strong> de manera que en los <strong>estados</strong>, los cuales implementan la interfaz de <strong>App</strong>, poseen una lista de cada uno de los objetos del juego para procesar su input, render y update.</p>
-<p>De esta misma manera funcionan los estados, es decir, desde el <strong>Engine</strong> principal, tanto de Android como de PC, se está llamando continuamente al <strong>handleInput</strong>, <strong>render</strong> y <strong>update</strong> del estado actual del juego.</p>
+<img src = "https://user-images.githubusercontent.com/47497948/169716480-88c48e10-0406-462c-adb1-94c77bc17c7c.png" width = 200>
+<p>En la carpeta <strong>enums</strong> se han guardado todos aquellos enumerados que se han utilizado para la lógica del juego y en la de <strong>interfaces</strong>, las interfaces auxiliares usadas.</p>
+<p>Posteriormente, en la carpeta <strong>states</strong> se han guardado cada uno de los estados del juego. Todos ellos implementan la interfaz State. Desde el <strong>Engine</strong> principal, tanto de Android como de PC, se está llamando continuamente al <strong>handleInput</strong>, <strong>render</strong> y <strong>update</strong> del estado actual del juego, que puede ser cualquiera de los que se ven en la imagen.</p>
+<p>En el paquete <strong>tablero</strong>, están aquellas clases necesarias para llevar a cabo la creación del tablero, así como la funcionalidad para gestionar la lógica del tablero en sí.</p>
+<p>Finalmente, aquellas clases que no pertenecen a un lugar en concreto no se han acomodado en ningún paquete adicional.</p>
+<hr>
+<p>También se ha adjuntado un documento <strong>correccionesP1.txt</strong> donde se resaltan cada una de las correcciones comentadas en el campus virtual y la forma de solucionarlas.</p>
 
 </body>
 </html>

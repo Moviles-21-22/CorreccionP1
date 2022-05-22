@@ -10,10 +10,13 @@ import es.ucm.arblemar.engine.Engine;
 import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
-import es.ucm.arblemar.gamelogic.ButtonCallback;
+import es.ucm.arblemar.gamelogic.interfaces.ButtonCallback;
 import es.ucm.arblemar.gamelogic.enums.TipoCelda;
 import es.ucm.arblemar.gamelogic.tablero.Celda;
 
+/**
+ * Estado del menú de selección d nivel
+ */
 public class SelectMenuState implements State {
     public SelectMenuState(Engine engine) {
         _engine = engine;
@@ -197,15 +200,6 @@ public class SelectMenuState implements State {
                             break;
                         }
                     }
-//                    boolean isClick = false;
-//                    int j = 0;
-//                    while (!isClick && j < _celdas.size()) {
-//                        if (_celdas.get(j).isClicked(currEvent.getX(), currEvent.getY())) {
-//                            _celdas.get(j).runCallBack();
-//                            isClick = true;
-//                        }
-//                        j++;
-//                    }
                 }
             }
         }

@@ -188,6 +188,7 @@ public class Tablero {
 
     /**
      * Reinicia el último movimiento hecho.
+     *
      * @return devuelve si hay algo que deshacer o no
      */
     public TipoUndo resetMovement() {
@@ -202,8 +203,7 @@ public class Tablero {
         // a poner en gris
         if (c.getTipoCelda() != TipoCelda.GRIS && mov.getTipoCelda() == TipoCelda.GRIS) {
             _celdasGrises++;
-        }
-        else if(c.getTipoCelda() == TipoCelda.GRIS && mov.getTipoCelda() != TipoCelda.GRIS){
+        } else if (c.getTipoCelda() == TipoCelda.GRIS && mov.getTipoCelda() != TipoCelda.GRIS) {
             _celdasGrises--;
         }
 
@@ -216,7 +216,7 @@ public class Tablero {
 
     private void addStackMov(Celda c) {
         // Si el movimiento es el mismo que el anterior, se devuelve
-        if(!_movements.isEmpty() && _movements.peek().getCelda() == c) return;
+        if (!_movements.isEmpty() && _movements.peek().getCelda() == c) return;
         MovementInfo mov = new MovementInfo(c);
         _movements.add(mov);
     }
@@ -224,10 +224,12 @@ public class Tablero {
 //-----------------------------------BÚSQUEDA-PISTAS----------------------------------------------//
 
     /**
-     * Busca la pista que pueda existir en la casilla seleccionada
+     * Busca la pista que pueda existir en la casilla seleccionada del tablero que se
+     * recibe por parámetro.
      *
-     * @param i: Fila de la celda
-     * @param j: Columna de la celda
+     * @param i:   Fila de la celda
+     * @param j:   Columna de la celda
+     * @param tab: Tablero donde se quieren buscar las pistas
      * @return Devuelve la pista generada. Puede ser NONE.
      */
     public Pista buscaPista(int i, int j, Celda[][] tab) {
@@ -251,8 +253,9 @@ public class Tablero {
     /**
      * Procesa las pistas que estén asociadas a una celda azul
      *
-     * @param i: Fila de la celda
-     * @param j: Columna de la celda
+     * @param i:   Fila de la celda
+     * @param j:   Columna de la celda
+     * @param tab: Tablero donde se quieren buscar las pistas
      */
     private void pistaCeldaAzul(int i, int j, Pista pista, Celda[][] tab) {
         _numVisibles = 0;
@@ -291,69 +294,48 @@ public class Tablero {
      * @param i:     Fila de la celda
      * @param j:     Columna de la celda
      * @param pista: variable de la pista que se va a modificar
+     * @param tab:   Tablero donde se quieren buscar las pistas
      * @return Devuelve true si la celda está cerrada
      * false en caso contrario o si ha sido pista
      */
     private boolean demasiadasAzules(int i, int j, Pista pista, Celda[][] tab) {
         boolean yaCerrada = true;
 
-        // i/n --> FILAS // j/m --> COLUMNAS
-        //-----------------ABAJO----------------//
-        for (int n = i + 1; n < _tam; ++n) {
-            if (tab[n][j].getTipoCelda() == TipoCelda.AZUL) _numVisibles++;
-                // En cuanto haya una gris, se deja de contar
-            else if (tab[n][j].getTipoCelda() == TipoCelda.GRIS) {
-                yaCerrada = false;
-                break;
-            } else break;
-            // Si se excede el valor de la celda, hay demasiadas azules
-            if (_numVisibles > tab[i][j].getValue()) {
-                pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                pista.setPosCelda(tab[i][j].getPos());
-                return false;
+        int nxt = 1;
+        Celda c = tab[i][j];
+        for (int[] d : _dirs) {
+            int row = c.getRow() + d[0] * nxt;
+            int col = c.getCol() + d[1] * nxt;
+
+            // Mientras esté en los límites del tablero
+            // Mientras sea (gris y no haya encontrado gris) o mientras se azul
+            // es cuando interesa seguir buscando
+            while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
+                    tab[row][col].getTipoCelda() == TipoCelda.AZUL) {
+
+                _numVisibles++;
+                // Si se excede el valor de la celda, hay demasiadas azules
+                if (_numVisibles > tab[i][j].getValue()) {
+                    pista.setTipo(TipoPista.DEMASIADAS_AZULES);
+                    pista.setPosCelda(tab[i][j].getPos());
+                    return false;
+                }
+
+                // Siguiente
+                nxt++;
+                row = c.getRow() + d[0] * nxt;
+                col = c.getCol() + d[1] * nxt;
             }
-        }
-        //-----------------ARRIBA----------------//
-        for (int n = i - 1; n >= 0; --n) {
-            if (tab[n][j].getTipoCelda() == TipoCelda.AZUL) _numVisibles++;
-            else if (tab[n][j].getTipoCelda() == TipoCelda.GRIS) {
+
+            // El bucle anterior puede haberse roto por haber encotnrado una celda de otro color.
+            // Si es gris, entonces la celda a partir, de la cual se está procesando la pista no
+            // está cerrada. Solo interesa asignarlo una vez.
+            if (yaCerrada && row >= 0 && row < _tam && col < _tam && col >= 0 &&
+                    tab[row][col].getTipoCelda() == TipoCelda.GRIS) {
                 yaCerrada = false;
-                break;
-            } else break;
-            // Si se excede el valor de la celda, hay demasiadas azules
-            if (_numVisibles > tab[i][j].getValue()) {
-                pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                pista.setPosCelda(tab[i][j].getPos());
-                return false;
             }
-        }
-        //-----------------DERECHA----------------//
-        for (int m = j + 1; m < _tam; ++m) {
-            if (tab[i][m].getTipoCelda() == TipoCelda.AZUL) _numVisibles++;
-            else if (tab[i][m].getTipoCelda() == TipoCelda.GRIS) {
-                yaCerrada = false;
-                break;
-            } else break;
-            // Si se excede el valor de la celda, hay demasiadas azules
-            if (_numVisibles > tab[i][j].getValue()) {
-                pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                pista.setPosCelda(tab[i][j].getPos());
-                return false;
-            }
-        }
-        //-----------------IZQUIERDA----------------//
-        for (int m = j - 1; m >= 0; --m) {
-            if (tab[i][m].getTipoCelda() == TipoCelda.AZUL) _numVisibles++;
-            else if (tab[i][m].getTipoCelda() == TipoCelda.GRIS) {
-                yaCerrada = false;
-                break;
-            } else break;
-            // Si se excede el valor de la celda, hay demasiadas azules
-            if (_numVisibles > tab[i][j].getValue()) {
-                pista.setTipo(TipoPista.DEMASIADAS_AZULES);
-                pista.setPosCelda(tab[i][j].getPos());
-                return false;
-            }
+
+            nxt = 1;
         }
 
         //Si ha salido siempre por celdas rojas devolvera true
@@ -379,7 +361,7 @@ public class Tablero {
             int col = c.getCol() + d[1] * nxt;
 
             // Mientras esté en los límites del tablero
-            // Mientras sea (gris y no haya encontrado gris) o mientras se azul
+            // Mientras (sea gris y no haya encontrado gris antes) o mientras sea azul
             // es cuando interesa seguir buscando
             while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
                     ((tab[row][col].getTipoCelda() == TipoCelda.GRIS && !gris) ||
@@ -450,11 +432,16 @@ public class Tablero {
      * @param pista: Variable de la pista que se va a modificar
      */
     private void ponerRoja(int i, int j, Pista pista, Celda[][] tab) {
+        // Arriba
+        // Abajo
+        // Izquierda
+        // Derecha
+
         // Si se detecta que no está cerrada, entonces no es esta pista
-        if ((i + 1 < _tam && tab[i + 1][j].getTipoCelda() != TipoCelda.ROJO)        // ABAJO
-                || (i - 1 >= 0 && tab[i - 1][j].getTipoCelda() != TipoCelda.ROJO)   // ARRIBA
-                || (j + 1 < _tam && tab[i][j + 1].getTipoCelda() != TipoCelda.ROJO) // DERECHA
-                || (j - 1 >= 0 && tab[i][j - 1].getTipoCelda() != TipoCelda.ROJO))  // IZQUIERDA
+        if ((i - 1 >= 0 && tab[i - 1][j].getTipoCelda() != TipoCelda.ROJO)          // ARRIBA
+                || (i + 1 < _tam && tab[i + 1][j].getTipoCelda() != TipoCelda.ROJO) // ABAJO
+                || (j - 1 >= 0 && tab[i][j - 1].getTipoCelda() != TipoCelda.ROJO)   // IZQUIERDA
+                || (j + 1 < _tam && tab[i][j + 1].getTipoCelda() != TipoCelda.ROJO))// DERECHA
         {
             return;
         }
@@ -627,7 +614,7 @@ public class Tablero {
      * Devuelve el índice de la celda relacionada al
      * último movimiento deshecho
      */
-    public int[] getUndoCellPos(){
+    public int[] getUndoCellPos() {
         return _undoCellPos;
     }
 

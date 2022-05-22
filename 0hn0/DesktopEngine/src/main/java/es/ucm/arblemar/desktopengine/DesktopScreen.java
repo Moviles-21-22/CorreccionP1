@@ -1,11 +1,7 @@
 package es.ucm.arblemar.desktopengine;
 
-
-import java.awt.Color;
 import java.awt.image.BufferStrategy;
 import javax.swing.JFrame;
-
-import es.ucm.arblemar.engine.Font;
 
 /**
  * Clase encargada de inicializar la ventana de Java
@@ -28,7 +24,7 @@ public class DesktopScreen extends JFrame {
             try {
                 createBufferStrategy(2);
                 break;
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         }
         if (intentos <= 0) {
