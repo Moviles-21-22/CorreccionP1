@@ -14,6 +14,7 @@ import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
+import es.ucm.arblemar.gamelogic.TipoUndo;
 import es.ucm.arblemar.gamelogic.tablero.Tablero;
 import es.ucm.arblemar.gamelogic.tablero.TipoPista;
 import es.ucm.arblemar.gamelogic.tablero.Pista;
@@ -68,7 +69,8 @@ public class GameState implements State {
             _reset = new ButtonCallback() {
                 @Override
                 public void doSomething() {
-                    _canUndo = _tablero.resetMovement();
+                    TipoUndo undo = _tablero.resetMovement();
+                    _canUndo = undo != TipoUndo.NONE;
                     if (!_canUndo) {
                         // Si el color está activado, se reinicia y se muestra el título
                         // si está la animación de fade del título y pista, se para
@@ -83,9 +85,20 @@ public class GameState implements State {
                             _posResetTxt[0] = (_graphics.getLogWidth() / 5);
                         }
                     } else {
+                        switch (undo){
+                            case GRIS:
+                                _resetText = "Celda devuelta a gris";
+                                break;
+                            case AZUL:
+                                _resetText = "Celda devuelta a azul";
+                                break;
+                            case ROJO:
+                                _resetText = "Celda devuelta a rojo";
+                                break;
+                        }
                         _currColorTitulo = 0X31313100;
                         _currColorReset = 0X313131FF;
-                        _resetText = "Celda devuelta a gris";
+
                         _posResetTxt[0] = (_graphics.getLogWidth() / 13) * 2;
                     }
 
@@ -335,14 +348,19 @@ public class GameState implements State {
     }
 
     /**
-     * Desactiva la pista actual y activa la animación
+     * Desactiva la pista actual, resetea el texto de deshacer y activa la animación
      * para mostrar el título del tablero
      */
-    public void disablePista() {
+    public void resetTitleText() {
         if (_pista.getTipo() != TipoPista.NONE) {
             // animación fade-in/out
             _animFadeText = true;
             _pista.setTipo(TipoPista.NONE);
+        }
+        else if(_canUndo) {
+            _canUndo = false;
+            _currColorTitulo = 0X313131FF;
+            _currColorReset = 0X31313100;
         }
     }
 

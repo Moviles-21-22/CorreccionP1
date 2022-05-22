@@ -934,7 +934,7 @@ public class CreaTablero {
         if (_tab.getCelda(i, j).getTipoCelda() == TipoCelda.GRIS)
             _tab.addGreyCell(1);
 
-        gm.disablePista();
+        gm.resetTitleText();
         gm.stopTimer();
     }
 

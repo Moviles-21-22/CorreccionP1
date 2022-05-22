@@ -6,6 +6,8 @@ import java.util.Stack;
 
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.engine.Graphics;
+import es.ucm.arblemar.gamelogic.MovementInfo;
+import es.ucm.arblemar.gamelogic.TipoUndo;
 import es.ucm.arblemar.gamelogic.states.GameState;
 
 /**
@@ -184,29 +186,37 @@ public class Tablero {
 
     /**
      * Reinicia el último movimiento hecho.
-     *
      * @return devuelve si hay algo que deshacer o no
      */
-    public boolean resetMovement() {
+    public TipoUndo resetMovement() {
         if (_movements.empty()) {
-            return false;
+            return TipoUndo.NONE;
         }
 
-        Celda c = _movements.peek();
-        // Si es distinta de gris, se resetea a gris
-        if (c.getTipoCelda() != TipoCelda.GRIS) {
-            c.setTipoCelda(TipoCelda.GRIS);
+        MovementInfo mov = _movements.peek();
+        Celda c = mov.getCelda();
+        // Si es distinta de gris, entonces hay que volver a sumar
+        // el número de celdas grises del tablero, porque se va a volver
+        // a poner en gris
+        if (c.getTipoCelda() != TipoCelda.GRIS && mov.getTipoCelda() == TipoCelda.GRIS) {
             _celdasGrises++;
         }
+        else if(c.getTipoCelda() == TipoCelda.GRIS && mov.getTipoCelda() != TipoCelda.GRIS){
+            _celdasGrises--;
+        }
+
+        c.setTipoCelda(mov.getTipoCelda());
 
         _undoCellPos = c.getPos();
         _movements.pop();
-        return true;
+        return mov.getTipoUndo();
     }
 
     private void addStackMov(Celda c) {
-        if(!_movements.isEmpty() && _movements.peek() == c) return;
-        _movements.add(c);
+        // Si el movimiento es el mismo que el anterior, se devuelve
+        if(!_movements.isEmpty() && _movements.peek().getCelda() == c) return;
+        MovementInfo mov = new MovementInfo(c);
+        _movements.add(mov);
     }
 
 //-----------------------------------BÚSQUEDA-PISTAS----------------------------------------------//
@@ -568,8 +578,8 @@ public class Tablero {
 //-----------------------------------------CELDAS-------------------------------------------------//
 
     public void changeCellColor(int i, int j) {
-        _celdas[i][j].changeColor();
         addStackMov(_celdas[i][j]);
+        _celdas[i][j].changeColor();
     }
 
     public void addGreyCell(int grey) {
@@ -693,5 +703,5 @@ public class Tablero {
     /**
      * Registro de los movimiento de la partida
      */
-    Stack<Celda> _movements;
+    Stack<MovementInfo> _movements;
 }
