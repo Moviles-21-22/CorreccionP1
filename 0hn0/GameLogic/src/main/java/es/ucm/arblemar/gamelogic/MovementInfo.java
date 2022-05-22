@@ -1,7 +1,8 @@
 package es.ucm.arblemar.gamelogic;
 
+import es.ucm.arblemar.gamelogic.enums.TipoUndo;
 import es.ucm.arblemar.gamelogic.tablero.Celda;
-import es.ucm.arblemar.gamelogic.tablero.TipoCelda;
+import es.ucm.arblemar.gamelogic.enums.TipoCelda;
 
 /**
  * Clase que guarda una represenación de la Celda y el color

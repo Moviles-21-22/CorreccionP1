@@ -7,7 +7,9 @@ import java.util.Stack;
 import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.gamelogic.MovementInfo;
-import es.ucm.arblemar.gamelogic.TipoUndo;
+import es.ucm.arblemar.gamelogic.enums.TipoUndo;
+import es.ucm.arblemar.gamelogic.enums.TipoCelda;
+import es.ucm.arblemar.gamelogic.enums.TipoPista;
 import es.ucm.arblemar.gamelogic.states.GameState;
 
 /**

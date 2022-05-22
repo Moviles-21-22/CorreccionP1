@@ -11,7 +11,7 @@ import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
-import es.ucm.arblemar.gamelogic.tablero.TipoCelda;
+import es.ucm.arblemar.gamelogic.enums.TipoCelda;
 import es.ucm.arblemar.gamelogic.tablero.Celda;
 
 public class SelectMenuState implements State {

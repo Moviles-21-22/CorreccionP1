@@ -14,9 +14,10 @@ import es.ucm.arblemar.engine.Graphics;
 import es.ucm.arblemar.engine.Input;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
-import es.ucm.arblemar.gamelogic.TipoUndo;
+import es.ucm.arblemar.gamelogic.enums.FadeAnimation;
+import es.ucm.arblemar.gamelogic.enums.TipoUndo;
 import es.ucm.arblemar.gamelogic.tablero.Tablero;
-import es.ucm.arblemar.gamelogic.tablero.TipoPista;
+import es.ucm.arblemar.gamelogic.enums.TipoPista;
 import es.ucm.arblemar.gamelogic.tablero.Pista;
 
 public class GameState implements State {
@@ -29,173 +30,15 @@ public class GameState implements State {
     @Override
     public boolean init() {
         try {
-            // INICIALIZACION DEL TABLERO
-            Font tabFont = Assets.jose;
-            float sizeTab = (float) (_graphics.getLogWidth() * 0.85);
-            int posTabX = (int) (_graphics.getLogWidth() - sizeTab) / 2;
-            int posTabY = (int) (_graphics.getLogHeight() - sizeTab) / 2;
-            _celdaSize = (sizeTab / _tam);
-            _celdaDiam = _celdaSize * 0.9f;
-            int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
+            // TABLERO
+            initTablero();
+            // BOTONES
+            initButtons();
+            // TEXTOS
+            initTexts();
+            // MISCELANEA
+            initMisc();
 
-            _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont);
-//            _totalGrises = _tablero.initTestTab();
-            _totalGrises = _tablero.generateTab();
-
-            // BOTON VOLVER
-            _sizeVolver = new int[2];
-            _sizeVolver[0] = (_graphics.getLogWidth() / 15);
-            _sizeVolver[1] = (_graphics.getLogWidth() / 15);
-            _posVolver = new int[2];
-            _posVolver[0] = (_graphics.getLogWidth() / 4) + (_sizeVolver[0] / 3);
-            _posVolver[1] = (_graphics.getLogHeight() / 8) * 7;
-            _imVolver = Assets.close;
-            _goBack = new ButtonCallback() {
-                @Override
-                public void doSomething() {
-                    SelectMenuState main = new SelectMenuState(_engine);
-                    _engine.reqNewState(main);
-                }
-            };
-
-            // BOTON RESET
-            _sizeReset = new int[2];
-            _sizeReset[0] = (_graphics.getLogWidth() / 14);
-            _sizeReset[1] = (_graphics.getLogWidth() / 14);
-            _posReset = new int[2];
-            _posReset[0] = (_graphics.getLogWidth() / 2) - (_sizeReset[0] / 2);
-            _posReset[1] = (_graphics.getLogHeight() / 8) * 7;
-            _imReset = Assets.history;
-            _reset = new ButtonCallback() {
-                @Override
-                public void doSomething() {
-                    TipoUndo undo = _tablero.resetMovement();
-                    _canUndo = undo != TipoUndo.NONE;
-                    if (!_canUndo) {
-                        // Si el color está activado, se reinicia y se muestra el título
-                        // si está la animación de fade del título y pista, se para
-                        if (_currColorReset == 0X313131FF) {
-                            _animFadeText = false;
-                            _currColorTitulo = 0X313131FF;
-                            _currColorReset = 0X31313100;
-                        } else {
-                            _currColorReset = 0X313131FF;
-                            _currColorTitulo = 0X31313100;
-                            _resetText = "Nada que deshacer";
-                            _posResetTxt[0] = (_graphics.getLogWidth() / 5);
-                        }
-                    } else {
-                        switch (undo){
-                            case GRIS:
-                                _resetText = "Celda devuelta a gris";
-                                break;
-                            case AZUL:
-                                _resetText = "Celda devuelta a azul";
-                                break;
-                            case ROJO:
-                                _resetText = "Celda devuelta a rojo";
-                                break;
-                        }
-                        _currColorTitulo = 0X31313100;
-                        _currColorReset = 0X313131FF;
-
-                        _posResetTxt[0] = (_graphics.getLogWidth() / 13) * 2;
-                    }
-
-                    _currColorPista = 0X31313100;
-                    _pista.setTipo(TipoPista.NONE);
-                    _posResetTxt[1] = (_graphics.getLogHeight() / 7);
-                }
-            };
-
-            // TEXTO DE RESET
-            _currColorReset = 0X31313100;
-            _tamFontReset = 32;
-            _resetText = "";
-            _fontReset = Assets.jose;
-            _posResetTxt = new int[2];
-
-
-            // BOTON PISTA
-            _sizePista = new int[2];
-            _sizePista[0] = (_graphics.getLogWidth() / 13);
-            _sizePista[1] = (_graphics.getLogWidth() / 13);
-            _posPista = new int[2];
-            _posPista[0] = (_graphics.getLogWidth() / 3) * 2;
-            _posPista[1] = (_graphics.getLogHeight() / 8) * 7;
-            _imPista = Assets.eye;
-            _verPista = new ButtonCallback() {
-                @Override
-                public void doSomething() {
-                    if (_pista.getTipo() == TipoPista.NONE) {
-                        List<Pista> pistasList = new ArrayList<>();
-
-                        for (int i = 0; i < _tam; ++i) {
-                            for (int j = 0; j < _tam; ++j) {
-                                Pista p = _tablero.buscaPista(i, j, null);
-                                if (p.getTipo() != TipoPista.NONE) pistasList.add(p);
-                            }
-                        }
-                        // Escoge una pista aleatoria de las que se encontraron
-                        if (!pistasList.isEmpty()) {
-                            // animación fade-in/out
-                            _animFadeText = true;
-                            Random rn = new Random();
-                            int max = pistasList.size();
-                            int choice = rn.nextInt(max);
-                            _pista = pistasList.get(choice);
-                            _lastPistaTxt[0] = _pista.getTextoPista()[0];
-                            _lastPistaTxt[1] = _pista.getTextoPista()[1];
-                            pistasList.clear();
-                        }
-                    } else {
-                        // animación fade-in/out
-                        _animFadeText = true;
-                        _pista.setTipo(TipoPista.NONE);
-                    }
-                }
-            };
-
-            // PORCENTAJE
-            _sizePorcent = new int[2];
-            _sizePorcent[0] = (_graphics.getLogWidth() / 12);
-            _sizePorcent[1] = (_graphics.getLogWidth() / 12);
-            _posPorcent = new int[2];
-            _posPorcent[0] = (_graphics.getLogWidth() / 2) - (_sizePorcent[0] / 2);
-            _posPorcent[1] = (_graphics.getLogHeight() / 80) * 67;
-            _colorPorcent = 0X999999FF;
-            _fontPorcent = Assets.jose;
-            _tamFPorcent = 24;
-            _porcent = 0;
-
-            // TITULO
-            _sizeTitulo = new int[2];
-            _sizeTitulo[0] = (_graphics.getLogWidth() / 9) * 3;
-            _sizeTitulo[1] = (_graphics.getLogWidth() / 8);
-            _posTitulo = new int[2];
-            _posTitulo[0] = (_graphics.getLogWidth() / 2) - (_sizeTitulo[0] / 2);
-            _posTitulo[1] = (_graphics.getLogHeight() / 10);
-            _currColorTitulo = 0X313131FF;
-            _colorTitulo = 0X313131FF;
-            _fontTitulo = Assets.jose;
-            _tamFTitulo = 64;
-            _titulo = _tam + " x " + _tam;
-
-            // PISTAS
-            _pista = new Pista();
-            _heightPistaTxt = (_graphics.getLogWidth() / 10);     //Tamaño del texto a lo alto
-            _posPistaTxt = new int[3];
-            _posPistaTxt[0] = (_graphics.getLogWidth() / 2);    //A lo ancho
-            _posPistaTxt[1] = (_graphics.getLogHeight() / 8);   //A lo alto primera linea
-            _posPistaTxt[2] = _posPistaTxt[1] + _heightPistaTxt;  //A lo alto segunda linea
-            _currColorPista = 0X31313100;
-            _fontPistaTxt = Assets.jose;
-            _tamFPistaTxt = 32;
-            _lastPistaTxt = new String[2];
-            _lastPistaTxt[0] = " ";
-            _lastPistaTxt[1] = " ";
-            _offsetPista = (int) (_celdaSize * 0.06);
-            _diamPista = _celdaDiam + (_offsetPista * 2);
         } catch (Exception e) {
             System.out.println("Fallo al intenar generar GameState");
             System.out.println(e);
@@ -223,25 +66,7 @@ public class GameState implements State {
             procesaPorcentaje();
         }
 
-        // FADE IN/OUT TEXTO
-        if (_animFadeText) {
-            _ticksAnimText += _velFadeAnim * deltaTime;
-            if (_ticksAnimText >= 1) {
-                // PISTA: Si hay una pista +10 - Si no -10
-                _currColorPista += _pista.getTipo() != TipoPista.NONE ? 10 : -10;
-                // TITULO: Si hay una pista -10 - Si no +10
-                _currColorTitulo += _pista.getTipo() != TipoPista.NONE ? -10 : 10;
-                if (_currColorPista >= _colorTitulo || _currColorTitulo >= _colorTitulo) {
-                    // PISTA: Si hay una pista color del titulo - Si no color sin alpha
-                    _currColorPista = _pista.getTipo() != TipoPista.NONE ? _colorTitulo : 0X31313100;
-                    // Titulo: Si hay una pista color sin alpha - Si no color del titulo
-                    _currColorTitulo = _pista.getTipo() != TipoPista.NONE ? 0X31313100 : _colorTitulo;
-                    _animFadeText = false;
-                }
-
-                _ticksAnimText = 0;
-            }
-        }
+        processFadeAnimation(deltaTime);
     }
 
     @Override
@@ -288,7 +113,7 @@ public class GameState implements State {
             }
 
             // CELDA ASOCIADA AL UNDO
-            if (_canUndo) {
+            if (_fadeInUndo && _undoType != TipoUndo.NONE) {
                 _graphics.setColor(_currColorReset);
                 int[] index = _tablero.getUndoCellPos();
                 x = index[0] - _offsetPista;
@@ -332,9 +157,7 @@ public class GameState implements State {
                         currEvent.getX() < _posPista[0] + _sizePista[0] &&
                         currEvent.getY() > _posPista[1] &&
                         currEvent.getY() < _posPista[1] + _sizePista[1]) {
-                    // Si está activado lo del deshacer, se quita
-                    _canUndo = false;
-                    _currColorReset = 0X31313100;
+
                     _verPista.doSomething();
                     break;
                 }
@@ -347,21 +170,22 @@ public class GameState implements State {
         }
     }
 
+//------------------------------------------------------------------------------------------------//
     /**
      * Desactiva la pista actual, resetea el texto de deshacer y activa la animación
      * para mostrar el título del tablero
      */
     public void resetTitleText() {
+
         if (_pista.getTipo() != TipoPista.NONE) {
             // animación fade-in/out
-            _animFadeText = true;
+            _fadeAnim = FadeAnimation.TITLE_HINT;
             _pista.setTipo(TipoPista.NONE);
+        } else if (_fadeInUndo) {
+            _fadeAnim = FadeAnimation.TITLE_UNDO;
+            _fadeInUndo = false;
         }
-        else if(_canUndo) {
-            _canUndo = false;
-            _currColorTitulo = 0X313131FF;
-            _currColorReset = 0X31313100;
-        }
+
     }
 
     /**
@@ -381,6 +205,131 @@ public class GameState implements State {
         }
     }
 
+//---------------------------------------------INITS----------------------------------------------//
+    private void initTablero(){
+        // INICIALIZACION DEL TABLERO
+        Font tabFont = Assets.jose;
+        float sizeTab = (float) (_graphics.getLogWidth() * 0.85);
+        int posTabX = (int) (_graphics.getLogWidth() - sizeTab) / 2;
+        int posTabY = (int) (_graphics.getLogHeight() - sizeTab) / 2;
+        _celdaSize = (sizeTab / _tam);
+        _celdaDiam = _celdaSize * 0.9f;
+        int tabTamFont = (int) Math.round(_celdaDiam * 0.614);
+
+        _tablero = new Tablero(_tam, posTabX, posTabY, _celdaSize, _celdaDiam, tabTamFont, tabFont);
+//            _totalGrises = _tablero.initTestTab();
+        _totalGrises = _tablero.generateTab();
+    }
+
+    private void initButtons(){
+        // BOTON VOLVER
+        _sizeVolver = new int[2];
+        _sizeVolver[0] = (_graphics.getLogWidth() / 15);
+        _sizeVolver[1] = (_graphics.getLogWidth() / 15);
+        _posVolver = new int[2];
+        _posVolver[0] = (_graphics.getLogWidth() / 4) + (_sizeVolver[0] / 3);
+        _posVolver[1] = (_graphics.getLogHeight() / 8) * 7;
+        _imVolver = Assets.close;
+        _goBack = new ButtonCallback() {
+            @Override
+            public void doSomething() {
+                SelectMenuState main = new SelectMenuState(_engine);
+                _engine.reqNewState(main);
+            }
+        };
+
+        // BOTON RESET
+        _sizeReset = new int[2];
+        _sizeReset[0] = (_graphics.getLogWidth() / 14);
+        _sizeReset[1] = (_graphics.getLogWidth() / 14);
+        _posReset = new int[2];
+        _posReset[0] = (_graphics.getLogWidth() / 2) - (_sizeReset[0] / 2);
+        _posReset[1] = (_graphics.getLogHeight() / 8) * 7;
+        _imReset = Assets.history;
+        _reset = new ButtonCallback() {
+            @Override
+            public void doSomething() {
+                stopTimer();
+                undoCallback();
+            }
+        };
+
+        // BOTON PISTA
+        _sizePista = new int[2];
+        _sizePista[0] = (_graphics.getLogWidth() / 13);
+        _sizePista[1] = (_graphics.getLogWidth() / 13);
+        _posPista = new int[2];
+        _posPista[0] = (_graphics.getLogWidth() / 3) * 2;
+        _posPista[1] = (_graphics.getLogHeight() / 8) * 7;
+        _imPista = Assets.eye;
+        _verPista = new ButtonCallback() {
+            @Override
+            public void doSomething() {
+                pistaCallback();
+            }
+        };
+    }
+
+    private void initTexts(){
+        // TITULO
+        _sizeTitulo = new int[2];
+        _sizeTitulo[0] = (_graphics.getLogWidth() / 9) * 3;
+        _sizeTitulo[1] = (_graphics.getLogWidth() / 8);
+        _posTitulo = new int[2];
+        _posTitulo[0] = (_graphics.getLogWidth() / 2) - (_sizeTitulo[0] / 2);
+        _posTitulo[1] = (_graphics.getLogHeight() / 10);
+        _currColorTitulo = 0X313131FF;
+        _colorTitulo = 0X313131FF;
+        _fontTitulo = Assets.jose;
+        _tamFTitulo = 64;
+        _titulo = _tam + " x " + _tam;
+
+        // TEXTO DE RESET
+        _currColorReset = 0X31313100;
+        _tamFontReset = 32;
+        _resetText = "";
+        _fontReset = Assets.jose;
+        _posResetTxt = new int[2];
+
+
+        // PORCENTAJE
+        _sizePorcent = new int[2];
+        _sizePorcent[0] = (_graphics.getLogWidth() / 12);
+        _sizePorcent[1] = (_graphics.getLogWidth() / 12);
+        _posPorcent = new int[2];
+        _posPorcent[0] = (_graphics.getLogWidth() / 2) - (_sizePorcent[0] / 2);
+        _posPorcent[1] = (_graphics.getLogHeight() / 80) * 67;
+        _colorPorcent = 0X999999FF;
+        _fontPorcent = Assets.jose;
+        _tamFPorcent = 24;
+        _porcent = 0;
+
+
+        // PISTAS
+        _heightPistaTxt = (_graphics.getLogWidth() / 10);     //Tamaño del texto a lo alto
+        _posPistaTxt = new int[3];
+        _posPistaTxt[0] = (_graphics.getLogWidth() / 2);    //A lo ancho
+        _posPistaTxt[1] = (_graphics.getLogHeight() / 8);   //A lo alto primera linea
+        _posPistaTxt[2] = _posPistaTxt[1] + _heightPistaTxt;  //A lo alto segunda linea
+        _currColorPista = 0X31313100;
+        _fontPistaTxt = Assets.jose;
+        _tamFPistaTxt = 32;
+        _lastPistaTxt = new String[2];
+        _lastPistaTxt[0] = " ";
+        _lastPistaTxt[1] = " ";
+        _offsetPista = (int) (_celdaSize * 0.06);
+        _diamPista = _celdaDiam + (_offsetPista * 2);
+    }
+
+    private void initMisc(){
+        // PISTAS
+        _pista = new Pista();
+
+        // FADE ANIM
+        _fadeAnim = FadeAnimation.NONE;
+        _fadeInUndo = false;
+    }
+//------------------------------------------------------------------------------------------------//
     /**
      * Procesa el porcentaje de tablero que se ha completado.
      * En caso de llegar a 100 se mira que se haya completado
@@ -405,7 +354,7 @@ public class GameState implements State {
             _timerTask = new TimerTask() {
                 @Override
                 public void run() {
-                    _animFadeText = true;
+                    _fadeAnim = FadeAnimation.TITLE_HINT;
                     Random rn = new Random();
                     int max = _pistasList.size();
                     int choice = rn.nextInt(max);
@@ -431,6 +380,143 @@ public class GameState implements State {
 
         _timer.schedule(_timerTask, _delay);
     }
+
+    /**
+     * Procesa el callback al darle al botón de pista
+     */
+    private void pistaCallback(){
+        // 1. Animacion entre titulo y hint
+        _fadeAnim = FadeAnimation.TITLE_HINT;
+
+        if (_pista.getTipo() == TipoPista.NONE) {
+            List<Pista> pistasList = new ArrayList<>();
+
+            for (int i = 0; i < _tam; ++i) {
+                for (int j = 0; j < _tam; ++j) {
+                    Pista p = _tablero.buscaPista(i, j, null);
+                    if (p.getTipo() != TipoPista.NONE) pistasList.add(p);
+                }
+            }
+
+            // Escoge una pista aleatoria de las que se encontraron
+            if (!pistasList.isEmpty()) {
+                // 2. Si está activado el texto del reset entonces es entre hint y undo
+                if (_fadeInUndo) {
+                    _fadeInUndo = false;
+                    _fadeAnim = FadeAnimation.UNDO_HINT;
+                }
+
+                Random rn = new Random();
+                int max = pistasList.size();
+                int choice = rn.nextInt(max);
+                _pista = pistasList.get(choice);
+                _lastPistaTxt[0] = _pista.getTextoPista()[0];
+                _lastPistaTxt[1] = _pista.getTextoPista()[1];
+                pistasList.clear();
+            }
+        } else {
+            _pista.setTipo(TipoPista.NONE);
+        }
+    }
+
+    /**
+     * Procesa el callback al darle al boton de undo
+     */
+    private void undoCallback(){
+        _undoType = _tablero.resetMovement();
+        boolean canUndo = _undoType != TipoUndo.NONE;
+
+        _fadeAnim = FadeAnimation.TITLE_UNDO;
+        if (!canUndo) {
+            // 1. Animacion entre titulo y undo
+            _resetText = "Nada que deshacer";
+            _posResetTxt[0] = (_graphics.getLogWidth() / 5);
+            _fadeInUndo = !_fadeInUndo;
+        } else {
+            if(_currColorReset == _currColorTitulo){
+                _fadeAnim = FadeAnimation.NONE;
+            }
+
+            _fadeInUndo = true;
+            switch (_undoType) {
+                case GRIS:
+                    _resetText = "Celda devuelta a gris";
+                    break;
+                case AZUL:
+                    _resetText = "Celda devuelta a azul";
+                    break;
+                case ROJO:
+                    _resetText = "Celda devuelta a rojo";
+                    break;
+            }
+
+            _posResetTxt[0] = (_graphics.getLogWidth() / 13) * 2;
+        }
+
+        // Si hay pista, entonces se cambia para mostrar el texto del undo
+        if (_pista.getTipo() != TipoPista.NONE) {
+            _fadeAnim = FadeAnimation.UNDO_HINT;
+            _pista.setTipo(TipoPista.NONE);
+        }
+
+        _posResetTxt[1] = (_graphics.getLogHeight() / 7);
+    }
+
+    /**
+     * Gestiona las animaciones de fade-in/out de los textos del tablero
+     *
+     * @param deltaTime deltaTime de la ejecución
+     */
+    private void processFadeAnimation(double deltaTime) {
+        // 1. Si no está activada, no se procesa nada
+        if (_fadeAnim == FadeAnimation.NONE)
+            return;
+
+        // 2. Gestión de la velocidad de la animación
+        _ticksAnimText += _velFadeAnim * deltaTime;
+        if (_ticksAnimText < 1)
+            return;
+
+        // 3. Aplicación del cambio de alpha
+        switch (_fadeAnim) {
+            case TITLE_HINT:
+                // PISTA: Si hay una pista +10 - Si no -10
+                _currColorPista += _pista.getTipo() != TipoPista.NONE ? 10 : -10;
+                // TITULO: Si hay una pista -10 - Si no +10
+                _currColorTitulo += _pista.getTipo() != TipoPista.NONE ? -10 : 10;
+                break;
+            case TITLE_UNDO:
+                // TITULO: Si es fade in undo +10 - Si no 10
+                _currColorTitulo += _fadeInUndo ? -10 : 10;
+                // UNDO: Si es fade in undo 10 - Si no -10
+                _currColorReset += _fadeInUndo ? 10 : -10;
+                break;
+            case UNDO_HINT:
+                // PISTA: Si hay una pista +10 - Si no -10
+                _currColorPista += _pista.getTipo() != TipoPista.NONE ? 10 : -10;
+                // UNDO: Si hay una pista -10 - Si no +10
+                _currColorReset += _pista.getTipo() != TipoPista.NONE ? -10 : 10;
+                break;
+        }
+
+        if (_currColorPista >= _colorTitulo || _currColorTitulo >= _colorTitulo || _currColorReset >= _colorTitulo) {
+            // PISTA: Si hay una pista -> color del titulo - Si no -> color sin alpha
+            boolean isAlpha = _pista.getTipo() != TipoPista.NONE;
+            _currColorPista = isAlpha ? _colorTitulo : 0X31313100;
+            // TITULO: Si se muestra el titulo -> color del titulo - Si no -> color sin alpha
+            isAlpha = (_pista.getTipo() == TipoPista.NONE && !_fadeInUndo);
+            _currColorTitulo = isAlpha ? _colorTitulo : 0X31313100;
+            // UNDO: Si hay fadeIn para el undo -> color del titulo - Si no -> color sin alpha
+            isAlpha = _fadeInUndo;
+            _currColorReset = isAlpha ? _colorTitulo : 0X31313100;
+
+            _fadeAnim = FadeAnimation.NONE;
+        }
+
+        _ticksAnimText = 0;
+    }
+
+//------------------------------------------------------------------------------------------------//
 
     // ATRIBUTOS DEL ESTADO
     Engine _engine;
@@ -466,7 +552,7 @@ public class GameState implements State {
     int _porcent;
     Font _fontPorcent;
 
-    // ATRIBUTOS TITULO
+    // FADE-IN/OUT ANIM
     /**
      * Cuenta los ticks para aplicar el fade-in/out
      */
@@ -475,6 +561,13 @@ public class GameState implements State {
      * Velocidad de los ticks de la animación fade-int/out
      */
     final float _velFadeAnim = 1200;
+    /**
+     * Determina entre que 2 textos se hace la animación
+     */
+    FadeAnimation _fadeAnim;
+    boolean _fadeInUndo;
+
+    // ATRIBUTOS TITULO
     int[] _sizeTitulo;
     int[] _posTitulo;
     int _tamFTitulo;
@@ -482,7 +575,6 @@ public class GameState implements State {
     int _colorTitulo;
     String _titulo;
     Font _fontTitulo;
-    boolean _animFadeText = false;
 
     // ATRIBUTOS PARA EL TEXTO DE PISTAS
     int _heightPistaTxt;
@@ -510,10 +602,7 @@ public class GameState implements State {
     String _resetText;
     int[] _posResetTxt;
     Font _fontReset;
-    /**
-     * Determina si hay
-     */
-    boolean _canUndo = false;
+    TipoUndo _undoType = TipoUndo.NONE;
 
     // ATRIBUTOS DEL TABLERO
     /**

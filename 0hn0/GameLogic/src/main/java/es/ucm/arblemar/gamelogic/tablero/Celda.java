@@ -7,11 +7,12 @@ import es.ucm.arblemar.engine.Font;
 import es.ucm.arblemar.gamelogic.Assets;
 import es.ucm.arblemar.gamelogic.ButtonCallback;
 import es.ucm.arblemar.gamelogic.CellCallback;
+import es.ucm.arblemar.gamelogic.enums.TipoCelda;
 import es.ucm.arblemar.gamelogic.states.GameState;
 
-import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.AZUL;
-import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.GRIS;
-import static es.ucm.arblemar.gamelogic.tablero.TipoCelda.ROJO;
+import static es.ucm.arblemar.gamelogic.enums.TipoCelda.AZUL;
+import static es.ucm.arblemar.gamelogic.enums.TipoCelda.GRIS;
+import static es.ucm.arblemar.gamelogic.enums.TipoCelda.ROJO;
 
 /**
  * Clase que representa a todas las celdas del juego. Dependiendo de su

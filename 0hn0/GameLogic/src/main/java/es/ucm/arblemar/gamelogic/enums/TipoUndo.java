@@ -1,4 +1,4 @@
-package es.ucm.arblemar.gamelogic;
+package es.ucm.arblemar.gamelogic.enums;
 
 public enum TipoUndo {
     NONE(0),
