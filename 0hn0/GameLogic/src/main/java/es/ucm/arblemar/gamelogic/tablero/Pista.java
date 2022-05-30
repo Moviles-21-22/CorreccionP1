@@ -44,6 +44,7 @@ public class Pista {
                 break;
             case DEBE_SER_AZUL:
             case AZULES_ALCANZABLES:
+            case AZULES_INALCANZABLES:
                 _size[0] = (winWidthLog / 20) * 8;
                 _size[1] = (winWidthLog / 20) * 8;
                 break;
@@ -93,6 +94,7 @@ public class Pista {
                 break;
             case DEBE_SER_AZUL:
             case AZULES_ALCANZABLES:
+            case AZULES_INALCANZABLES:
                 _st[0] = "Una celda está en todas";
                 _st[1] = "las soluciones imaginables";
                 break;

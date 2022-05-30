@@ -244,6 +244,10 @@ public class Celda {
         _visibles.add(c);
     }
 
+    public void setVisibles(List<Celda> newVisibles){
+        _visibles = newVisibles;
+    }
+
     /**
      * Limpia la lista de visibles
      */
@@ -477,5 +481,5 @@ public class Celda {
     /**
      * Lista de las celdas visibles
      */
-    private final List<Celda> _visibles;
+    private List<Celda> _visibles;
 }

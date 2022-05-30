@@ -573,7 +573,7 @@ public class CreaTablero {
      */
     void instaLockSomeBlues(List<Celda> blues) {
         // 1. Celda menos frecuente
-        Celda currC = lessFreqCell(blues);
+        Celda currC = moreFreqCell(blues);
         _celdasAzules++;
         currC.setLock(true);
         currC.setCellCallback(new CellCallback() {
@@ -606,15 +606,15 @@ public class CreaTablero {
     }
 
     /**
-     * Devuelve la celda que menos visibles tenga del grupo
+     * Devuelve la celda que más visibles tenga del grupo
      *
      * @param blues Grupo de azules que se va a mirar
      */
-    Celda lessFreqCell(List<Celda> blues) {
+    Celda moreFreqCell(List<Celda> blues) {
         Celda c = blues.get(0);
         for (int i = 0; i < blues.size(); i++) {
             Celda newC = blues.get(i);
-            if (newC.getValue() < c.getValue()) {
+            if (newC.getValue() > c.getValue()) {
                 c = newC;
             }
         }
@@ -658,7 +658,7 @@ public class CreaTablero {
                 c.setTipoCelda(TipoCelda.AZUL);
                 // 2. ¿Tiene solución o es diferente a la original?
                 boolean isNewSol = isNewSolution();
-                // Si y es diferente - Entonces se bloquea
+                // Si - Entonces se bloquea, es obligatoria
                 if (isNewSol) {
                     c.setLock(true);
                     c.setTipoCelda(TipoCelda.ROJO);
@@ -731,6 +731,7 @@ public class CreaTablero {
                     break;
                 }
                 case DEBE_SER_AZUL:
+                case AZULES_INALCANZABLES:
                     putBlueInDir(tabAux, i, j);
                     break;
                 case UNA_DIRECCION:
@@ -762,6 +763,11 @@ public class CreaTablero {
                 i = 0;
                 j = 0;
             }
+        }
+
+        if(i >= _tam)
+        {
+            return true;
         }
 
         // 5. ¿La soución nueva es igual a la original?

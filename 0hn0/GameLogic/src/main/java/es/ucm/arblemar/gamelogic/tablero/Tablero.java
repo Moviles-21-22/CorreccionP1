@@ -153,35 +153,37 @@ public class Tablero {
      * Muestra el valor de todas las celdas azules
      */
     public void showAllValues() {
-        int a = 0;
-        for (int i = 0; i < _tam; i++) {
-            for (int j = 0; j < _tam; j++) {
-                if (!_celdas[i][j].isLock() && _celdas[i][j].getTipoCelda() == TipoCelda.AZUL) {
-                    _numVisibles = 0;
-                    //-----------------ABAJO----------------//
-                    for (int n = i + 1; n < _tam; ++n) {
-                        if (_celdas[n][j].getTipoCelda() == TipoCelda.ROJO) break;
+        int i = 0, j = 0;
+        while (i < _tam) {
+            Celda c = _celdas[i][j];
+            if (!c.isLock() && c.getTipoCelda() == TipoCelda.AZUL) {
+                _numVisibles = 0;
+                int nxt = 1;
+                for (int[] d : _dirs) {
+                    int row = c.getRow() + d[0] * nxt;
+                    int col = c.getCol() + d[1] * nxt;
+
+                    while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
+                            _celdas[row][col].getTipoCelda() == TipoCelda.AZUL) {
+
                         _numVisibles++;
-                    }
-                    //-----------------ARRIBA----------------//
-                    for (int n = i - 1; n >= 0; --n) {
-                        if (_celdas[n][j].getTipoCelda() == TipoCelda.ROJO) break;
-                        _numVisibles++;
-                    }
-                    //-----------------DERECHA----------------//
-                    for (int m = j + 1; m < _tam; ++m) {
-                        if (_celdas[i][m].getTipoCelda() == TipoCelda.ROJO) break;
-                        _numVisibles++;
-                    }
-                    //-----------------IZQUIERDA----------------//
-                    for (int m = j - 1; m >= 0; --m) {
-                        if (_celdas[i][m].getTipoCelda() == TipoCelda.ROJO) break;
-                        _numVisibles++;
+
+                        // Siguiente
+                        nxt++;
+                        row = c.getRow() + d[0] * nxt;
+                        col = c.getCol() + d[1] * nxt;
                     }
 
-                    _celdas[i][j].setLock(true);
-                    _celdas[i][j].showText(true, _numVisibles);
+                    nxt = 1;
                 }
+
+                _celdas[i][j].setLock(true);
+                _celdas[i][j].showText(true, _numVisibles);
+            }
+            j++;
+            if (j >= _tam) {
+                j = 0;
+                i++;
             }
         }
     }
@@ -260,12 +262,14 @@ public class Tablero {
     private void pistaCeldaAzul(int i, int j, Pista pista, Celda[][] tab) {
         _numVisibles = 0;
         boolean yaCerrada;  //Para medir si la celda completa ya esta cerrada
+        int[] dirVisibles = new int[4];
         //-----------------DEMASIADAS-AZULES-----------------------//
-        yaCerrada = demasiadasAzules(i, j, pista, tab);
+        yaCerrada = demasiadasAzules(i, j, pista, tab, dirVisibles);
         if (pista.getTipo() != TipoPista.NONE) return;
 
         //-----------------INSUFICIENTES-AZULES-----------------------//
-        if (yaCerrada) {    //Pueden estar las azules justas o faltar
+        if (yaCerrada) {
+            //Pueden estar las azules justas o faltar
             if (_numVisibles < tab[i][j].getValue()) {
                 pista.setTipo(TipoPista.INSUFICIENTES_AZULES);
                 pista.setPosCelda(tab[i][j].getPos());
@@ -285,24 +289,27 @@ public class Tablero {
         if (pista.getTipo() != TipoPista.NONE) return;
 
         //-----------------DEBE-SER-AZUL-------------------------//
-        ponerAzul(i, j, pista, tab);
+        ponerAzul(i, j, pista, tab, dirVisibles);
     }
 
     /**
      * Procesa la pista sobre demasiadas azules. Es la 4 del enunciado
      *
-     * @param i:     Fila de la celda
-     * @param j:     Columna de la celda
-     * @param pista: variable de la pista que se va a modificar
-     * @param tab:   Tablero donde se quieren buscar las pistas
+     * @param i:           Fila de la celda
+     * @param j:           Columna de la celda
+     * @param pista:       variable de la pista que se va a modificar
+     * @param tab:         Tablero donde se quieren buscar las pistas
+     * @param dirVisibles: Array de visibles de la celda en función de las direcciones
      * @return Devuelve true si la celda está cerrada
      * false en caso contrario o si ha sido pista
      */
-    private boolean demasiadasAzules(int i, int j, Pista pista, Celda[][] tab) {
+    private boolean demasiadasAzules(int i, int j, Pista pista, Celda[][] tab, int[] dirVisibles) {
         boolean yaCerrada = true;
 
         int nxt = 1;
         Celda c = tab[i][j];
+
+        int k = 0;
         for (int[] d : _dirs) {
             int row = c.getRow() + d[0] * nxt;
             int col = c.getCol() + d[1] * nxt;
@@ -313,6 +320,7 @@ public class Tablero {
             while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
                     tab[row][col].getTipoCelda() == TipoCelda.AZUL) {
 
+                dirVisibles[k]++;
                 _numVisibles++;
                 // Si se excede el valor de la celda, hay demasiadas azules
                 if (_numVisibles > tab[i][j].getValue()) {
@@ -327,14 +335,16 @@ public class Tablero {
                 col = c.getCol() + d[1] * nxt;
             }
 
-            // El bucle anterior puede haberse roto por haber encotnrado una celda de otro color.
-            // Si es gris, entonces la celda a partir, de la cual se está procesando la pista no
-            // está cerrada. Solo interesa asignarlo una vez.
+            // El bucle anterior puede haberse salido por haber encontrado una celda != Azul.
+            // Si es gris, entonces, la celda a partir de la cual se está procesando la pista no
+            // está cerrada.
+            // Solo interesa asignarlo una vez.
             if (yaCerrada && row >= 0 && row < _tam && col < _tam && col >= 0 &&
                     tab[row][col].getTipoCelda() == TipoCelda.GRIS) {
                 yaCerrada = false;
             }
 
+            k++;
             nxt = 1;
         }
 
@@ -372,7 +382,8 @@ public class Tablero {
                     _indRelPista[0] = row;
                     _indRelPista[1] = col;
                     nuevoVal++;
-                } else if (gris && tab[row][col].getTipoCelda() == TipoCelda.AZUL) nuevoVal++;
+                } else if (gris && tab[row][col].getTipoCelda() == TipoCelda.AZUL)
+                    nuevoVal++;
 
                 if (nuevoVal > tab[i][j].getValue()) {
                     pista.setTipo(TipoPista.DEBE_SER_PARED);
@@ -399,27 +410,34 @@ public class Tablero {
      * @param j:     Columna de la celda
      * @param pista: Variable de la pista que se va a modificar
      */
-    private void ponerAzul(int i, int j, Pista pista, Celda[][] tab) {
+    private void ponerAzul(int i, int j, Pista pista, Celda[][] tab, int[] dirVisibles) {
         // Calculo de alcanzables
         Celda c = tab[i][j];
-        int[] alcanzables = possibleVisibles(c, tab);
+        int[] alcanzables = possibleVisibles(c, tab, dirVisibles);
 
         // Pista 8 del enunciado. Si la celda solo tiene una dirección, entonces se ponen azules
         // en esa dirección
-        boolean oneDir = isOneDir(alcanzables, c);
+        boolean oneDir = isOneDir(alcanzables, dirVisibles, c);
+        int valorAlcanzable = alcanzables[0] + alcanzables[1] + alcanzables[2] + alcanzables[3] +
+                dirVisibles[0] + dirVisibles[1] + dirVisibles[2] + dirVisibles[3];
+
         if (oneDir) {
             pista.setTipo(TipoPista.UNA_DIRECCION);
             pista.setPosCelda(c.getPos());
-        }
-        // Pista 9 del enunciado. Si las contiguas suman el valor de la celda, basta con ponerlas
-        // todas en azul para resolverlo
-        else if (alcanzables[0] + alcanzables[1] + alcanzables[2] + alcanzables[3] == c.getValue()) {
-            pista.setTipo(TipoPista.AZULES_ALCANZABLES);
+        } else if (valorAlcanzable <= c.getValue()) {
+            TipoPista type = valorAlcanzable == c.getValue() ?
+                    // Pista 9 del enunciado. Si las contiguas suman el valor de la celda,
+                    // basta con ponerlas todas en azul para resolverlo
+                    TipoPista.AZULES_ALCANZABLES :
+                    // Pista 10 del enunciado. Si se ponen en azul las celdas alzanzables,
+                    // no se puede llegar a igualar el valor de la celda
+                    TipoPista.AZULES_INALCANZABLES;
+            pista.setTipo(type);
             pista.setPosCelda(c.getPos());
         }
         // Pista 3 del enunciado. Se escoge la dirección donde hay que poner azules
         else {
-            putBlueInDir(alcanzables, pista, c);
+            putBlueInDir(alcanzables, pista, c, dirVisibles);
         }
     }
 
@@ -462,18 +480,16 @@ public class Tablero {
      * @param c           Celda desde la que quiere hacer la comprobación
      * @return Devuelve si tiene una sola dirección o no
      */
-    private boolean isOneDir(final int[] alcanzables, final Celda c) {
+    private boolean isOneDir(final int[] alcanzables, final int[] dirVisibles, final Celda c) {
         boolean oneDir = false;
         int d = 0;
         for (int val : alcanzables) {
             if (val > 0) {
-                int next = 1;
-                int row;
-                int col;
-                while (next <= val) {
-                    row = c.getRow() + _dirs.get(d)[0] * next;
-                    col = c.getCol() + _dirs.get(d)[1] * next;
+                int next = dirVisibles[d] + 1;
+                int row = c.getRow() + _dirs.get(d)[0] * next;
+                int col = c.getCol() + _dirs.get(d)[1] * next;
 
+                while (row >= 0 && row < _tam && col < _tam && col >= 0) {
                     // 1. La siguiente celda es gris, por tanto se puede rellenar por ahí
                     if (_celdas[row][col].getTipoCelda() == TipoCelda.GRIS) {
                         if (!oneDir) {
@@ -486,7 +502,10 @@ public class Tablero {
                         // una única dirección
                         return false;
                     }
+                    // Siguiente
                     next++;
+                    row = c.getRow() + _dirs.get(d)[0] * next;
+                    col = c.getCol() + _dirs.get(d)[1] * next;
                 }
             }
             d++;
@@ -502,19 +521,25 @@ public class Tablero {
      * @param tab Tablero donde se realiza la búsqueda
      * @return Devuelve el número de posibles visibles para cada dirección
      */
-    private int[] possibleVisibles(Celda c, Celda[][] tab) {
+    private int[] possibleVisibles(Celda c, Celda[][] tab, int[] dirVisibles) {
         int[] alcanzables = new int[4];
         int nxt = 1;
         int line = 0;
         for (int[] d : _dirs) {
             int row = c.getRow() + d[0] * nxt;
             int col = c.getCol() + d[1] * nxt;
+            int aux = dirVisibles[line];
 
+            // Mientras esté dentro de los límites
+            // Mientras la siguiente celda sea distinta de roja, interesa
             while (row >= 0 && row < _tam && col < _tam && col >= 0 &&
-                    tab[row][col].getTipoCelda() != TipoCelda.ROJO &&
-                    alcanzables[line] < c.getValue()) {
+                    tab[row][col].getTipoCelda() != TipoCelda.ROJO /*&&
+                    alcanzables[line] < c.getValue()*/) {
 
-                alcanzables[line]++;
+                if (tab[row][col].getTipoCelda() == TipoCelda.AZUL && aux > 0)
+                    aux--;
+                else
+                    alcanzables[line]++;
 
                 // Siguiente
                 nxt++;
@@ -529,40 +554,127 @@ public class Tablero {
         return alcanzables;
     }
 
-    private void putBlueInDir(int[] alcanzables, Pista pista, Celda c) {
-        // 1. Se escoge el camino que tenga más alcanzables
+    /**
+     * Calcla en qué dirección debe poner una azul
+     *
+     * @param alcanzables Número de celdas alcanzables desde c en todas direcciones
+     * @param pista:      Variable de la pista que se va a modificar
+     * @param c           Celda desde la que se inicia la búsqueda
+     * @param dirVisibles Número de celdas visibles desde c en todas direcciones
+     */
+    private void putBlueInDir(int[] alcanzables, Pista pista, Celda c, int[] dirVisibles) {
+        // Azules que quedan por colocar
+        int leftVisibles = c.getValue() - _numVisibles;
+        // Valor máximo alcanzable y el ínice correspondiente
         int max = Math.max(
                 Math.max(alcanzables[0], alcanzables[1]),
                 Math.max(alcanzables[2], alcanzables[3])
         );
-        // 2. Cálculo de celdas que quedan por ver
-        int leftVisibles = c.getValue() - _numVisibles;
-        boolean unique = false;
-        for (int k = 0; k < 4; k++) {
-            if (max == alcanzables[k] && alcanzables[k] <= leftVisibles) {
-                // 3. ¿Las alcanzables en la dirección k son las que quedan por ver?
-                if (alcanzables[k] == leftVisibles) {
-                    // 3.1 Si ya se asignó un caminó entonces no es único. Por tanto,
-                    // no forma parte de la pista. Si hay más de un camino con EXACTAMENTE
-                    // el número de celdas alcanzables igual a las que quedan por ver
-                    // entonces no se puede dar una pista de este tipo
-                    if (unique) {
-                        pista.setTipo(TipoPista.NONE);
-                        return;
-                    }
+        int[] maximo = getMaximumAndIndex(alcanzables, max);
 
-                    unique = true;
+        // ¿Cuántas direcciones tiene disponibles
+        int count = 0;
+        int indexDuo = 0;
+        int i = 0;
+        for (int a : alcanzables) {
+            if (a > 0) {
+                count++;
+                if (maximo[2] != 1 || (maximo[2] == 1 && maximo[0] != a)) {
+                    indexDuo = i;
                 }
+            }
+            i++;
+        }
 
-                // 4. Asignación de la pista
-                if (pista.getTipo() != TipoPista.NONE)
-                    continue;
+        // 1. Solo tiene 2 direcciones
+        if (count == 2) {
+            // Ambos son iguales y menores que las que quedan por colocar
+            boolean bothEqualLess = maximo[2] != 1 && alcanzables[indexDuo] < leftVisibles;
+            // Ambas direcciones son diferentes y son más pequeñas que leftVisibles
+            // porque el maximo es menor que las que quedan por colocar
+            boolean bothLess = maximo[2] == 1 && maximo[0] < leftVisibles;
+            if (bothEqualLess || bothLess) {
+                // Se puede coger cualquier dirección.
                 pista.setTipo(TipoPista.DEBE_SER_AZUL);
                 pista.setPosCelda(c.getPos());
-                _indRelPista[0] = _dirs.get(k)[0];
-                _indRelPista[1] = _dirs.get(k)[1];
+                _indRelPista[0] = _dirs.get(indexDuo)[0];
+                _indRelPista[1] = _dirs.get(indexDuo)[1];
+                return;
+            }
+
+            // El valor máximo es único, su valor es mayor que las que quedan por ver
+            // y el valor del otro camino es menor que las que quedan por colocar
+            boolean isMaxDir = maximo[2] == 1 && alcanzables[maximo[1]] >= leftVisibles &&
+                    alcanzables[indexDuo] < leftVisibles;
+            if (isMaxDir) {
+                pista.setTipo(TipoPista.DEBE_SER_AZUL);
+                pista.setPosCelda(c.getPos());
+                _indRelPista[0] = _dirs.get(maximo[1])[0];
+                _indRelPista[1] = _dirs.get(maximo[1])[1];
+                return;
             }
         }
+
+        // 2. Existe una dirección alcanzable más grande que las otras y la suma de las otras
+        // es menor que las que quedan por ver, por tanto, se escoge la dirección más grande
+        if (maximo[2] == 1) {
+            int sumMenores = 0;
+            for (int a : alcanzables) {
+                if (a != maximo[0]) {
+                    sumMenores += a;
+                }
+            }
+            if (sumMenores < leftVisibles) {
+                pista.setTipo(TipoPista.DEBE_SER_AZUL);
+                pista.setPosCelda(c.getPos());
+                _indRelPista[0] = _dirs.get(maximo[1])[0];
+                _indRelPista[1] = _dirs.get(maximo[1])[1];
+            }
+        }
+        // Si hay más de un máximo, entonces, deben ser todos menores que
+        // los que quedan por colocar
+        else {
+            int sumMayores = 0;
+            for (int a : alcanzables) {
+                if (a == max) {
+                    sumMayores += a;
+                }
+            }
+
+            if (sumMayores < leftVisibles) {
+                pista.setTipo(TipoPista.DEBE_SER_AZUL);
+                pista.setPosCelda(c.getPos());
+                _indRelPista[0] = _dirs.get(maximo[1])[0];
+                _indRelPista[1] = _dirs.get(maximo[1])[1];
+            }
+        }
+    }
+
+    /**
+     * Comprueba si el valor máximos es único y lo devuelve
+     * junto con el índice correspondiente y el número de
+     * máximos. Si el máximo no es único, entonces se devolverá
+     * -1 como primer elemento del array devuelto.
+     *
+     * @param array    Array del que obtener el máximo
+     * @param maxValue Valor máximo del array
+     */
+    private int[] getMaximumAndIndex(int[] array, int maxValue) {
+        int[] maxAndIndex = {-1, 0, 0};
+        for (int i = 0; i < 4; i++) {
+            int aux = array[i];
+            if (aux == maxValue) {
+                maxAndIndex[0] = aux;
+                maxAndIndex[1] = i;
+                maxAndIndex[2]++;
+            }
+        }
+
+        if (maxAndIndex[2] > 1) {
+            maxAndIndex[0] = -1;
+        }
+
+        return maxAndIndex;
     }
 //-----------------------------------------CELDAS-------------------------------------------------//
 
